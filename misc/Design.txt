@@ -1,0 +1,96 @@
+Rig3 Design Doc
+
+----
+20070827 Rig3
+
+Rig3 is designed to be an over simplified version of the (dead) rig2.
+Here I'll first explain the main goal and then stages to get there, with the
+idea that the first stages will be as simple as possible to get started asap.
+
+Rig3 is not a server. It's a standalone python script that runs periodically
+on the server, parsing a directory tree that contains pictures and Izu files.
+It produces another directory tree ready to be served by Apache. The main
+target is to run this under Linux. Whenever possible make it OS agnostic
+(by using os.path.sep f.ex.)
+
+Whenever possible, the processing is going to be incremental, meaning one can
+expect that most of the source won't have changed between two invocations.
+It is thus essential to detect only what has changed and rebuild only what is
+necessary.
+
+There are two parts in Rig3:
+- The engine part is about processing files.
+- The application part is about generating the final content we care for.
+
+Both parts work together. The engine is just here to do whatever the application
+needs, and not much more.
+
+So let's see what application we want to do first:
+- The main output is a weblog, aka blog, with an entry page containing the
+  last N new items.
+- Each item is either an Izumi text file (with possible images inserted)
+  or an album view.
+- The source folders are organized as a hierarchy of directories with a date
+  (either explicit from the folder name or implicit from the filesystem).
+- Each folder is a blog item and in the blog the structure is flat.
+- Parents folders are used to provide categories and index.izu files (or some kind of
+  specific file) can provide additional tags.
+- Generated pages:
+	- Page for the Most recent N items
+	- Page for all items of category X
+- Each item should be generated as a bit of HTML, cached as an embeddable HTML file.
+- Each page is a collection of existing items. We can use .shtml on the server
+  side (to be enabled in Apache) to link the separate items into a single page,
+  or we could use AJAX. We'll start with the shtml approach for simplicity.
+- Use KID for templating the pages and the items.
+
+The engine should work like this:
+- First build a list of source folders to process and their associated
+  destination. These objects should be "lazy" and not load their content
+  unless really needed.
+- Detect which folders have changed, ideally using some simple heuristic
+  such as the modification time.
+- Create or update the items corresponding to the changed folders.
+- Create or update the pages corresponding to the changed items.
+
+Stages:
+- Stage 1:
+	- Ignore pictures (i.e. the album view will be a link to an existing
+	  Rig1) and only deal with folders that contain an index.izu.
+  	- Requires a new Izu formatter in Python that can embedded the Rig images.
+  	- Have global config vs sites configs.
+  		- Patterns for valid folder names
+  		- Settings for generating the Rig links
+  	- Generate .shtml for items and create pages that uses them.
+- Stage 2:
+	- Remove obsolete destination items/pages
+	- Generate embedded album views, with a link onto the full rig version.
+		- Settings/patterns for image levels (unwanted/ignored, low/medium/good/excellent)
+	- Experiment with AJAX instead of shtml (or provide it as an option)
+	- Tags to be able to remove a given source folder from processing
+	- Tags to generate .htaccess into destination
+
+Expansions:
+- Ability to generate on-the-fly obfuscated pages for sharing
+	- can be done at first by symlinking the html on the web server
+
+----
+20070827 Structure Stage 1
+
+At root level:
+rig3/src: all.
+rig3/misc: this file.
+rig3/rig3.py -> src/rig3.py
+
+At src level:
+- settings.py: Load() from .rig3.rc f.ex (flat settings dict per site)
+- dirparser.py: Parse(dir) => list [ Dir( ... ) ] (recursive)
+- generate.py: Generate(site)
+	- load source for site
+	- compare to dest
+	- generate or update items
+	- keep links per type: last-n-page or page-cat-X (dict of list or dict of dict)
+	- generate pages
+- izumi.py: ConvertToHtml(izu)
+- thumbnail.py: UrlForImage(file, quality, size)
+- cache.py: Store(type, name, ref), or update. Cleanup()
