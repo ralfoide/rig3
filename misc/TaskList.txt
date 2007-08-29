@@ -1,0 +1,12 @@
+---- TODO ----
+
+20070828 [1] Engine: settings reader
+
+---- Done Version 0.1 ----
+
+20070828 [1] Engine: rig3 getopts, parse -v, .rc path, create log
+20070828 [1] Engine: Add log.py and UT
+20070828 [1] Engine: Add RigTestCase
+20070828 [1] Engine: Add UT framework (via command line and via PyDev)
+20070827 [1] SVN: Create rig3.googlecode with skeleton
+20070827 [1] Doc: Write preliminary design doc
