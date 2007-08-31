@@ -10,11 +10,18 @@ __author__ = "ralfoide@gmail.com"
 
 import re
 import unittest
+import StringIO
+
+from rig.log import Log
 
 IS_VERBOSE = False
 
 #------------
 class RigTestCase(unittest.TestCase):
+
+    def __init__(self, methodName='runTest'):
+        self._log = None
+        unittest.TestCase.__init__(self, methodName)
 
     def isVerbose(self):
         """
@@ -22,6 +29,23 @@ class RigTestCase(unittest.TestCase):
         running in verbose mode.
         """
         return IS_VERBOSE
+
+    def log(self):
+        """
+        Creates or returns a rig3 Log object.
+        """
+        if self._log is None:
+            self._str = StringIO.StringIO()
+            # Configure the logger to use the StringIO has file output
+            # Fix the date so that it doesn't affect tests
+            # Fix the format so that it be independant of the date, line number and
+            # of the default formatting in the default configuration.
+            self._log = Log(file=self._str,
+                            use_stderr=self.isVerbose(),
+                            format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
+                            date="%H:%M:%S")
+        return self._log
+
 
     def assertMatches(self, expected_regexp, actual, msg=None):
         """

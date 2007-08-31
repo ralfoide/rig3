@@ -7,6 +7,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 import sys
 import getopt
 from rig.log import Log
@@ -19,12 +20,13 @@ Rig3 [-h] [-v]
 Options:
     -h, --help:    This help
     -v, --verbose: Verbose logging (default: %(_verbose)s)
-    -c, --config:  Configuration file (default: %(_pathConfigRc)s) 
+    -c, --config:  Configuration file (default: %(_configPaths)s) 
 """
     
     def __init__(self):
+        self._log = None
         self._verbose = False
-        self._pathConfigRc = "~/.rig3rc"
+        self._configPaths = [ "/etc/rig3.rc", os.path.expanduser("~/.rig3rc") ]
 
     def _UsageAndExit(self, msg=None):
         """
@@ -49,7 +51,7 @@ Options:
                 elif opt in ["-v", "--verbose"]:
                     self._verbose = True
                 elif opt in ["-c", "--config"]:
-                    self._pathConfigRc = value
+                    self._configPaths = [ value ]
         except getopt.error, msg:
             self._UsageAndExit(msg)
 

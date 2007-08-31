@@ -1,9 +1,17 @@
 ---- TODO ----
 
-20070828 [1] Engine: settings reader
+20070829 [1] Engine: settings reader w/ UT
+20070830 [1] Engine: define sites/site in settings, UT
+20070830 [1] Engine: rig3 process sites/site
+20070830 [1] Engine: read source dirs (glob + patterns)
+20070830 [1] Engine: check update vs dest dirs
+
 
 ---- Done Version 0.1 ----
 
+20070830 [1] Tests: mock rig3 Run
+20070829 [1] Tests: rig3 ParseArgs
+20070829 [1] Engine: settings reader, first cut (no UT), list of rc paths
 20070828 [1] Engine: rig3 getopts, parse -v, .rc path, create log
 20070828 [1] Engine: Add log.py and UT
 20070828 [1] Engine: Add RigTestCase
