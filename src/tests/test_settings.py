@@ -8,7 +8,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
-from tests.rigtestcase import RigTestCase
+from tests.rig_test_case import RigTestCase
 import rig3
 import rig.settings
 

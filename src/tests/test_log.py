@@ -10,7 +10,7 @@ __author__ = "ralfoide@gmail.com"
 
 import StringIO
 
-from tests.rigtestcase import RigTestCase
+from tests.rig_test_case import RigTestCase
 from rig.log import Log
 
 #------------------------
