@@ -15,10 +15,10 @@ import rig3
 import rig.settings_base
 
 #------------------------
-class SettingsTest(RigTestCase):
+class SettingsBaseTest(RigTestCase):
 
     def setUp(self):
-        self.m = rig.settings_base.Settings(self.log())
+        self.m = rig.settings_base.SettingsBase(self.log())
 
     def tearDown(self):
         self.m = None
@@ -30,7 +30,7 @@ class SettingsTest(RigTestCase):
         r = rig3.Rig3()
         self.m.Load(r._configPaths)
 
-    def testTestdataRig3rc(self):
+    def testTestdata(self):
         p = self.getTestDataPath()
         self.m.Load(os.path.join(p, "settings_base.rc"))
         self.assertDictEquals(

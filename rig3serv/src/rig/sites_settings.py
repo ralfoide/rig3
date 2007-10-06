@@ -1,7 +1,14 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Rig3 module: One-line module description
+Rig3 module: Settings for top-level sites definitions.
+
+Each site has the following definitions (all are strings):
+- internal_name: A compact identifier, ideally short and without spaces
+- public_name: The public name for the site.
+- source_dir: The absolute path where sources are located
+- dest_dir: The absolute path where files are generated
+- theme: The identifier for the generated files' theme.
 
 Part of Rig3.
 License GPL.
@@ -9,15 +16,41 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import sys
+import ConfigParser
+from rig.settings_base import SettingsBase
 
 #------------------------
-class Empty:
+class SitesSettings(SettingsBase):
     """
-    Describe class
+    Loader for Sites Settings.
     """
-    def __init__(self):
-        # print >>sys.stderr, "empty class"
-        pass
+    def __init__(self, log):
+        super(SitesSettings, self).__init__(log)
+
+    def Load(self, config_paths):
+        """
+        Loads sites .rc files from the list of config_paths.
+        """
+        super(SitesSettings, self).Load(config_paths)
+
+    def Sites(self):
+        """
+        Returns the list of internal site names available.
+        """
+        sites = self._parser.get("serve", "sites")
+        return [s.strip() for s in ",".split(sites)]
+
+    def PublicName(self, site):
+        return self._parser.get(site, "public_name")
+
+    def SourceDir(self, site):
+        return self._parser.get(site, "source_dir")
+
+    def DestDir(self, site):
+        return self._parser.get(site, "dest_dir")
+
+    def Theme(self, site):
+        return self._parser.get(site, "theme")
 
 #------------------------
 # Local Variables:
