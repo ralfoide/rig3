@@ -90,7 +90,7 @@ class Log:
         self._logger = logger = logging.getLogger(name)
         self.is_verbose = False
     
-        for handler in  logger.handlers:
+        for handler in logger.handlers:
             logger.removeHandler(handler)
     
         if isinstance(file, str):
@@ -104,9 +104,9 @@ class Log:
             h = logging.StreamHandler(sys.stderr)
             logger.addHandler(h)
             h.setFormatter(_LogFormatter(format, date))
-    
+
         logger.setLevel(self.is_verbose and logging.DEBUG or logging.WARNING)
-    
+
         # Log ourselves
         self.Info("Logging enabled: %s", str(file))
 

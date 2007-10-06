@@ -8,6 +8,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 import re
 import unittest
 import StringIO
@@ -23,12 +24,25 @@ class RigTestCase(unittest.TestCase):
         self._log = None
         unittest.TestCase.__init__(self, methodName)
 
+    def setVerbose(verbose):
+        """
+        Static methods that sets the global verbosity flag.
+        """
+        global IS_VERBOSE
+        IS_VERBOSE = verbose
+    setVerbose = staticmethod(setVerbose)
+
     def isVerbose(self):
         """
         Convenience method that indicates if the current unit tests are
         running in verbose mode.
         """
+        global IS_VERBOSE
         return IS_VERBOSE
+
+    def getTestDataPath(self):
+        f = __file__
+        return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "testdata"))
 
     def log(self):
         """
@@ -44,8 +58,8 @@ class RigTestCase(unittest.TestCase):
                             use_stderr=self.isVerbose(),
                             format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
                             date="%H:%M:%S")
+            self._log.SetVerbose(self.isVerbose())
         return self._log
-
 
     def assertMatches(self, expected_regexp, actual, msg=None):
         """

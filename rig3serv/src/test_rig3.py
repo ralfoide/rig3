@@ -13,7 +13,7 @@ import os
 import sys
 import glob
 import unittest
-from tests import rigtestcase
+from tests.rig_test_case import RigTestCase
 
 #------------
 class CustomTestProgram(unittest.TestProgram):
@@ -26,7 +26,7 @@ class CustomTestProgram(unittest.TestProgram):
         unittest.TestProgram.__init__(self)
 
     def runTests(self):
-        rigtestcase.IS_VERBOSE = (self.verbosity == 2)
+        RigTestCase.setVerbose(self.verbosity == 2)
         if self.test is None or self.test.countTestCases() == 0:
             self.test = self._tests
         unittest.TestProgram.runTests(self)

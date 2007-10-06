@@ -8,6 +8,8 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
+
 from tests.rig_test_case import RigTestCase
 import rig3
 import rig.settings
@@ -27,6 +29,10 @@ class SettingsTest(RigTestCase):
         """
         r = rig3.Rig3()
         self.m.Load(r._configPaths)
+
+    def testTestdataRig3rc(self):
+        p = self.getTestDataPath()
+        self.m.Load(os.path.join(p, "rig3.rc"))
 
 
 #------------------------

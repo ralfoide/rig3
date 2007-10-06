@@ -9,6 +9,8 @@
 
 ---- Done Version 0.1 ----
 
+20071005 [1] Tests: Renamed rig_test_case, added getTestDataPath
+20070830 [1] Engine: basic settings reader w/ basic UT (not complete)
 20070830 [1] Tests: mock rig3 Run
 20070829 [1] Tests: rig3 ParseArgs
 20070829 [1] Engine: settings reader, first cut (no UT), list of rc paths
