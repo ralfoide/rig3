@@ -12,13 +12,13 @@ import os
 
 from tests.rig_test_case import RigTestCase
 import rig3
-import rig.settings
+import rig.settings_base
 
 #------------------------
 class SettingsTest(RigTestCase):
 
     def setUp(self):
-        self.m = rig.settings.Settings(self.log())
+        self.m = rig.settings_base.Settings(self.log())
 
     def tearDown(self):
         self.m = None
@@ -32,8 +32,15 @@ class SettingsTest(RigTestCase):
 
     def testTestdataRig3rc(self):
         p = self.getTestDataPath()
-        self.m.Load(os.path.join(p, "rig3.rc"))
-
+        self.m.Load(os.path.join(p, "settings_base.rc"))
+        self.assertDictEquals(
+            {"global_default_key": "global_value_default"},
+            self.m._parser.defaults())
+        self.assertListEquals(["section1"], self.m._parser.sections())
+        self.assertTrue(self.m._parser.has_section("section1"))
+        self.assertListEquals(
+            [('key1', 'value1'), ('global_default_key', 'global_value_default')],
+            self.m._parser.items("section1"))
 
 #------------------------
 # Local Variables:

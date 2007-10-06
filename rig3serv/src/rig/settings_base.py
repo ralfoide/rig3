@@ -12,7 +12,7 @@ import sys
 import ConfigParser
 
 #------------------------
-class Settings:
+class SettingsBase:
     """
     Describe class
     """

@@ -1,0 +1,8 @@
+# testdata/rig3.rc
+
+[section1]
+key1=value1
+
+[DEFAULT]
+global_default_key=global_value_default
+
