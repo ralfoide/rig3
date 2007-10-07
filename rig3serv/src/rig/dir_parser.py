@@ -65,11 +65,8 @@ class DirParser(object):
             full_path = os.path.join(root_dir, name)
             if self._isdir(full_path):
                 if dir_pattern.search(name):
-                    # Create an instance of Dir for this sub directory.
-                    # Uses self.__class__() instead of Dir() to create instances
-                    # of derived classes.
-                    p = self.__class__(self._log).Parse(full_path, os.path.join(dest_dir, name),
-                                             file_pattern, dir_pattern)
+                    p = self._new().Parse(full_path, os.path.join(dest_dir, name),
+                                          file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
                         self._sub_dirs.append(p)
@@ -86,7 +83,36 @@ class DirParser(object):
                     self._log.Debug("Ignore file: %s", full_path)
         return self
 
+    def __eq__(self, other):
+        """
+        Equality of two DirParser is defined as equality of all of its
+        members, i.e. absolute directories, file list and sub dirs list.
+        """
+        eq = (self.AbsSourceDir() == other.AbsSourceDir()
+              and self.AbsDestDir() == other.AbsDestDir()
+              and self.Files() == other.Files()
+              and self.SubDirs() == other.SubDirs())
+        return eq
+
+    def __ne__(self, other):
+        """
+        See DirParser.__eq__
+        """
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return "%s[%s => %s, files: %s, subdirs: %s]" % (
+            super(DirParser, self).__repr__(),
+            self.AbsSourceDir(), self.AbsDestDir(),
+            self.Files(), self.SubDirs())
+
     # Overridable methods for mock unittest
+
+    def _new(self, leaf):
+        """
+        Creates a new DirParser instance. Useful for mock unittests.
+        """
+        return DirParser(self._log)
 
     def _listdir(self, dir):
         """
