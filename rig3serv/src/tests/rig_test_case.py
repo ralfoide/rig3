@@ -69,7 +69,7 @@ class RigTestCase(unittest.TestCase):
         - expected_regexp (string): A regexp string to match.
         - actual (string): The actual value to match with.
         """
-        msg = "%s\nExpected regexp: %s\nActual: %s" % \
+        msg = "%s\nExpected regexp: %s\nActual  : %s" % \
               (msg or "assertMatches failed", expected_regexp, actual)
         self.assertTrue(re.match(expected_regexp, actual), msg)
 
@@ -87,14 +87,14 @@ class RigTestCase(unittest.TestCase):
         self.assertTrue(isinstance(actual, expected_types), msg)
 
     def assertDictEquals(self, expected, actual, msg=None):
-        msg = "%s\nExpected: %s\nActual: %s" % \
+        msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertDictEquals failed", repr(expected), repr(actual))
         self.assertTrue(isinstance(actual, dict), msg)
         self.assertTrue(isinstance(expected, dict), msg)
         self.assertEquals(expected, actual, msg)
 
     def assertListEquals(self, expected, actual, msg=None):
-        msg = "%s\nExpected: %s\nActual: %s" % \
+        msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertListEquals failed", repr(expected), repr(actual))
         self.assertTrue(isinstance(actual, list), msg)
         self.assertTrue(isinstance(expected, list), msg)

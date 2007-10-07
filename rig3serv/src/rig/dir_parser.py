@@ -83,6 +83,28 @@ class DirParser(object):
                     self._log.Debug("Ignore file: %s", full_path)
         return self
 
+    def Traverse(self):
+        """
+        Generate that traverses the directory structure.
+        Returns a tuple (source_dir, dest_dir, leaf_name, all_files) for each file.
+        all_files is the current list of files for this directory. It's a copy
+        so the caller can remove elements to be processed next and can use it
+        to lookup specific files ahead.
+        Processes local files then each subdirectories in alphabetical
+        order.
+        """
+        all_files = list(self._files)
+        all_files.sort()
+        for f in all_files:
+            yield (self._abs_source_dir, self._abs_dest_dir, f, all_files)
+        dirs = list(self._sub_dirs)
+        dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
+        for d in dirs:
+            for i in d.Traverse():
+                yield i
+
+    # Utilities
+
     def __eq__(self, other):
         """
         Equality of two DirParser is defined as equality of all of its

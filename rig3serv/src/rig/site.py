@@ -33,16 +33,20 @@ class Site(object):
         """
         Processes the site. Do whatever is needed to get the job done.
         """
-        # source_tree = Parse(source_dir, dest_dir)
-        # categories, items = GenerateItems(source_tree)
+        tree = Parse()
+        categories, items = GenerateItems(source_tree)
         # GeneratePages(categories, items)
 
     def Parse(self):
-        p = DirParser(self._log,
-                      os.path.realpath(self._source_dir),
-                      os.path.realpath(self._dest_dir))
-        p.Parse(_DIR_PATTERN, _VALID_FILES)
+        p = DirParser(self._log).Parse(os.path.realpath(self._source_dir),
+                                       os.path.realpath(self._dest_dir),
+                                       _DIR_PATTERN, _VALID_FILES)
         return p
+    
+    def GenerateItems(self, tree):
+        for source_dir, dest_dir, filename, all_files in tree.Traverse():
+            self._log.Info("Process %s/%s => %s/%s", source_dir, filename,
+                           dest_dir, filename)
 
 #------------------------
 # Local Variables:
