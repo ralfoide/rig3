@@ -18,7 +18,7 @@ from rig.settings_base import SettingsBase
 class SettingsBaseTest(RigTestCase):
 
     def setUp(self):
-        self.m = SettingsBase(self.log())
+        self.m = SettingsBase(self.Log())
 
     def tearDown(self):
         self.m = None

@@ -19,7 +19,7 @@ from rig.sites_settings import SitesSettings
 class SitesSettingsTest(RigTestCase):
 
     def setUp(self):
-        self.m = SitesSettings(self.log())
+        self.m = SitesSettings(self.Log())
 
     def tearDown(self):
         self.m = None

@@ -16,7 +16,7 @@ from rig.site import Site
 class SiteTest(RigTestCase):
 
     def setUp(self):
-        self.m = Site("Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
+        self.m = Site(self.Log(), "Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
 
     def tearDown(self):
         self.m = None

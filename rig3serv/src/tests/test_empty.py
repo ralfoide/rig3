@@ -15,7 +15,7 @@ from rig.empty import Empty
 class EmptyTest(RigTestCase):
 
     def setUp(self):
-        self.m = Empty()
+        self.m = Empty(self.Log())
 
     def tearDown(self):
         self.m = None

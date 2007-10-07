@@ -15,7 +15,8 @@ class Empty(object):
     """
     Describe class
     """
-    def __init__(self):
+    def __init__(self, log):
+        self._log = log
         # print >>sys.stderr, "empty class"
         pass
 

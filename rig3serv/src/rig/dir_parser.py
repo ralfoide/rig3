@@ -9,16 +9,19 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import os
+import re
 
 #------------------------
 class DirParser(object):
     """
-    Describe class
+    Parses directories recursively accordingly to given file/dir regexps.
+    Parses the source directories and match the corresponding destination
+    structure (destinaton is not checked for existence.)
+    
+    To use create the object then call Parse() on it.
     """
-    def __init__(self, log, abs_source_dir, abs_dest_dir):
+    def __init__(self, log):
         self._log = log
-        self._abs_source_dir = abs_source_dir
-        self._abs_dest_dir = abs_dest_dir
         self._files = []
         self._sub_dirs = []
     
@@ -34,7 +37,26 @@ class DirParser(object):
     def SubDirs(self):
         return self._sub_dirs
 
-    def Parse(self, dir_pattern, file_pattern):
+    def Parse(self, abs_source_dir, abs_dest_dir, file_pattern=".", dir_pattern="."):
+        """
+        Parse the directory at abs_source_dir and associate it with the parallel
+        structure at abs_dest_dir. Fills Files() and SubDirs().
+        
+        dir_pattern and file_pattern are regular expressions (string or compiled regexp)
+        to limit the directories or files accepted. Patterns are matched using "re.search",
+        not "re.match" so you have to use ^..$ if you want to test against full strings.
+        The default patterns are "." which matches anything.
+        
+        Returns self for chaining.
+        """
+        self._files = []
+        self._sub_dirs = []
+        self._abs_source_dir = abs_source_dir
+        self._abs_dest_dir = abs_dest_dir
+        if isinstance(dir_pattern, str):
+            dir_pattern = re.compile(dir_pattern)
+        if isinstance(file_pattern, str):
+            file_pattern = re.compile(file_pattern)
         root_dir = self._abs_source_dir
         dest_dir = self._abs_dest_dir
         self._log.Debug("Parse dir: %s", root_dir)
@@ -43,11 +65,14 @@ class DirParser(object):
             full_path = os.path.join(root_dir, name)
             if self._isdir(full_path):
                 if dir_pattern.search(name):
-                    p = Dir(self._log, full_path, os.path.join(dest_dir, name))
-                    p.Parse(dir_pattern, file_pattern)
+                    # Create an instance of Dir for this sub directory.
+                    # Uses self.__class__() instead of Dir() to create instances
+                    # of derived classes.
+                    p = self.__class__(self._log).Parse(full_path, os.path.join(dest_dir, name),
+                                             file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
-                        self.SubDirs().append(p)
+                        self._sub_dirs.append(p)
                         self._log.Debug("Append dir: %s", full_path)
                     else:
                         self._log.Debug("Ignore empty dir: %s", full_path)
@@ -55,10 +80,11 @@ class DirParser(object):
                     self._log.Debug("Ignore dir: %s", full_path)
             else:
                 if file_pattern.search(name):
-                    self.Files().append(full_path)
-                    self._log.Debug("Append file: %s=%s", p, full_path)
+                    self._files.append(name)
+                    self._log.Debug("Append file: %s", full_path)
                 else:
                     self._log.Debug("Ignore file: %s", full_path)
+        return self
 
     # Overridable methods for mock unittest
 
