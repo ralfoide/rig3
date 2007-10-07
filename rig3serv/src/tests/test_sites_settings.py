@@ -11,14 +11,15 @@ __author__ = "ralfoide@gmail.com"
 import os
 
 from tests.rig_test_case import RigTestCase
+
 import rig3
-import rig.sites_settings
+from rig.sites_settings import SitesSettings
 
 #------------------------
 class SitesSettingsTest(RigTestCase):
 
     def setUp(self):
-        self.m = rig.sites_settings.SitesSettings(self.log())
+        self.m = SitesSettings(self.log())
 
     def tearDown(self):
         self.m = None

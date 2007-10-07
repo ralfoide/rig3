@@ -6,7 +6,7 @@ sites = site1, site2
 
 [DEFAULT]
 # Other options for all sites
-theme = blue_templates
+theme = blue_template
 
 [site1]
 public_name = Site 1

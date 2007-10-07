@@ -10,15 +10,15 @@ __author__ = "ralfoide@gmail.com"
 
 import os
 
-from tests.rig_test_case import RigTestCase
 import rig3
-import rig.settings_base
+from tests.rig_test_case import RigTestCase
+from rig.settings_base import SettingsBase
 
 #------------------------
 class SettingsBaseTest(RigTestCase):
 
     def setUp(self):
-        self.m = rig.settings_base.SettingsBase(self.log())
+        self.m = SettingsBase(self.log())
 
     def tearDown(self):
         self.m = None

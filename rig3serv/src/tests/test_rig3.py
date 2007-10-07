@@ -9,18 +9,23 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 from tests.rig_test_case import RigTestCase
-from rig.log import Log
+
 import rig3
+from rig.log import Log
+from rig.sites_settings import SitesSettings
 
 #------------------------
 class MockRig3(rig3.Rig3):
     def __init__(self):
         self._usageAndExitCalled = False
+        self._ProcessSitesCalled = False
         rig3.Rig3.__init__(self)
 
     def _UsageAndExit(self, msg=None):
         self._usageAndExitCalled = True
 
+    def ProcessSites(self):
+        self._ProcessSitesCalled = True
 
 #------------------------
 class Rig3Test(RigTestCase):
@@ -64,8 +69,12 @@ class Rig3Test(RigTestCase):
         Tests run
         """
         self.assertEquals(None, self.m._log)
+        self.assertEquals(None, self.m._sites_settings)
+        self.assertFalse(self.m._ProcessSitesCalled)
         self.m.Run()
         self.assertIsInstance(Log, self.m._log)
+        self.assertIsInstance(SitesSettings, self.m._sites_settings)
+        self.assertTrue(self.m._ProcessSitesCalled)
 
 #------------------------
 # Local Variables:

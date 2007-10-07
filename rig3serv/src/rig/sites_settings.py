@@ -37,8 +37,12 @@ class SitesSettings(SettingsBase):
         """
         Returns the list of internal site names available.
         """
-        sites = self._parser.get("serve", "sites")
-        return [s.strip() for s in ",".split(sites)]
+        try:
+            sites = self._parser.get("serve", "sites")
+            result = [s.strip() for s in sites.split(",")]
+            return result
+        except ConfigParser.NoSectionError:
+            return []
 
     def PublicName(self, site):
         return self._parser.get(site, "public_name")

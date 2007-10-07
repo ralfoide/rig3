@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Unit tests for Empty
+Unit tests for Site
 
 Part of Rig3.
 License GPL.
@@ -9,22 +9,27 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 from tests.rig_test_case import RigTestCase
-from rig.empty import Empty
+
+from rig.site import Site
 
 #------------------------
-class EmptyTest(RigTestCase):
+class SiteTest(RigTestCase):
 
     def setUp(self):
-        self.m = Empty()
+        self.m = Site("Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
 
     def tearDown(self):
         self.m = None
 
     def testInit(self):
         """
-        Test init of Empty
+        Test init of Site
         """
         self.assertNotEqual(None, self.m)
+        self.assertEquals("Site Name", self.m._public_name)
+        self.assertEquals("/tmp/source/data", self.m._source_dir)
+        self.assertEquals("/tmp/dest/data", self.m._dest_dir)
+        self.assertEquals("theme", self.m._theme)
 
 
 #------------------------
