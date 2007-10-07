@@ -1,11 +1,17 @@
 ---- TODO ----
 
-20070830 [1] Engine: read source dirs (glob + patterns)
-20070830 [1] Engine: check update vs dest dirs
-
+20070830 [1] Engine: read source dirs (glob + patterns), UT
+20070830 [1] Engine: check update vs dest dirs, UT
+20071006 [1] Engine: Generate items, mock, UT
+20071006 [1] Engine: Izumi-to-Html converted, UT
+20071006 [1] Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
+20071006 [1] Engine: Generate items, complete, UT
+20071006 [1] Engine: Generate index page, UT
+20071006 [1] Engine: Generate categories pages, UT
 
 ---- Done Version 0.1 ----
 
+20071006 [1] Engine: read source dirs (glob + patterns) (no UT)
 20071006 [1] Engine: rig3 process sites/site
 20071005 [1] Engine: define sites/site in settings, UT
 20071005 [1] Engine: settings reader w/ UT

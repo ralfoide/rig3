@@ -11,7 +11,7 @@ __author__ = "ralfoide@gmail.com"
 import sys
 
 #------------------------
-class Empty:
+class Empty(object):
     """
     Describe class
     """

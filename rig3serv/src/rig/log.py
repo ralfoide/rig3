@@ -59,7 +59,7 @@ class _LogFormatter(logging.Formatter):
 
 
 #------------
-class Log:
+class Log(object):
     """
     A simple wrapper around Python's logging facility.
     """
