@@ -40,6 +40,7 @@ class SiteTest(RigTestCase):
         self.assertSearch(rig.site._VALID_FILES, "index.izu")
         self.assertSearch(rig.site._VALID_FILES, "image.jpg")
         self.assertSearch(rig.site._VALID_FILES, "image.jpeg")
+        self.assertSearch(rig.site._VALID_FILES, "T12896_tiny_jpeg.jpg")
 
     def testAlbum(self):
         m = Site(self.Log(), "Test Album",

@@ -130,7 +130,7 @@ class DirParser(object):
 
     # Overridable methods for mock unittest
 
-    def _new(self, leaf):
+    def _new(self):
         """
         Creates a new DirParser instance. Useful for mock unittests.
         """

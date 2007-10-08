@@ -42,7 +42,8 @@ class Site(object):
     def Parse(self):
         p = DirParser(self._log).Parse(os.path.realpath(self._source_dir),
                                        os.path.realpath(self._dest_dir),
-                                       _DIR_PATTERN, _VALID_FILES)
+                                       file_pattern=_VALID_FILES,
+                                       dir_pattern=_DIR_PATTERN)
         return p
     
     def GenerateItems(self, tree):
