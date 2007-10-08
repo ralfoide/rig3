@@ -26,7 +26,8 @@ class SitesSettingsTest(RigTestCase):
 
     def testTestdata(self):
         p = self.getTestDataPath()
-        self.m.Load(os.path.join(p, "sites_settings.rc"))
+        r = self.m.Load(os.path.join(p, "sites_settings.rc"))
+        self.assertSame(r, self.m)
         self.assertListEquals(["site1", "site2"], self.m.Sites())
 
         self.assertEquals("blue_template", self.m.Theme("site1"))

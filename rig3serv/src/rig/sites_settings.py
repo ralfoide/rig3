@@ -30,8 +30,9 @@ class SitesSettings(SettingsBase):
     def Load(self, config_paths):
         """
         Loads sites .rc files from the list of config_paths.
+        Return self, for chaining.
         """
-        super(SitesSettings, self).Load(config_paths)
+        return super(SitesSettings, self).Load(config_paths)
 
     def Sites(self):
         """

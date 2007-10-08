@@ -26,11 +26,16 @@ class SettingsBase(object):
         self._parser = ConfigParser.SafeConfigParser()
 
     def Load(self, config_paths):
+        """
+        Loads sites .rc files from the list of config_paths.
+        Return self, for chaining.
+        """
         parsed = self._parser.read(config_paths)
         self._log.Info("Parsed %s out of %s", parsed, config_paths)
         self._log.Debug("Defaults: %s", self._parser.defaults())
         for s in self._parser.sections():
             self._log.Debug("Section[%s]: %s", s, self._parser.items(s))
+        return self
 
 #------------------------
 # Local Variables:

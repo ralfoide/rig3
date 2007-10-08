@@ -32,7 +32,8 @@ class SettingsBaseTest(RigTestCase):
 
     def testTestdata(self):
         p = self.getTestDataPath()
-        self.m.Load(os.path.join(p, "settings_base.rc"))
+        r = self.m.Load(os.path.join(p, "settings_base.rc"))
+        self.assertSame(r, self.m)
         self.assertDictEquals(
             {"global_default_key": "global_value_default"},
             self.m._parser.defaults())

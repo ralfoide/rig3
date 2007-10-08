@@ -8,28 +8,45 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
+
 from tests.rig_test_case import RigTestCase
 
+import rig.site
 from rig.site import Site
 
 #------------------------
 class SiteTest(RigTestCase):
 
     def setUp(self):
-        self.m = Site(self.Log(), "Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
+        pass
 
     def tearDown(self):
-        self.m = None
+        pass
 
     def testInit(self):
         """
         Test init of Site
         """
-        self.assertNotEqual(None, self.m)
-        self.assertEquals("Site Name", self.m._public_name)
-        self.assertEquals("/tmp/source/data", self.m._source_dir)
-        self.assertEquals("/tmp/dest/data", self.m._dest_dir)
-        self.assertEquals("theme", self.m._theme)
+        m = Site(self.Log(), "Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
+        self.assertNotEqual(None, m)
+        self.assertEquals("Site Name", m._public_name)
+        self.assertEquals("/tmp/source/data", m._source_dir)
+        self.assertEquals("/tmp/dest/data", m._dest_dir)
+        self.assertEquals("theme", m._theme)
+
+    def testPatterns(self):
+        self.assertSearch(rig.site._DIR_PATTERN, "2007-10-07_Folder 1")
+        self.assertSearch(rig.site._VALID_FILES, "index.izu")
+        self.assertSearch(rig.site._VALID_FILES, "image.jpg")
+        self.assertSearch(rig.site._VALID_FILES, "image.jpeg")
+
+    def testAlbum(self):
+        m = Site(self.Log(), "Test Album",
+                 os.path.join(self.getTestDataPath(), "album"),
+                 os.path.join(self.getTestDataPath(), "dest"),
+                 "theme")
+        m.Process()
 
 
 #------------------------

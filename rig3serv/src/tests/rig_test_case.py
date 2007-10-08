@@ -55,16 +55,36 @@ class RigTestCase(unittest.TestCase):
             # Fix the format so that it be independant of the date, line number and
             # of the default formatting in the default configuration.
             self.__log = Log(file=self._str,
-                            use_stderr=self.isVerbose(),
-                            format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
-                            date="%H:%M:%S")
-            self.__log.SetVerbose(self.isVerbose())
+                             verbose=self.isVerbose(),
+                             use_stderr=self.isVerbose(),
+                             format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
+                             date="%H:%M:%S")
         return self.__log
     Log = log
 
+    def assertSame(self, expected, actual, msg=None):
+        """
+        Asserts that the two reference point to the same object, not just
+        equal objects. This compares the internal object ids.
+        """
+        self.assertEquals(id(expected), id(actual), msg)
+
+    def assertSearch(self, expected_regexp, actual, msg=None):
+        """
+        Asserts that the actual string value matches the expected regexp
+        using a free search, not a complete match.
+        Parameters:
+        - expected_regexp (string): A regexp string to match.
+        - actual (string): The actual value to match with.
+        """
+        msg = "%s\nExpected regexp: %s\nActual  : %s" % \
+              (msg or "assertMatches failed", expected_regexp, actual)
+        self.assertTrue(re.search(expected_regexp, actual), msg)
+
     def assertMatches(self, expected_regexp, actual, msg=None):
         """
-        Asserts that the actual string value matches the expected regexp.
+        Asserts that the actual string value matches the expected regexp
+        using a full match.
         Parameters:
         - expected_regexp (string): A regexp string to match.
         - actual (string): The actual value to match with.

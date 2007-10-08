@@ -29,7 +29,8 @@ Options:
         self._log = None
         self._sites_settings = None
         self._verbose = False
-        self._configPaths = [ "/etc/rig3.rc", os.path.expanduser("~/.rig3rc") ]
+        self._configPaths = [ "/etc/rig3.rc",
+                              os.path.expanduser(os.path.join("~", ".rig3rc")) ]
 
     def _UsageAndExit(self, msg=None):
         """
@@ -62,14 +63,15 @@ Options:
         """
         Runs rig3.
         """
-        self._log = Log(use_stderr=self._verbose)
-        self._sites_settings = SitesSettings(self._configPaths)
+        self._log = Log(verbose=self._verbose, use_stderr=self._verbose)
+        self._sites_settings = SitesSettings(self._log).Load(self._configPaths)
         self.ProcessSites()
 
     def ProcessSites(self):
         s = self._sites_settings
         for site_id in s.Sites():
-            site = Site(s.PublicName(site_id),
+            site = Site(self._log,
+                        s.PublicName(site_id),
                         s.SourceDir(site_id),
                         s.DestDir(site_id),
                         s.Theme(site_id))

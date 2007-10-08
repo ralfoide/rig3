@@ -33,8 +33,10 @@ class Site(object):
         """
         Processes the site. Do whatever is needed to get the job done.
         """
-        tree = Parse()
-        categories, items = GenerateItems(source_tree)
+        self._log.Info("Processing site %s.\nSource: %s\nDest: %s\nTheme: %s",
+                       self._public_name, self._source_dir, self._dest_dir, self._theme)
+        tree = self.Parse()
+        # categories, items = GenerateItems(tree)
         # GeneratePages(categories, items)
 
     def Parse(self):

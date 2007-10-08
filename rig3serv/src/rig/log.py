@@ -67,6 +67,7 @@ class Log(object):
     def __init__(self,
                  name=_NAME,
                  file=_FILENAME,
+                 verbose=False,
                  use_stderr=True,
                  format="%(levelname)s %(filename)s:%(lineno)s [%(asctime)s] %(message)s",
                  date="%Y/%m/%d %H:%M:%S"):
@@ -88,7 +89,7 @@ class Log(object):
         most notably the file argument.
         """
         self._logger = logger = logging.getLogger(name)
-        self.is_verbose = False
+        self.is_verbose = verbose
     
         for handler in logger.handlers:
             logger.removeHandler(handler)

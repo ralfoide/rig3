@@ -40,7 +40,7 @@ class DirParserTest(RigTestCase):
     def testEmptyDir(self):
         m = MockDirParser(self.Log(), mock_dirs={})
         p = m.Parse("base", "dest")
-        self.assertEquals(p, m)
+        self.assertSame(p, m)
         self.assertListEquals([], m.Files())
         self.assertListEquals([], m.SubDirs())
 
