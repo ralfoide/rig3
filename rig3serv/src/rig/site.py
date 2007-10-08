@@ -62,7 +62,7 @@ class Site(object):
         """
         categories = []
         items = []
-        for source_dir, dest_dir, filename, all_files in tree.Traverse():
+        for source_dir, dest_dir, filename, all_files in tree.TraverseFiles():
             self._log.Info("Process %s/%s => %s/%s", source_dir, filename,
                            dest_dir, filename)
             if self.UpdateNeeded(source_dir, dest_dir):

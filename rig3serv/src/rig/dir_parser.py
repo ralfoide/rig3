@@ -83,9 +83,9 @@ class DirParser(object):
                     self._log.Debug("Ignore file: %s", full_path)
         return self
 
-    def Traverse(self):
+    def TraverseFiles(self):
         """
-        Generate that traverses the directory structure.
+        Generate that traverses all files in the directory structure.
         Returns a tuple (source_dir, dest_dir, leaf_name, all_files) for each file.
         all_files is the current list of files for this directory. It's a copy
         so the caller can remove elements to be processed next and can use it
@@ -100,7 +100,7 @@ class DirParser(object):
         dirs = list(self._sub_dirs)
         dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
         for d in dirs:
-            for i in d.Traverse():
+            for i in d.TraverseFiles():
                 yield i
 
     # Utilities

@@ -125,7 +125,7 @@ class DirParserTest(RigTestCase):
         self.assertListEquals([ "file7", "file8" ], dir2b.Files())
         self.assertListEquals([], dir2b.SubDirs())
 
-    def testTraverse(self):
+    def testTraverseFiles(self):
         mock_dirs={ "base": [ "dir1b", "dir1a", "file0" ],
                    os.path.join("base", "dir1a"): [ "file2", "file1", "dir2a" ],
                    os.path.join("base", "dir1b"): [ "file3", "file4", "dir2b" ],
@@ -149,7 +149,7 @@ class DirParserTest(RigTestCase):
             (os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"), "file8", [ "file7", "file8" ] ),
             ]
         
-        actual = [i for i in m.Traverse()]
+        actual = [i for i in m.TraverseFiles()]
         self.assertListEquals(expected, actual)
 
 #------------------------
