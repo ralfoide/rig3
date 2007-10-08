@@ -35,21 +35,46 @@ class Site(object):
         """
         self._log.Info("Processing site %s.\nSource: %s\nDest: %s\nTheme: %s",
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
-        tree = self.Parse()
-        # categories, items = GenerateItems(tree)
+        tree = self.Parse(self._source_dir, self._dest_dir)
+        categories, items = self.GenerateItems(tree)
         # GeneratePages(categories, items)
 
-    def Parse(self):
-        p = DirParser(self._log).Parse(os.path.realpath(self._source_dir),
-                                       os.path.realpath(self._dest_dir),
+    def Parse(self, source_dir, dest_dir):
+        """
+        Calls the directory parser on the source vs dest directories
+        with the default dir/file patterns.
+        
+        Returns the DirParser pointing on the root of the source tree.
+        
+        TODO: make dir/file patterns configurable in SitesSettings.
+        """
+        p = DirParser(self._log).Parse(os.path.realpath(source_dir),
+                                       os.path.realpath(dest_dir),
                                        file_pattern=_VALID_FILES,
                                        dir_pattern=_DIR_PATTERN)
         return p
     
     def GenerateItems(self, tree):
+        """
+        Traverses the source tree and generate new items as needed.
+        
+        Returns a tuple (list: categories, list: items).
+        """
+        categories = []
+        items = []
         for source_dir, dest_dir, filename, all_files in tree.Traverse():
             self._log.Info("Process %s/%s => %s/%s", source_dir, filename,
                            dest_dir, filename)
+            if self.UpdateNeeded(source_dir, dest_dir):
+                pass
+        return categories, items
+
+    def UpdateNeeded(self, source_dir, dest_dir):
+        pass
+
+
+    # Utilities, overridable for unit tests
+    
 
 #------------------------
 # Local Variables:

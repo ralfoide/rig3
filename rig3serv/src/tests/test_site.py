@@ -14,6 +14,7 @@ from tests.rig_test_case import RigTestCase
 
 import rig.site
 from rig.site import Site
+from rig.dir_parser import DirParser
 
 #------------------------
 class SiteTest(RigTestCase):
@@ -48,6 +49,19 @@ class SiteTest(RigTestCase):
                  os.path.join(self.getTestDataPath(), "dest"),
                  "theme")
         m.Process()
+    
+    def testParse(self):
+        m = Site(self.Log(), "Test Album",
+                 os.path.join(self.getTestDataPath(), "album"),
+                 os.path.join(self.getTestDataPath(), "dest"),
+                 "theme")
+        p = m.Parse(m._source_dir, m._dest_dir)
+        self.assertIsInstance(DirParser, p)
+        self.assertListEquals([], p.Files())
+        self.assertEquals(1, len(p.SubDirs()))
+        self.assertIsInstance(DirParser, p.SubDirs()[0])
+        self.assertListEquals([ "index.izu", "T12896_tiny_jpeg.jpg"], p.SubDirs()[0].Files())
+        self.assertListEquals([], p.SubDirs()[0].SubDirs())
 
 
 #------------------------
