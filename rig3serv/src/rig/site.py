@@ -37,7 +37,8 @@ class Site(object):
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
         tree = self.Parse(self._source_dir, self._dest_dir)
         categories, items = self.GenerateItems(tree)
-        # GeneratePages(categories, items)
+        # TODO: self.GeneratePages(categories, items)
+        # TODO: self.DeleteOldGeneratedItems()
 
     def Parse(self, source_dir, dest_dir):
         """
@@ -56,25 +57,51 @@ class Site(object):
     
     def GenerateItems(self, tree):
         """
-        Traverses the source tree and generate new items as needed.
+        Traverses the source tree and generates new items as needed.
+        
+        An item in a RIG site is a directory that contains either an
+        index.izu and/or JPEG images.
         
         Returns a tuple (list: categories, list: items).
         """
         categories = []
         items = []
-        for source_dir, dest_dir, filename, all_files in tree.TraverseFiles():
-            self._log.Info("Process %s/%s => %s/%s", source_dir, filename,
-                           dest_dir, filename)
-            if self.UpdateNeeded(source_dir, dest_dir):
+        for source_dir, dest_dir, all_files in tree.TraverseDirs():
+            self._log.Info("Process %s => %s", source_dir, 
+                           dest_dir)
+            if self.UpdateNeeded(source_dir, dest_dir, all_files):
                 pass
         return categories, items
 
-    def UpdateNeeded(self, source_dir, dest_dir):
-        pass
+    def UpdateNeeded(self, source_dir, dest_dir, all_files):
+        """
+        The item needs to be updated if the source directory or any of
+        its internal files are more recent than the destination directory.
+        And obviously it needs to be created if the destination does not
+        exist yet.
+        """
+        dest_ts = None
+        if not os.path.exists(dest_dir):
+            return true
+        else:
+            dest
+        
 
 
     # Utilities, overridable for unit tests
     
+    def DirTimeStamp(self, dir):
+        """
+        Returns the most recent change or modification time stamp for the
+        given directory.
+        
+        Throws OSError with e.errno==errno.ENOENT (2) when the directory
+        does not exists.
+        """
+        c = os.path.getctime(dir)
+        m = os.path.getmtime(dir)
+        return max(c, m)
+
 
 #------------------------
 # Local Variables:
