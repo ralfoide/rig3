@@ -70,7 +70,19 @@ class Site(object):
             self._log.Info("Process %s => %s", source_dir, 
                            dest_dir)
             if self.UpdateNeeded(source_dir, dest_dir, all_files):
-                pass
+                files = [f.lower() for f in all_files]
+                cats = []
+                items = []
+                if "index.izu" in files:
+                    cats, items = self.GenerateIzuEntry("index.izu", source_dir, dest_dir, all_files)
+                else:
+                    cats, items = self.GenerateAlbumEntry(source_dir, dest_dir, all_files)
+                for c in cats:
+                    if not c in categories:
+                        categories.append(c)
+                for i in items:
+                    if not i in items:
+                        items.append(i)
         return categories, items
 
     def UpdateNeeded(self, source_dir, dest_dir, all_files):
@@ -80,13 +92,37 @@ class Site(object):
         And obviously it needs to be created if the destination does not
         exist yet.
         """
-        dest_ts = None
         if not os.path.exists(dest_dir):
             return true
-        else:
-            dest
-        
+        source_ts = None
+        dest_ts = None
+        try:
+            dest_ts = self.DirTimeStamp(dest_dir)
+        except OSError:
+            return True
+        try:
+            source_ts = self.DirTimeStamp(source_dir)
+        except OSError:
+            return False
+        return source_ts > dest_ts
 
+    def GenerateIzuEntry(self, index, source_dir, dest_dir, all_files):
+        """
+        Generates a new Izumi entry from the given index.
+        Might be associated with all images from all_files
+        Returns: tuple (list: categories, list: items)
+        """
+        # TODO
+        return [], []
+
+    def GenerateAlbumEntry(self, source_dir, dest_dir, all_files):
+        """
+        Generates a new photo album entry from the given index.
+        Returns: tuple (list: categories, list: items)
+        """
+        # TODO
+        return [], []
+        
 
     # Utilities, overridable for unit tests
     
