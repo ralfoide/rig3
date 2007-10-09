@@ -85,7 +85,7 @@ class DirParser(object):
 
     def TraverseFiles(self):
         """
-        Generate that traverses all files in the directory structure.
+        Generator that traverses all files in the directory structure.
         Returns a tuple (source_dir, dest_dir, leaf_name, all_files) for each file.
         all_files is the current list of files for this directory. It's a copy
         so the caller can remove elements to be processed next and can use it
@@ -101,6 +101,21 @@ class DirParser(object):
         dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
         for d in dirs:
             for i in d.TraverseFiles():
+                yield i
+
+    def TraverseDirs(self):
+        """
+        Generator that traverses the directories in the directory structure.
+        For each directory, returns a tuple (source_dir, dest_dir, all_files).
+        Processes directories deep-first in sorted order.
+        The all_files list is not sorted in any particular order.
+        Callers should treat the tuples as immutable and not change the values.
+        """
+        yield (self._abs_source_dir, self._abs_dest_dir, self._files)
+        dirs = list(self._sub_dirs)
+        dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
+        for d in dirs:
+            for i in d.TraverseDirs():
                 yield i
 
     # Utilities

@@ -1,6 +1,5 @@
 ---- TODO ----
 
-20070830 [1] Engine: read source dirs (glob + patterns), UT
 20070830 [1] Engine: check update vs dest dirs, UT
 20071006 [1] Engine: Generate items, mock, UT
 20071006 [1] Engine: Izumi-to-Html converted, UT
@@ -11,6 +10,9 @@
 
 ---- Done Version 0.1 ----
 
+20071008 [1] Engine: DirParser.TraverseDirs w/ UT
+20071007 [1] Engine: misc fixes, more UTs, testing dir parsing
+20071007 [1] Engine: read source dirs (glob + patterns) w/ UT
 20071006 [1] Engine: read source dirs (glob + patterns) (no UT)
 20071006 [1] Engine: rig3 process sites/site
 20071005 [1] Engine: define sites/site in settings, UT

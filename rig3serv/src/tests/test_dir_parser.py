@@ -152,6 +152,29 @@ class DirParserTest(RigTestCase):
         actual = [i for i in m.TraverseFiles()]
         self.assertListEquals(expected, actual)
 
+    def testTraverseDirs(self):
+        mock_dirs={ "base": [ "dir1b", "dir1a", "file0" ],
+                   os.path.join("base", "dir1a"): [ "file2", "file1", "dir2a" ],
+                   os.path.join("base", "dir1b"): [ "file3", "file4", "dir2b" ],
+                   os.path.join("base", "dir1a", "dir2a"): [ "file6", "file5", "dir3a" ],
+                   os.path.join("base", "dir1b", "dir2b"): [ "file7", "file8", "dir3b" ],
+                   os.path.join("base", "dir1a", "dir2a", "dir3a"): [],
+                   os.path.join("base", "dir1b", "dir2b", "dir3b"): [] }
+
+        m = MockDirParser(self.Log(), mock_dirs)
+        m.Parse("base", "dest")
+
+        expected = [
+            ("base", "dest", [ "file0" ]),
+            (os.path.join("base", "dir1a"), os.path.join("dest", "dir1a"), [ "file2", "file1" ] ),
+            (os.path.join("base", "dir1a", "dir2a"), os.path.join("dest", "dir1a", "dir2a"), [ "file6", "file5" ] ),
+            (os.path.join("base", "dir1b"), os.path.join("dest", "dir1b"), [ "file3", "file4" ] ),
+            (os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"), [ "file7", "file8" ] ),
+            ]
+        
+        actual = [i for i in m.TraverseDirs()]
+        self.assertListEquals(expected, actual)
+
 #------------------------
 # Local Variables:
 # mode: python
