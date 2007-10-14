@@ -11,6 +11,14 @@ __author__ = "ralfoide@gmail.com"
 import sys
 
 #------------------------
+class _State(object):
+    def __init__(self):
+        self.html = ""
+        self.images = []
+        self.tags = []
+        self.cats = []
+
+#------------------------
 class IzuParser(object):
     """
     Izumi parser.
@@ -35,22 +43,38 @@ class IzuParser(object):
         - list of referenced images (can be an empty list, but not None)
         """
         f = None
-        html = ""
-        tags = []
-        images = []
-        cats = []
+        result = ("", [], [], [])
         try:
             if isinstance(source, str):
                 f = file(source, "r", 1)  # 1=line buffered
             else:
                 f = source
-            state = { "html": html, "tags": tags, "img": images, "cat": cats }
-            for l in 
+            state = self._InitState()
+            # file.readline returns each line with its line ending and returns an empty string
+            # when the end of the file has been reached
+            l = f.readline()
+            while l:
+                self._ProcessLine(state, l)
+                l = f.readline()
+            result = self._CloseState(state)
         except IOError:
             if f and f != source:
                 f.close()
             self._log.Exception("Read-error for %s" % source)
-        return (html, tags, cats, images)
+        return result
+
+    def _InitState(self):
+        s = _State();
+        s.html = "<div class='izumi'>\n"
+        return s
+
+    def _CloseState(self, state):
+        state.html += "</div>\n"
+        return state.html, state.tags, state.cats, state.images
+
+    def _ProcessLine(self, state, line):
+        # placeholder
+        state.html += line
 
 #------------------------
 # Local Variables:

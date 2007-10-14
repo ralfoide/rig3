@@ -13,6 +13,7 @@ import os
 import sys
 
 from rig.dir_parser import DirParser
+from rig.izu_parser import IzuParser
 
 _INDEX = "index.izu"
 _DIR_PATTERN = re.compile(r"^(?P<year>\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
@@ -108,8 +109,9 @@ class Site(object):
         Returns: tuple (list: categories, list: items)
         """
         if _INDEX in all_files:
-            text_html = Izu.Render(os.path.join(source_dir, _INDEX))
-        return [], []        
+            parser = IzuParser(self._log)
+            html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, _INDEX))
+        return [], []
 
     # Utilities, overridable for unit tests
     
