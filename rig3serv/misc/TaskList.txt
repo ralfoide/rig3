@@ -2,7 +2,7 @@
 
 20070830 [1] Engine: check update vs dest dirs, UT
 20071006 [1] Engine: Generate items, mock, UT
-20071006 [1] Engine: Izumi-to-Html converted, UT
+20071006 [1] Engine: Full Izumi-to-Html converter, UT
 20071006 [1] Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
 20071006 [1] Engine: Generate items, complete, UT
 20071006 [1] Engine: Generate index page, UT
@@ -10,6 +10,7 @@
 
 ---- Done Version 0.1 ----
 
+20071013 [1] Engine: Skeleton for Izumi-to-Html converter, UT
 20071008 [1] Engine: DirParser.TraverseDirs w/ UT
 20071007 [1] Engine: misc fixes, more UTs, testing dir parsing
 20071007 [1] Engine: read source dirs (glob + patterns) w/ UT

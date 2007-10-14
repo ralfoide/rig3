@@ -11,6 +11,7 @@ __author__ = "ralfoide@gmail.com"
 import re
 import os
 import sys
+import zlib
 
 from rig.dir_parser import DirParser
 from rig.izu_parser import IzuParser
@@ -94,11 +95,11 @@ class Site(object):
         source_ts = None
         dest_ts = None
         try:
-            dest_ts = self.DirTimeStamp(dest_dir)
+            dest_ts = self._DirTimeStamp(dest_dir)
         except OSError:
             return True
         try:
-            source_ts = self.DirTimeStamp(source_dir)
+            source_ts = self._DirTimeStamp(source_dir)
         except OSError:
             return False
         return source_ts > dest_ts
@@ -108,14 +109,17 @@ class Site(object):
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns: tuple (list: categories, list: items)
         """
+        cats = []
+        entries = []
         if _INDEX in all_files:
             parser = IzuParser(self._log)
             html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, _INDEX))
-        return [], []
+            
+        return cats, entries
 
     # Utilities, overridable for unit tests
     
-    def DirTimeStamp(self, dir):
+    def _DirTimeStamp(self, dir):
         """
         Returns the most recent change or modification time stamp for the
         given directory.
@@ -127,6 +131,40 @@ class Site(object):
         m = os.path.getmtime(dir)
         return max(c, m)
 
+    def _WriteFile(self, data, dest_dir, leafname):
+        """
+        Writes the given data to the given directory and leaf name.
+        The leafname parameter is mangled into a different name, to sanitize
+        it (i.e. the name may be used later in URLs.)
+        
+        If data is None or anything empty (list, string, whatever), it will
+        generate an empty file, but a file should be created nonetheless.
+        Otherwise data can be anything that can be formatted with str().
+        The file is open in binary mode so data need not be human-readable text.
+        
+        If the destination exists, it will be overwritten.
+        
+        Returns the actual full pathname written to.
+        
+        This method is extracted so that it can be mocked in unit tests.
+        """
+        leafname = self._SimpleFileName(leafname)
+
+    def _SimpleFileName(self, leafname, maxlen=20):
+        """
+        Sanitizes a file name (i.e. only leaf name, not a full path name):
+        - Aggregates multiples spaces or dashes into single dashes
+          (i.e. remove spaces)
+        - Aggregates non-alphanums into single underscores
+        - If the name is too long, keep a shorter version with a CRC at the end.
+        Returns the new file name.
+        """
+        name = re.sub("[ -]+", "-", leafname)
+        name = re.sub("[^a-zA-Z0-9-]+", "_", name)
+        if name > maxlen:
+            zlib.adler32(leafname)
+        return name
+        
 
 #------------------------
 # Local Variables:
