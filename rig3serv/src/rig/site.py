@@ -14,6 +14,7 @@ import sys
 
 from rig.dir_parser import DirParser
 
+_INDEX = "index.izu"
 _DIR_PATTERN = re.compile(r"^(?P<year>\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g)$")
 
@@ -71,12 +72,7 @@ class Site(object):
                            dest_dir)
             if self.UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
-                cats = []
-                items = []
-                if "index.izu" in files:
-                    cats, items = self.GenerateIzuEntry("index.izu", source_dir, dest_dir, all_files)
-                else:
-                    cats, items = self.GenerateAlbumEntry(source_dir, dest_dir, all_files)
+                cats, items = self.GenerateEntry(source_dir, dest_dir, all_files)
                 for c in cats:
                     if not c in categories:
                         categories.append(c)
@@ -106,23 +102,14 @@ class Site(object):
             return False
         return source_ts > dest_ts
 
-    def GenerateIzuEntry(self, index, source_dir, dest_dir, all_files):
+    def GenerateEntry(self, source_dir, dest_dir, all_files):
         """
-        Generates a new Izumi entry from the given index.
-        Might be associated with all images from all_files
+        Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns: tuple (list: categories, list: items)
         """
-        # TODO
-        return [], []
-
-    def GenerateAlbumEntry(self, source_dir, dest_dir, all_files):
-        """
-        Generates a new photo album entry from the given index.
-        Returns: tuple (list: categories, list: items)
-        """
-        # TODO
-        return [], []
-        
+        if _INDEX in all_files:
+            text_html = Izu.Render(os.path.join(source_dir, _INDEX))
+        return [], []        
 
     # Utilities, overridable for unit tests
     
