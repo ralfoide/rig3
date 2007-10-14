@@ -107,17 +107,44 @@ class RigTestCase(unittest.TestCase):
         self.assertTrue(isinstance(actual, expected_types), msg)
 
     def assertDictEquals(self, expected, actual, msg=None):
+        """
+        Asserts that two dictionaries are equal.
+        This also asserts that both expected and actual values are
+        really dictionary.
+        """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertDictEquals failed", repr(expected), repr(actual))
         self.assertTrue(isinstance(actual, dict), msg)
         self.assertTrue(isinstance(expected, dict), msg)
         self.assertEquals(expected, actual, msg)
 
-    def assertListEquals(self, expected, actual, msg=None):
+    def assertListEquals(self, expected, actual, msg=None, sort=False):
+        """
+        Asserts that two lists are equal.
+        This also asserts that both expected and actual values are
+        really list.
+        
+        Sometimes the order of lists should not matter. The 'sort' argument
+        controls that:
+        - False: the default list equality is used, which is by default order-sensitive.
+        - True: both lists are *duplicated* then sorted using list.sort()
+        - A non boolean: both lists are duplicated then sorted and the sort argument is used
+          as the 'cmp' comparator for the sort operation, typically a lambda, e.g.
+           sort=lambda x, y : x < y
+        """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertListEquals failed", repr(expected), repr(actual))
         self.assertTrue(isinstance(actual, list), msg)
         self.assertTrue(isinstance(expected, list), msg)
+        if sort is not False:
+            expected = list(expected)
+            actual = list(actual)
+            if sort is True:
+                expected.sort()
+                actual.sort()
+            else:
+                expected.sort(cmp=sort)
+                actual.sort(cmp=sort)
         self.assertEquals(expected, actual, msg)
 
 

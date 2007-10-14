@@ -60,7 +60,8 @@ class SiteTest(RigTestCase):
         self.assertListEquals([], p.Files())
         self.assertEquals(1, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
-        self.assertListEquals([ "index.izu", "T12896_tiny_jpeg.jpg"], p.SubDirs()[0].Files())
+        self.assertListEquals([ "index.izu", "T12896_tiny_jpeg.jpg"], p.SubDirs()[0].Files(),
+                              sort=True)
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
 
 

@@ -93,7 +93,7 @@ class Site(object):
         exist yet.
         """
         if not os.path.exists(dest_dir):
-            return true
+            return True
         source_ts = None
         dest_ts = None
         try:
