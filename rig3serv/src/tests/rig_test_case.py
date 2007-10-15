@@ -147,6 +147,37 @@ class RigTestCase(unittest.TestCase):
                 actual.sort(cmp=sort)
         self.assertEquals(expected, actual, msg)
 
+    def assertHtmlEquals(self, expected, actual, msg=None):
+        """
+        Compares two string contains HTML. The strings are "normalized" to make the
+        comparison more meaningful:
+        - \n or \r\n is irrelevant and thus removed (or more exactly replaced by a space)
+        - spaces are collapsed
+        - spaces before or after tag delimiters < /> are removed
+          (but not those after a closing tag delimiter whith content, i.e. >)
+        Optionaly we could lower-case all tags (i.e. <H1 => <h1) but we don't currently
+        do that since I rarely write upper case tags and thus if I do I may want to keep it.
+        
+        Normalization is done on both the expected and actual values so that you can
+        deliberately format the expected string as best fits your unit tests for clarity.
+        """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+                (msg or "assertHtmlEquals failed", repr(expected), repr(actual))
+        actual = self._NormalizeHtml(actual)
+        expected = self._NormalizeHtml(expected)
+        self.assertEquals(expected, actual, msg)
+
+    # Utilities
+    
+    def _NormalizeHtml(self, str):
+        """
+        Normalize HTML for comparison. See assertHtmlEquals for details.
+        """
+        str = re.sub("[\r\n]+", " ", str)
+        str = re.sub(" +", " ", str)
+        str = re.sub(" <", "<", str)
+        str = re.sub("/> ", "/>", str)
+        return str
 
 #------------------------
 # Local Variables:

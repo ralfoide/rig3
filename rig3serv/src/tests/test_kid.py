@@ -34,21 +34,20 @@ class SimpleKidTest(RigTestCase):
         template.bar = "MyBar"
         result = template.serialize()
         expected = """<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>Test-Title</title>
-</head>
-<body>
-  Kid Test.
-  Title is Test-Title.
-  Title is <span>TEST-TITLE</span>.
-  <div>TEST-TITLE</div>.
-  From caller: MyFoo, MyBar.
-</body>
-</html>"""
-        self.assertEquals(expected, result,
-                          "HTML differs:\nExpected: %s\nActual  : %s\n" % (
-                              repr(expected), repr(result)))
+                        <html xmlns="http://www.w3.org/1999/xhtml">
+                        <head>
+                          <title>Test-Title</title>
+                        </head>
+                        <body>
+                          Kid Test.
+                          Title is Test-Title.
+                          Title is <span>TEST-TITLE</span>.
+                          <div>TEST-TITLE</div>.
+                        
+                          From caller: MyFoo, MyBar.
+                        </body>
+                        </html>"""
+        self.assertHtmlEquals(expected, result)
 
 
 #------------------------
