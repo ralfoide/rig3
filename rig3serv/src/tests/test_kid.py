@@ -14,7 +14,7 @@ from tests.rig_test_case import RigTestCase
 from rig.empty import Empty
 
 #------------------------
-class EmptyTest(RigTestCase):
+class SimpleKidTest(RigTestCase):
 
     def setUp(self):
         pass
