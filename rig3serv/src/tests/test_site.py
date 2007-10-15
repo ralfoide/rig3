@@ -72,6 +72,7 @@ class SiteTest(RigTestCase):
         self.assertEquals("long_3e3a06df", m._SimpleFileName("long_filename.txt", maxlen=13))
         self.assertEquals("someverylon_7eea09fa", m._SimpleFileName("someverylongfilename.txt"))
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof", 50))
+        self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
 
 #------------------------

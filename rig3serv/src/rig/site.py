@@ -162,7 +162,10 @@ class Site(object):
         name = re.sub("[ -]+", "-", leafname)
         name = re.sub("[^a-zA-Z0-9-]+", "_", name)
         if len(name) > maxlen:
-            crc = "%8x" % zlib.adler32(leafname)
+            # The adler32 crc is returned as an int and can thus "seem" negative
+            # convert to its true long 64-bit value, always positive
+            crc = zlib.adler32(leafname) & 0x0FFffFFffL
+            crc = "%8x" % crc
             if name.endswith("_"):
                 name = name[:maxlen - len(crc)] + crc
             else:
