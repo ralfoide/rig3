@@ -12,7 +12,6 @@ import re
 import os
 import sys
 import zlib
-import base64
 
 from rig.dir_parser import DirParser
 from rig.izu_parser import IzuParser
@@ -162,16 +161,14 @@ class Site(object):
         """
         name = re.sub("[ -]+", "-", leafname)
         name = re.sub("[^a-zA-Z0-9-]+", "_", name)
-        if name > maxlen:
-            crc = zlib.adler32(leafname)
-            s = chr(crc & 0xFF) + chr(crc >> 8 & 0xFF) + chr(crc >> 16 & 0xFF) + chr(crc >> 24 & 0xFF)
-            b = base64.encodestring(s).strip().replace("=", "")
+        if len(name) > maxlen:
+            crc = "%8x" % zlib.adler32(leafname)
             if name.endswith("_"):
-                name = name[:maxlen - len(b)] + b
+                name = name[:maxlen - len(crc)] + crc
             else:
-                name = name[:maxlen - 1 - len(b)] + "_" + b
+                name = name[:maxlen - 1 - len(crc)] + "_" + crc
         return name
-        
+
 
 #------------------------
 # Local Variables:
