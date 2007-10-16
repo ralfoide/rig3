@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--! Entry template.
+
+The generated entry should be a piece of HTML, not a full document.
+
+Parameters:
+- text: string, The main text
+- image: string, An optional image (a full <img> tag)
+-->
+<div class="entry">
+${text}
+<br/>
+${image}
+</div>
