@@ -11,6 +11,7 @@ __author__ = "ralfoide@gmail.com"
 import re
 import os
 import sys
+import kid
 import zlib
 
 from rig.dir_parser import DirParser
@@ -111,10 +112,17 @@ class Site(object):
         """
         cats = []
         entries = []
+        title = os.path.basename(source_dir)
         if _INDEX in all_files:
             parser = IzuParser(self._log)
             html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, _INDEX))
             
+            content = self._FillTemplate(self._theme, "entry.xml",
+                                         title=title,
+                                         text=html,
+                                         image="")
+            dest = self._WriteFile(content, dest_dir, _INDEX)
+            entries.append(dest)
         return cats, entries
 
     # Utilities, overridable for unit tests
@@ -172,6 +180,18 @@ class Site(object):
                 name = name[:maxlen - 1 - len(crc)] + "_" + crc
         return name
 
+    def _FillTemplate(self, theme, template, **keywords):
+        """
+        """
+        template_file = os.path.join(self.getTemplateDir(), theme, template)
+        template = kid.Template(template_file, **keywords)
+        result = template.serialize()
+        return result
+
+    def getTemplateDir(self):
+        f = __file__
+        return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
+        
 
 #------------------------
 # Local Variables:
