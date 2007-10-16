@@ -84,7 +84,8 @@ class RigTestCase(unittest.TestCase):
     def assertMatches(self, expected_regexp, actual, msg=None):
         """
         Asserts that the actual string value matches the expected regexp
-        using a full match.
+        at least at the beginning of the string. If you want a perfect full
+        match you need to use the end-of-string $ anchor.
         Parameters:
         - expected_regexp (string): A regexp string to match.
         - actual (string): The actual value to match with.
@@ -153,8 +154,7 @@ class RigTestCase(unittest.TestCase):
         comparison more meaningful:
         - \n or \r\n is irrelevant and thus removed (or more exactly replaced by a space)
         - spaces are collapsed
-        - spaces before or after tag delimiters < /> are removed
-          (but not those after a closing tag delimiter whith content, i.e. >)
+        - spaces before or after tag delimiters < /> or < > are removed.
         Optionaly we could lower-case all tags (i.e. <H1 => <h1) but we don't currently
         do that since I rarely write upper case tags and thus if I do I may want to keep it.
         
@@ -176,7 +176,7 @@ class RigTestCase(unittest.TestCase):
         str = re.sub("[\r\n]+", " ", str)
         str = re.sub(" +", " ", str)
         str = re.sub(" <", "<", str)
-        str = re.sub("/> ", "/>", str)
+        str = re.sub("> ", ">", str)
         return str
 
 #------------------------
