@@ -14,27 +14,28 @@ from tests.rig_test_case import RigTestCase
 
 import rig.site
 from rig.site import Site
+from rig.site import DEFAULT_THEME
 from rig.dir_parser import DirParser
 
 #------------------------
 class SiteTest(RigTestCase):
 
     def setUp(self):
-        pass
+        self._tempdir = self.MakeTempDir()
 
     def tearDown(self):
-        pass
+        self.RemoveDir(self._tempdir)
 
     def testInit(self):
         """
         Test init of Site
         """
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
+        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
         self.assertNotEqual(None, m)
         self.assertEquals("Site Name", m._public_name)
         self.assertEquals("/tmp/source/data", m._source_dir)
-        self.assertEquals("/tmp/dest/data", m._dest_dir)
-        self.assertEquals("theme", m._theme)
+        self.assertEquals(self._tempdir, m._dest_dir)
+        self.assertEquals(DEFAULT_THEME, m._theme)
 
     def testPatterns(self):
         self.assertSearch(rig.site._DIR_PATTERN, "2007-10-07_Folder 1")
@@ -46,15 +47,15 @@ class SiteTest(RigTestCase):
     def testAlbum(self):
         m = Site(self.Log(), "Test Album",
                  os.path.join(self.getTestDataPath(), "album"),
-                 os.path.join(self.getTestDataPath(), "dest"),
-                 "theme")
+                 self._tempdir,
+                 theme=DEFAULT_THEME)
         m.Process()
     
     def testParse(self):
         m = Site(self.Log(), "Test Album",
                  os.path.join(self.getTestDataPath(), "album"),
-                 os.path.join(self.getTestDataPath(), "dest"),
-                 "theme")
+                 self._tempdir,
+                 theme=DEFAULT_THEME)
         p = m.Parse(m._source_dir, m._dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
@@ -64,8 +65,8 @@ class SiteTest(RigTestCase):
                               sort=True)
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
 
-    def testSimpleFileName(self):
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", "/tmp/dest/data", "theme")
+    def test_SimpleFileName(self):
+        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("ab_12_txt", m._SimpleFileName("ab!@#$12%^&@&*()\\_+/.<>,txt"))
@@ -74,6 +75,24 @@ class SiteTest(RigTestCase):
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof", 50))
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
+    def test_TemplateDir(self):
+        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
+        td = m._TemplateDir()
+        self.assertNotEquals("", td)
+        self.assertTrue(os.path.exists(td))
+        self.assertTrue(os.path.isdir(td))
+        # the templates dir should contain at least the "default" sub-dir
+        # with at least the entry.xml and index.xml files
+        self.assertTrue(os.path.exists(os.path.join(td, "default")))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", "index.xml")))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.xml")))
+
+    def test_FillTemplate(self):
+        theme = DEFAULT_THEME
+        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
+        html = m._FillTemplate(theme, "simple_kid.xml", title="MyTitle", entries=["entry1", "entry2"])
+        self.assertIsInstance(str, html)
+        self.assertNotEquals("", html)
 
 #------------------------
 # Local Variables:

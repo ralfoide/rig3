@@ -12,6 +12,7 @@ import os
 import re
 import unittest
 import StringIO
+import tempfile
 
 from rig.log import Log
 
@@ -24,15 +25,15 @@ class RigTestCase(unittest.TestCase):
         self.__log = None
         unittest.TestCase.__init__(self, methodName)
 
-    def setVerbose(verbose):
+    def SetVerbose(verbose):
         """
         Static methods that sets the global verbosity flag.
         """
         global IS_VERBOSE
         IS_VERBOSE = verbose
-    setVerbose = staticmethod(setVerbose)
+    setVerbose = staticmethod(SetVerbose)
 
-    def isVerbose(self):
+    def IsVerbose(self):
         """
         Convenience method that indicates if the current unit tests are
         running in verbose mode.
@@ -44,7 +45,7 @@ class RigTestCase(unittest.TestCase):
         f = __file__
         return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "testdata"))
 
-    def log(self):
+    def Log(self):
         """
         Creates or returns a rig3 Log object.
         """
@@ -55,12 +56,32 @@ class RigTestCase(unittest.TestCase):
             # Fix the format so that it be independant of the date, line number and
             # of the default formatting in the default configuration.
             self.__log = Log(file=self._str,
-                             verbose=self.isVerbose(),
-                             use_stderr=self.isVerbose(),
+                             verbose=self.IsVerbose(),
+                             use_stderr=self.IsVerbose(),
                              format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
                              date="%H:%M:%S")
         return self.__log
-    Log = log
+
+    def MakeTempDir(self):
+        """
+        Utility to create a temp directory. Use RemoveDir() to remove it later.
+        Really, just a wrapper around tempfile.mkdtemp.        
+        """
+        return tempfile.mkdtemp()
+    
+    def RemoveDir(self, dir_path):
+        """
+        Removes a directory recursively.
+        If dir_path is empty (empty string, None or equivalent), nothing is done.
+        """
+        try:
+            if dir_path:
+                os.removedirs(dir_path)
+        except OSError, e:
+            self.Log().Exception("RemoveDir '%s' failed: %s", dir_path, e)
+
+
+    # Fancy asserts
 
     def assertSame(self, expected, actual, msg=None):
         """
@@ -167,7 +188,7 @@ class RigTestCase(unittest.TestCase):
         expected = self._NormalizeHtml(expected)
         self.assertEquals(expected, actual, msg)
 
-    # Utilities
+    # Internal Utilities
     
     def _NormalizeHtml(self, str):
         """

@@ -17,7 +17,8 @@ import zlib
 from rig.dir_parser import DirParser
 from rig.izu_parser import IzuParser
 
-_INDEX = "index.izu"
+DEFAULT_THEME = "default"
+INDEX_IZU = "index.izu"
 _DIR_PATTERN = re.compile(r"^(?P<year>\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g)$")
 
@@ -113,16 +114,16 @@ class Site(object):
         cats = []
         entries = []
         title = os.path.basename(source_dir)
-        if _INDEX in all_files:
+        if INDEX_IZU in all_files:
             parser = IzuParser(self._log)
-            html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, _INDEX))
+            html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, INDEX_IZU))
             
-            content = self._FillTemplate(self._theme, "entry.xml",
-                                         title=title,
-                                         text=html,
-                                         image="")
-            dest = self._WriteFile(content, dest_dir, _INDEX)
-            entries.append(dest)
+            #content = self._FillTemplate(self._theme, "entry.xml",
+            #                             title=title,
+            #                             text=html,
+            #                             image="")
+            #dest = self._WriteFile(content, dest_dir, _INDEX)
+            #entries.append(dest)
         return cats, entries
 
     # Utilities, overridable for unit tests
@@ -182,13 +183,17 @@ class Site(object):
 
     def _FillTemplate(self, theme, template, **keywords):
         """
+        Renders the given template with the given theme.
+        Keywords are the special variables expected by the given template.
+        Returns the generated HTML as a string.
         """
-        template_file = os.path.join(self.getTemplateDir(), theme, template)
-        template = kid.Template(template_file, **keywords)
-        result = template.serialize()
+        template_file = os.path.join(self._TemplateDir(), theme, template)
+        #template = kid.load_template(file=template_file, cache=0)
+        template = kid.Template(file=template_file, **keywords)
+        result = template.serialize() #output="html")
         return result
 
-    def getTemplateDir(self):
+    def _TemplateDir(self):
         f = __file__
         return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
         

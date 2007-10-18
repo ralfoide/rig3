@@ -23,7 +23,7 @@ class LogTest(RigTestCase):
         # Fix the format so that it be independant of the date, line number and
         # of the default formatting in the default configuration.
         self._log = Log(file=self._str,
-                        use_stderr=self.isVerbose(),
+                        use_stderr=self.IsVerbose(),
                         format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
                         date="1901/01/02 12:13:14")
 
