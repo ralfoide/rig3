@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?python
- title="MyTitle"
- text="MyText"
- image="MyImage"
-?>
+<div class="entry" xmlns:py="http://purl.org/kid/ns#">
 <!--! Entry template.
 
 The generated entry should be a piece of HTML, not a full document.
@@ -13,7 +9,6 @@ Parameters:
 - text: string, The main text
 - image: string, An optional image (a full <img> tag)
 !-->
-<div class="entry">
 <h2>$title</h2>
 ${text}
 <br/>

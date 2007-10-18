@@ -188,9 +188,8 @@ class Site(object):
         Returns the generated HTML as a string.
         """
         template_file = os.path.join(self._TemplateDir(), theme, template)
-        #template = kid.load_template(file=template_file, cache=0)
         template = kid.Template(file=template_file, **keywords)
-        result = template.serialize() #output="html")
+        result = template.serialize(output="html")
         return result
 
     def _TemplateDir(self):

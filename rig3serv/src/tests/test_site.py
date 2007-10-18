@@ -90,9 +90,17 @@ class SiteTest(RigTestCase):
     def test_FillTemplate(self):
         theme = DEFAULT_THEME
         m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
-        html = m._FillTemplate(theme, "simple_kid.xml", title="MyTitle", entries=["entry1", "entry2"])
+        html = m._FillTemplate(theme, "index.xml", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
-        self.assertNotEquals("", html)
+        self.assertEquals("", html)
+        
+        html = m._FillTemplate(theme, "entry.xml",
+                               title="MyTitle",
+                               text="Main <b>Text Content</b> as HTML",
+                               image="<a href='page_url'><img href='image_url'/></a>")
+        self.assertIsInstance(str, html)
+        self.assertEquals("", html)
+
 
 #------------------------
 # Local Variables:
