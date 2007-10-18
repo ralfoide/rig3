@@ -92,14 +92,27 @@ class SiteTest(RigTestCase):
         m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
         html = m._FillTemplate(theme, "index.xml", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
-        self.assertEquals("", html)
+        self.assertSearch(
+            (r"<HTML>.*<HEAD>.*"
+             r"<TITLE>MyTitle</TITLE>.*"
+             r"</HEAD>.*<BODY>.*"
+             r"<DIV>\s*entry1\s*</DIV>.*"
+             r"<DIV>\s*entry2\s*</DIV>.*"
+             r"</BODY>.*</HTML>"),
+             self.NormalizeHtml(html))
         
-        html = m._FillTemplate(theme, "entry.xml",
-                               title="MyTitle",
-                               text="Main <b>Text Content</b> as HTML",
-                               image="<a href='page_url'><img href='image_url'/></a>")
+        keywords = { "title": "MyTitle",
+                     "text": "Main <b>Text Content</b> as HTML",
+                     "image": "<a href='page_url'><img href='image_url'/></a>" }
+        html = m._FillTemplate(theme, "entry.xml", **keywords)
         self.assertIsInstance(str, html)
-        self.assertEquals("", html)
+        self.assertSearch(
+            (r"<DIV CLASS=\"entry\">.*"
+             r"<H2>\s*%(title)s\s*<H2>.*"
+             #r"<H2>\s*%(text<BODY>.*"
+             #r"<DIV>\s*entry1\s*</DIV>.*"
+             r"</DIV>" % keywords),
+             self.NormalizeHtml(html))
 
 
 #------------------------

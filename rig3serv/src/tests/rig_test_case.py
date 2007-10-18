@@ -184,13 +184,13 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertHtmlEquals failed", repr(expected), repr(actual))
-        actual = self._NormalizeHtml(actual)
-        expected = self._NormalizeHtml(expected)
+        actual = self.NormalizeHtml(actual)
+        expected = self.NormalizeHtml(expected)
         self.assertEquals(expected, actual, msg)
 
     # Internal Utilities
     
-    def _NormalizeHtml(self, str):
+    def NormalizeHtml(self, str):
         """
         Normalize HTML for comparison. See assertHtmlEquals for details.
         """
