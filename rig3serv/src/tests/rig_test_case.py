@@ -171,16 +171,8 @@ class RigTestCase(unittest.TestCase):
 
     def assertHtmlEquals(self, expected, actual, msg=None):
         """
-        Compares two string contains HTML. The strings are "normalized" to make the
-        comparison more meaningful:
-        - \n or \r\n is irrelevant and thus removed (or more exactly replaced by a space)
-        - spaces are collapsed
-        - spaces before or after tag delimiters < /> or < > are removed.
-        Optionaly we could lower-case all tags (i.e. <H1 => <h1) but we don't currently
-        do that since I rarely write upper case tags and thus if I do I may want to keep it.
-        
-        Normalization is done on both the expected and actual values so that you can
-        deliberately format the expected string as best fits your unit tests for clarity.
+        Compares to string after HTML normalization.
+        See NormalizeHtml for details.
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertHtmlEquals failed", repr(expected), repr(actual))
@@ -188,16 +180,31 @@ class RigTestCase(unittest.TestCase):
         expected = self.NormalizeHtml(expected)
         self.assertEquals(expected, actual, msg)
 
+    def assertHtmlMatches(self, expected_regexp, actual, msg=None):
+        """
+        Similar to assertHtmlEquals, compares to HTML normalized strings.
+        However the expected_regexp string is considered as a regexp and a
+        strict match is expected with the actual string -- that is it must
+        match the *beginning* of actual. Use a $ anchor to also force matching
+        the end. 
+        """
+
     # Internal Utilities
     
     def NormalizeHtml(self, str):
         """
-        Normalize HTML for comparison. See assertHtmlEquals for details.
+        Normalize HTML for comparison. The strings are "normalized" to help make
+        comparisons more meaningful:
+        - \n or \r\n is irrelevant and thus removed (or more exactly replaced by a space)
+        - spaces are collapsed
+        - spaces before or after tag delimiters < /> or < > are removed.
+        - tag names are changed to lower case
         """
         str = re.sub("[\r\n]+", " ", str)
         str = re.sub(" +", " ", str)
         str = re.sub(" <", "<", str)
         str = re.sub("> ", ">", str)
+        str = re.sub("<[a-zA-Z0-9]+", lambda x: x.group(0).lower(), str)
         return str
 
 #------------------------

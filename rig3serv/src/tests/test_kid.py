@@ -32,12 +32,7 @@ class SimpleKidTest(RigTestCase):
         filename = os.path.join(self.getTestDataPath(), "simple_kid.xml")
         keywords = { "foo": "MyFoo", "bar": "MyBar" }
         template = kid.Template(file=filename, **keywords)
-        #template = kid.Template(filename, foo="MyFoo", bar="MyBar")
-        # template.bar = "MyBar"
         result = template.serialize()
-        #template = kid.load_template(file=filename, cache=0)
-        #template = template.Template()
-        #result = template.serialize(output="html")
 
         expected = """<?xml version="1.0" encoding="utf-8"?>
                         <html xmlns="http://www.w3.org/1999/xhtml">
@@ -53,6 +48,9 @@ class SimpleKidTest(RigTestCase):
                           From caller: MyFoo, MyBar.
                         </body>
                         </html>"""
+        self.assertHtmlEquals(expected, result)
+
+        result = template.serialize(output="html")
         self.assertHtmlEquals(expected, result)
 
 
