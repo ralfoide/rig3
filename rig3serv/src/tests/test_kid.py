@@ -32,26 +32,41 @@ class SimpleKidTest(RigTestCase):
         filename = os.path.join(self.getTestDataPath(), "simple_kid.xml")
         keywords = { "foo": "MyFoo", "bar": "MyBar" }
         template = kid.Template(file=filename, **keywords)
-        result = template.serialize()
 
+        result = template.serialize()
         expected = """<?xml version="1.0" encoding="utf-8"?>
-                        <html xmlns="http://www.w3.org/1999/xhtml">
-                        <head>
+                      <html xmlns="http://www.w3.org/1999/xhtml">
+                      <head>
                           <title>Test-Title</title>
-                        </head>
-                        <body>
+                      </head>
+                      <body>
                           Kid Test.
                           Title is Test-Title.
                           Title is <span>TEST-TITLE</span>.
                           <div>TEST-TITLE</div>.
                         
                           From caller: MyFoo, MyBar.
-                        </body>
-                        </html>"""
+                      </body>
+                      </html>"""
         self.assertHtmlEquals(expected, result)
 
         result = template.serialize(output="html")
-        self.assertHtmlEquals(expected, result)
+        expected = """<!DOCTYPE [^>]+>
+                      <html>
+                      <head>
+                          <meta [^>]+>
+                          <title>Test-Title</title>
+                      </head>
+                      <body>
+                          Kid Test.
+                          Title is Test-Title.
+                          Title is <span>TEST-TITLE</span>.
+                          <div>TEST-TITLE</div>.
+                        
+                          From caller: MyFoo, MyBar.
+                      </body>
+                      </html>"""
+        self.assertHtmlMatches(expected, result)
 
 
 #------------------------

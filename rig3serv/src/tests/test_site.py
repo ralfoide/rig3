@@ -92,27 +92,25 @@ class SiteTest(RigTestCase):
         m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
         html = m._FillTemplate(theme, "index.xml", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
-        self.assertSearch(
-            (r"<HTML>.*<HEAD>.*"
-             r"<TITLE>MyTitle</TITLE>.*"
-             r"</HEAD>.*<BODY>.*"
-             r"<DIV>\s*entry1\s*</DIV>.*"
-             r"<DIV>\s*entry2\s*</DIV>.*"
-             r"</BODY>.*</HTML>"),
-             self.NormalizeHtml(html))
+        self.assertHtmlMatches(r"""<!DOCTYPE [^>]+><html>.*<head>.*<meta.*>.*
+                                   <title>MyTitle</title>.*
+                                   </head>.*<body>.*
+                                   <div>entry1</div>.*
+                                   <div>entry2</div>.*
+                                   </body>.*</html>""",
+                                html)
         
         keywords = { "title": "MyTitle",
                      "text": "Main <b>Text Content</b> as HTML",
                      "image": "<a href='page_url'><img href='image_url'/></a>" }
         html = m._FillTemplate(theme, "entry.xml", **keywords)
         self.assertIsInstance(str, html)
-        self.assertSearch(
-            (r"<DIV CLASS=\"entry\">.*"
-             r"<H2>\s*%(title)s\s*<H2>.*"
+        self.assertHtmlMatches(r"""<div CLASS="entry">.*
+                                   <h2>%(title)s<h2>.*""",
              #r"<H2>\s*%(text<BODY>.*"
              #r"<DIV>\s*entry1\s*</DIV>.*"
-             r"</DIV>" % keywords),
-             self.NormalizeHtml(html))
+             #r"</DIV>" % keywords),
+                              html)
 
 
 #------------------------

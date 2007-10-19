@@ -188,6 +188,11 @@ class RigTestCase(unittest.TestCase):
         match the *beginning* of actual. Use a $ anchor to also force matching
         the end. 
         """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+                (msg or "assertHtmlMatches failed", repr(expected_regexp), repr(actual))
+        actual = self.NormalizeHtml(actual)
+        expected_regexp = self.NormalizeHtml(expected_regexp)
+        self.assertMatches(expected_regexp, actual, msg)
 
     # Internal Utilities
     
@@ -204,7 +209,7 @@ class RigTestCase(unittest.TestCase):
         str = re.sub(" +", " ", str)
         str = re.sub(" <", "<", str)
         str = re.sub("> ", ">", str)
-        str = re.sub("<[a-zA-Z0-9]+", lambda x: x.group(0).lower(), str)
+        str = re.sub("</?[a-zA-Z0-9]+", lambda x: x.group(0).lower(), str)
         return str
 
 #------------------------

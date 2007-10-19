@@ -74,7 +74,15 @@ class RigTestCaseTest(RigTestCase):
 
     def testAssertHtmlEquals(self):
         self.assertHtmlEquals("<html>blah foo bar</html><span />",
-                              "  <html>\n\r  blah\nfoo   bar </html>  <span    /> ")
+                              "  <HTML>\n\r  blah\nfoo   bar </HTML>  <span    /> ")
+
+    def testAssertHtmlMatches(self):
+        self.assertHtmlMatches("""<div CLASS="[^"]+">blah foo bar</div><span attr='[^']+' />""",
+                               """  <DIV   CLASS=\"entry\">\n\r  blah\nfoo   bar </DIV>  <span attr='foo'   /> """)
+
+    def testNormalizeHtml(self):
+        self.assertEquals("<html>blah foo? bar</html>(?: .*| .+)<span />",
+                          self.NormalizeHtml("  <HTML>\n\r  blah\nfoo?   bar </HTML> (?:   .*| .+)  <span    /> "))
 
 #------------------------
 # Local Variables:
