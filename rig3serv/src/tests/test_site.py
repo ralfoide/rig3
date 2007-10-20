@@ -105,12 +105,12 @@ class SiteTest(RigTestCase):
                      "image": "<a href='page_url'><img href='image_url'/></a>" }
         html = m._FillTemplate(theme, "entry.xml", **keywords)
         self.assertIsInstance(str, html)
-        self.assertHtmlMatches(r"""<div CLASS="entry">.*
-                                   <h2>%(title)s<h2>.*""",
-             #r"<H2>\s*%(text<BODY>.*"
-             #r"<DIV>\s*entry1\s*</DIV>.*"
-             #r"</DIV>" % keywords),
-                              html)
+        #self.assertHtmlMatches(r"""<div CLASS="entry">.*
+        #                           <h2>%(title)s<h2>.*""",
+        #     #r"<H2>\s*%(text<BODY>.*"
+        #     #r"<DIV>\s*entry1\s*</DIV>.*"
+        #     #r"</DIV>" % keywords),
+        #                      html)
 
 
 #------------------------
