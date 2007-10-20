@@ -94,3 +94,83 @@ At src level:
 - izumi.py: ConvertToHtml(izu)
 - thumbnail.py: UrlForImage(file, quality, size)
 - cache.py: Store(type, name, ref), or update. Cleanup()
+
+----
+20071020 Template System
+
+I started using the Kid XML Templating system and I'm not very happy with it.
+It's a fine piece of software and it does its job right. It's just not what I
+really want. One one hand it means templates have to be XML whereas I want
+templates to very free text. On the other hand by default it comes with a
+limited set of serializers, most pro-eminently XML or HTML, that is it will
+reformat documents accordingly -- and same here I just want something that
+does text replacement in a template, not reformatting.
+
+In the past I used the Django templating system with success and I liked it
+overall. It's only weakness is that it doesn't do HTML encoding by default, but
+that normal since it doesn't /have/ to be HTML templates. However Django does
+much more than just templates and I don't need all the rest.
+
+So I decided I will re-implement a minimalist templating system that does
+exactly and only what I need. The specs follow.
+
+Templates are free text with simple variable replacement.
+
+Templates contain tags, which are enclosed in double-bracket pairs: [[ ... ]]
+The first word after the opening bracket is the operation. Some tags can contain
+content, in which case the content will be after the tag and before the next
+[[end]] tag.
+
+By default we'll have:
+- [[# multi-line comment]]
+- [[for x in list]] ... [[end]]
+- [[include template.name]]
+- [[if cond]] ... [[else]] ... [[end]]
+- [[variable|filter|filter]]
+
+Unknown tag operations will be expected to be variables to be replaced in place,
+possibly after filtering.
+
+Variable expansion should also accept field access, e.g. var.property.value.
+For list, list.index (e.g. mylist.0); for dictionaries do a get; if property
+is a function it evaluates it without arguments; otherwise it's a field/property
+access.
+
+If the template extension is ".html", variables will by default be html-encoded
+unless a filter is present.
+
+The expected filters will be:
+- raw: The string is output as such. It's a no-op.
+- html: HTML-encode the string. This is an implicit filter for .html templates.
+- url: URL-encode the string.
+- %: Any of the "printf"-like formatting for strings (e.g.: [[count|%02x]]
+
+If you're familiar with Django, you'll notice this is basically the same
+templating system except it doesn't have the notion of "top template" with
+overridable blocks -- I prefer the usual top-down inclusion system.
+
+There could be potentially more tag operations and more filters, for example
+an "inc" filter, [[elseif]], date formatting, etc.
+
+
+Implementation: we just want one class, Template(filename).
+Included templates will be looked up in the same directory.
+The Template constructor should parse the template and validate it and thow
+a ParseException if needed.
+Then Template.generate(dictionary) will serialize the template to a string.
+
+Internally we shall parse the template into a structured tree.
+A node can be:
+- a list of nodes
+- literal: content
+- tag: tag name, parameters, optional node content
+- variable: name list (e.g. x.y.z), filter list
+
+
+Limitations: to keep things simply, we won't have variable expansion inside
+tag blocks. E.g. you can't write [[for x in [[y.somelist]]]], nor can you
+write [[myvar.[[selector]]]]. If we really had to, it wouldn't be too hard
+to support, but my experience is that this is rarely needed and I don't see the
+need for it -- I'm not writing the most universal templating system here, just
+the minimum for what I need.
+ 
