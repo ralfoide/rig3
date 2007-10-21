@@ -36,12 +36,14 @@ class Buffer(object):
     #def SetOffset(self, offset):
     #    self.offset = offset
 
-    def StartsWith(self, word, whitespace=False):
+    def StartsWith(self, word, whitespace=False, consume=False):
         """
         Returns true if the given word is present at the current position
         in the buffer.
         If whitespace is true, some whitespace must be present after the word
         or the end of the buffer must have been reached.
+        If consume is True, the content is 'consumed' (i.e. offset is moved to end)
+        if found. If whitespace is requested, it also consumes the whitespace.
         
         Returns false if the end of the buffer has been reached or if the
         given word is empty.
@@ -50,10 +52,17 @@ class Buffer(object):
             return False
         end = self.offset + len(word)
         if self.data[self.offset:end] == word:
+            found = True
             if whitespace and end < len(self.data):
-                return self.data[end] in _WS
-            else:
-                return True
+                found = self.data[end] in _WS
+                if consume:
+                    consume = False
+                    while found and self.data[end] in _WS:
+                        end += 1
+                        self.offset = end
+            if consume:
+                self.offset = end
+            return found
         return False
 
     def NextWord(self):
@@ -168,12 +177,12 @@ class Template(object):
         """
         Returns the next node in the buffer.
         """
-        if buffer.StartsWith("[["):
+        if buffer.StartsWith("[[", consume=True):
             # get tag
             pass
         else:
-            # get literal
-            pass
+            literal = buffer.SkipTo("[[")
+            return NodeLiteral(literal)
         
 
 #------------------------

@@ -77,14 +77,27 @@ class BufferTest(RigTestCase):
         # offset:               0 2 . 6 . . . 14
         self.assertFalse(m.StartsWith("for"))
         self.assertTrue(m.StartsWith("#"))
-        m.offset = 2
+        self.assertEquals(0, m.offset)
+
+        self.assertTrue(m.StartsWith("#", consume=True))
+        self.assertEquals(1, m.offset)
+        m.offset = 0
+        self.assertTrue(m.StartsWith("#", whitespace=True, consume=True))
+        self.assertEquals(2, m.offset)
+
         self.assertTrue(m.StartsWith("for", whitespace=False))
         self.assertTrue(m.StartsWith("for", whitespace=True))
-        m.offset = 6
+        self.assertEquals(2, m.offset)
+        self.assertTrue(m.StartsWith("for", whitespace=True, consume=True))
+        self.assertEquals(6, m.offset)
+
         self.assertTrue(m.StartsWith("for", whitespace=False))
-        self.assertFalse(m.StartsWith("for", whitespace=True))
+        self.assertFalse(m.StartsWith("for", whitespace=True, consume=True))
+        self.assertEquals(6, m.offset)
+
         m.offset = 14
-        self.assertTrue(m.StartsWith("!@#", whitespace=True))
+        self.assertTrue(m.StartsWith("!@#", whitespace=True, consume=True))
+        self.assertTrue(m.EndReached())
 
 #------------------------
 # Local Variables:
