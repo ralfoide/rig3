@@ -10,6 +10,7 @@
 
 ---- Done Version 0.1 ----
 
+20071020 [1] Engine: Define templating system, start impl.
 20071015 [1] Tests: Need to tests rig_test_case 
 20071014 [1] Tests: Testing Kid template system
 20071013 [1] Engine: Skeleton for Izumi-to-Html converter, UT

@@ -8,7 +8,77 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 import sys
+
+class Buffer(object):
+    def __init__(self, filename, data, offset):
+        self.filename = filename
+        self.data = data
+        self.offset = offset
+        self.lineno = 1
+
+    def EndReached(self):
+        return self.offset >= len(self.data)
+
+    def SetOffset(self, offset):
+        self.offset = offset
+
+    def NextWord(self):
+        """
+        Returns None or tuple (string: word, int: initial position)
+        Side effect: advances current offset.
+        """
+        data = self.data
+        initial = offset = self.offset
+        if self.EndReached():
+            return None
+        if data[offset:offset + 2] == "[[":
+            return ("[[", offset + 2)
+        if data[offset:offset + 2] == "]]":
+            return ("]]", offset + 2)
+        s = ""
+        while True:
+            if data[offset:offset + 2] in ["[[", "]]"]:
+                break
+            c = data[offset]
+            if c in " \t\f":
+                if not s:
+                    offset += 1
+                    continue
+                else:
+                    break
+            if c in "\r\n":
+                self.lineno += 1
+            s += c
+            offset += 1
+        self.offset = offset
+        return (s, initial)
+        
+
+class Node(object): pass
+
+class NodeList(Node):
+    def __init__(self, list=[]):
+        self.list = list
+
+    def Append(self, node):
+        self.list.append(node)
+
+class NodeLiteral(Node):
+    def __init__(self, literal):
+        self.literal = literal
+
+class NodeTag(Node):
+    def __init__(self, tag, parameters=[], content=None):
+        self.tag = tag
+        self.parameters = parameters
+        self.content = content
+
+class NodeVariable(Node):
+    def __init__(self, names=[], filters=[]):
+        self.names = names
+        self.filters = filters
 
 #------------------------
 class Template(object):
@@ -27,21 +97,32 @@ class Template(object):
             if isinstance(_file, str):
                 return self._ParseFile(filename=_file)
             elif _file.read:  # does _file.read() exists?
-                return self._Parse(_file.read())
+                return self._Parse(_file.name and _file.name() or "file",
+                                   _file.read())
         elif source is not None:
-            return self._Parse(source)
+            return self._Parse("source", source)
         raise TypeError("Template: missing file or source parameters")
 
     def _ParseFile(self, filename):
         f = None
         try:
             f = file(filename)
-            self._Parse(f.read())
+            self._Parse(filename, f.read())
         finally:
             if f: f.close()
 
-    def _Parse(self, source):
-        pass
+    def _Parse(self, filename, source):
+        buffer = Buffer(os.path.basename(filename), source, 0)
+        nodes = NodeList()
+        while not buffer.EndReached():
+            n = self._GetNextNode(buffer)
+            if n:
+                nodes.Append(n)
+        self._nodes = nodes
+
+    def _GetNextNode(self, buffer):
+        word, pos = 
+        
 
 #------------------------
 # Local Variables:
