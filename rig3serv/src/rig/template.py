@@ -11,7 +11,16 @@ __author__ = "ralfoide@gmail.com"
 import os
 import sys
 
+#------------------------
+_WS = " \t\f"
+_EOL = "\r\n"
+
+#------------------------
 class Buffer(object):
+    """
+    A buffer wraps a data string with a "current position" offset.
+    All operations advance the offset.
+    """
     def __init__(self, filename, data, offset):
         self.filename = filename
         self.data = data
@@ -19,10 +28,33 @@ class Buffer(object):
         self.lineno = 1
 
     def EndReached(self):
+        """
+        Returns true if the end of the buffer has been reached
+        """
         return self.offset >= len(self.data)
 
-    def SetOffset(self, offset):
-        self.offset = offset
+    #def SetOffset(self, offset):
+    #    self.offset = offset
+
+    def StartsWith(self, word, whitespace=False):
+        """
+        Returns true if the given word is present at the current position
+        in the buffer.
+        If whitespace is true, some whitespace must be present after the word
+        or the end of the buffer must have been reached.
+        
+        Returns false if the end of the buffer has been reached or if the
+        given word is empty.
+        """
+        if not word or self.EndReached():
+            return False
+        end = self.offset + len(word)
+        if self.data[self.offset:end] == word:
+            if whitespace and end < len(self.data):
+                return self.data[end] in _WS
+            else:
+                return True
+        return False
 
     def NextWord(self):
         """
@@ -56,6 +88,7 @@ class Buffer(object):
         return (s, initial)
         
 
+#------------------------
 class Node(object): pass
 
 class NodeList(Node):
@@ -97,13 +130,21 @@ class Template(object):
             if isinstance(_file, str):
                 return self._ParseFile(filename=_file)
             elif _file.read:  # does _file.read() exists?
-                return self._Parse(_file.name and _file.name() or "file",
-                                   _file.read())
+                def _file_name(f):
+                    "Returns the filename for a real file() object"
+                    try:
+                        return f.name
+                    except AttributeError:
+                        return "file"
+                return self._Parse(_file_name(_file), _file.read())
         elif source is not None:
             return self._Parse("source", source)
         raise TypeError("Template: missing file or source parameters")
 
     def _ParseFile(self, filename):
+        """
+        Helper to parse a file given by its filename.
+        """
         f = None
         try:
             f = file(filename)
@@ -112,16 +153,27 @@ class Template(object):
             if f: f.close()
 
     def _Parse(self, filename, source):
+        """
+        Parses a source string for the given filename.
+        """
         buffer = Buffer(os.path.basename(filename), source, 0)
         nodes = NodeList()
-        while not buffer.EndReached():
-            n = self._GetNextNode(buffer)
-            if n:
-                nodes.Append(n)
+        #while not buffer.EndReached():
+        #    n = self._GetNextNode(buffer)
+        #    if n:
+        #        nodes.Append(n)
         self._nodes = nodes
 
     def _GetNextNode(self, buffer):
-        word, pos = 
+        """
+        Returns the next node in the buffer.
+        """
+        if buffer.StartsWith("[["):
+            # get tag
+            pass
+        else:
+            # get literal
+            pass
         
 
 #------------------------
