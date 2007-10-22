@@ -21,7 +21,7 @@ class Buffer(object):
     A buffer wraps a data string with a "current position" offset.
     All operations advance the offset.
     """
-    def __init__(self, filename, data, offset):
+    def __init__(self, filename, data, offset=0):
         self.filename = filename
         self.data = data
         self.offset = offset
@@ -32,9 +32,6 @@ class Buffer(object):
         Returns true if the end of the buffer has been reached
         """
         return self.offset >= len(self.data)
-
-    #def SetOffset(self, offset):
-    #    self.offset = offset
 
     def StartsWith(self, word, whitespace=False, consume=False):
         """
@@ -65,7 +62,30 @@ class Buffer(object):
             return found
         return False
 
-    def NextWord(self):
+    def SkipTo(self, word):
+        """
+        Advances the buffer up to the first occurence of the given word
+        (not included) or to the end of the buffer.
+        Returns whatever has been read in between or an empty string is
+        nothing changed (i.e. if the requested word is already at the current
+        location or the end had already been reached or the requested word
+        is empty.)
+        """
+        if not word or self.EndReached():
+            return ""
+        offset = self.offset
+        found = self.data.find(word, offset)
+        if found == -1:
+            self.offset = len(self.data)
+        else:
+            self.offset = found
+        return self.data[offset:self.offset]
+        
+
+    #def SetOffset(self, offset):
+    #    self.offset = offset
+
+    def obsolete_NextWord(self):
         """
         Returns None or tuple (string: word, int: initial position)
         Side effect: advances current offset.
@@ -110,6 +130,11 @@ class NodeList(Node):
 class NodeLiteral(Node):
     def __init__(self, literal):
         self.literal = literal
+
+    def __eq__(self, rhs):
+        if isinstance(rhs, NodeLiteral):
+            return self.literal == rhs.literal
+        return super(NodeLiteral, self).__eq__(rhs)
 
 class NodeTag(Node):
     def __init__(self, tag, parameters=[], content=None):
@@ -167,11 +192,11 @@ class Template(object):
         """
         buffer = Buffer(os.path.basename(filename), source, 0)
         nodes = NodeList()
+        self._nodes = nodes
         #while not buffer.EndReached():
         #    n = self._GetNextNode(buffer)
         #    if n:
         #        nodes.Append(n)
-        self._nodes = nodes
 
     def _GetNextNode(self, buffer):
         """

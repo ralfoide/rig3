@@ -12,10 +12,14 @@ import os
 import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.template import Template, Buffer
+from rig.template import Template, Buffer, NodeLiteral
 
 #------------------------
 class MockParse(Template):
+    """
+    A mock Template that overrides the _Parse method just to check if the
+    constructor calls it adequately.
+    """
     def __init__(self, log, file=None, source=None):
         self.filename = None
         self.source = None
@@ -55,6 +59,11 @@ class TemplateTest(RigTestCase):
         self.assertEquals("template from StringIO", m.source)
         self.assertEquals("file", m.filename)
 
+    def testGetNextNode(self):
+        m = MockParse(self.Log(), source="")
+        b = Buffer("file", "literal string")
+        self.assertEquals(NodeLiteral("literal string"), m._GetNextNode(b))
+
 #------------------------
 class BufferTest(RigTestCase):
     def testInit(self):
@@ -65,7 +74,7 @@ class BufferTest(RigTestCase):
         self.assertEquals(1, m.lineno)
 
     def testEndReached(self):
-        m = Buffer("filename", "data", 0)
+        m = Buffer("filename", "data")
         self.assertFalse(m.EndReached())
         m.offset = 3
         self.assertFalse(m.EndReached())
@@ -73,8 +82,9 @@ class BufferTest(RigTestCase):
         self.assertTrue(m.EndReached())
 
     def testStartsWith(self):
-        m = Buffer("filename", "# for foreach !@#", 0)
+        m = Buffer("filename", "# for foreach !@#")
         # offset:               0 2 . 6 . . . 14
+        self.assertFalse(m.StartsWith(""))
         self.assertFalse(m.StartsWith("for"))
         self.assertTrue(m.StartsWith("#"))
         self.assertEquals(0, m.offset)
@@ -97,6 +107,22 @@ class BufferTest(RigTestCase):
 
         m.offset = 14
         self.assertTrue(m.StartsWith("!@#", whitespace=True, consume=True))
+        self.assertTrue(m.EndReached())
+
+    def testSkipTo(self):
+        m = Buffer("filename", "some string")
+        # offset:               0 2 .5. 8 10
+        self.assertEquals("", m.SkipTo(""))
+        self.assertEquals("some ", m.SkipTo("st"))
+        self.assertEquals(5, m.offset)
+
+        # "st" is still at the current's buffer pos. This is a nop.
+        self.assertEquals("", m.SkipTo("st"))
+        self.assertEquals(5, m.offset)
+
+        # try again, past the "st" pattern
+        m.offset += 1
+        self.assertEquals("tring", m.SkipTo("st"))
         self.assertTrue(m.EndReached())
 
 #------------------------
