@@ -13,7 +13,6 @@ import sys
 
 #------------------------
 _WS = " \t\f"
-_EOL = "\r\n"
 
 #------------------------
 class Buffer(object):
@@ -26,6 +25,32 @@ class Buffer(object):
         self.data = data
         self.offset = offset
         self.lineno = 1
+
+    def ConvertLineSep(self):
+        """
+        This method tries to convert all line endings in the buffer to the
+        'default' of the given platform (as indicated by os.linesep).
+        
+        The buffer is expected to contain:
+        - only \n, aka unix mode
+        - only \r, aka MacOS mode
+        - only \r\n pairs, aka DOS/Windows mode
+        
+        The operation happens in-place to the whole data buffer, independant of the
+        current offset position. If offset is not 0, it will raise an exception and
+        do nothing since it would ruin the current offset (no attempt is made to fix it).
+        """
+        if self.offset != 0:
+            raise RuntimeError("ConvertLineSep will not apply to buffer with offset=%d" % offset)
+        sep = ""
+        if "\r" in self.data:
+            sep = "\r"
+            if self.data.find("\r\n"):
+                sep = "\r\n"
+        elif "\n" in self.data:
+            sep = "\n"
+        if sep:
+            self.data.replace(sep, os.linesep)
 
     def EndReached(self):
         """
@@ -41,6 +66,9 @@ class Buffer(object):
         or the end of the buffer must have been reached.
         If consume is True, the content is 'consumed' (i.e. offset is moved to end)
         if found. If whitespace is requested, it also consumes the whitespace.
+        
+        Line numbers: Since this methods will never pass over a line separator,
+        it doesn't touch Buffer.lineno
         
         Returns false if the end of the buffer has been reached or if the
         given word is empty.
@@ -66,6 +94,11 @@ class Buffer(object):
         """
         Advances the buffer up to the first occurence of the given word
         (not included) or to the end of the buffer.
+        
+        Line numbers: The method returns *everything* between the current position
+        and the first occurence of word, including line separators. These are scanned
+        for when the buffer is consumed and the Buffer.lineno is incremeted as necessary.
+
         Returns whatever has been read in between or an empty string is
         nothing changed (i.e. if the requested word is already at the current
         location or the end had already been reached or the requested word
@@ -79,7 +112,9 @@ class Buffer(object):
             self.offset = len(self.data)
         else:
             self.offset = found
-        return self.data[offset:self.offset]
+        result = self.data[offset:self.offset]
+        self.lineno += result.count(os.linesep)
+        return result
         
 
     #def SetOffset(self, offset):
@@ -235,7 +270,7 @@ class Template(object):
         Returns the next node in the buffer.
         """
         if buffer.StartsWith("[[", consume=True):
-            # get tag
+            #word = buffer.GetWord()
             pass
         else:
             literal = buffer.SkipTo("[[")
