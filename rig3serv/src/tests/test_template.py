@@ -12,7 +12,7 @@ import os
 import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.template import Template, Buffer, NodeLiteral
+from rig.template import Template, Buffer, NodeLiteral, NodeTag, NodeList, NodeVariable
 
 #------------------------
 class MockParse(Template):
@@ -28,6 +28,7 @@ class MockParse(Template):
     def _Parse(self, filename, source):
         self.filename = filename
         self.source = source
+
 
 #------------------------
 class TemplateTest(RigTestCase):
@@ -64,8 +65,10 @@ class TemplateTest(RigTestCase):
         b = Buffer("file", "literal string")
         self.assertEquals(NodeLiteral("literal string"), m._GetNextNode(b))
 
+
 #------------------------
 class BufferTest(RigTestCase):
+
     def testInit(self):
         m = Buffer("filename", "data", 42)
         self.assertEquals("filename", m.filename)
@@ -124,6 +127,28 @@ class BufferTest(RigTestCase):
         m.offset += 1
         self.assertEquals("tring", m.SkipTo("st"))
         self.assertTrue(m.EndReached())
+
+#------------------------
+class NodeTest(RigTestCase):
+
+    def testEquality(self):
+        self.assertEquals(NodeLiteral("abc"), NodeLiteral("abc"))
+
+        content = NodeList()
+        content.Append(NodeLiteral("abc"))
+        content.Append(NodeLiteral("second"))
+        
+        self.assertEquals(content, NodeList([ NodeLiteral("abc"),
+                                              NodeLiteral("second") ]))
+
+        self.assertEquals(NodeTag("for", [ "param1", "param2" ], content),
+                          NodeTag("for", [ "param1", "param2" ], content))
+
+        self.assertEquals(NodeVariable([ "var", "prop", "prop2" ],
+                                       [ "raw", "html" ]),
+                          NodeVariable([ "var", "prop", "prop2" ], 
+                                       [ "raw", "html" ]))
+
 
 #------------------------
 # Local Variables:
