@@ -54,8 +54,9 @@ class NodeLiteral(Node):
 
 #------------------------
 class NodeTag(Node):
-    def __init__(self, tag, parameters=[], content=None):
+    def __init__(self, tag, tag_def, parameters=[], content=None):
         self.tag = tag
+        self.tag_def = tag_def
         self.parameters = parameters
         self.content = content
 

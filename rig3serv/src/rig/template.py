@@ -13,6 +13,7 @@ import re
 
 from rig.buffer import Buffer, _WS, _EOL
 from rig.node import *
+from rig.tag import *
 
 #------------------------
 class Template(object):
@@ -25,8 +26,15 @@ class Template(object):
     If neither file nor source is defined, TypeError is thrown.
     """
     def __init__(self, log, file=None, source=None):
-        _file = file
         self._log = log
+        self._tags = { "#":   TagComment(),
+                       "for": TagFor(),
+                       "if":  TagIf() }
+        self._filters = { }
+        self._InitFileSource(file, source)
+
+    def _InitFileSource(self, file, source):
+        _file = file
         if _file is not None:
             if isinstance(_file, str):
                 return self._ParseFile(filename=_file)
@@ -70,7 +78,7 @@ class Template(object):
         Returns the next node in the buffer.
         """
         if buffer.StartsWith("[[", consume=True):
-            tag = buffer.NextWord()
+            tag = buffer.NextWord().lower()
             parameters = buffer.SkipTo("]]")
             if parameters:
                 # strip whitespace and uniformize it, then split by space
@@ -78,9 +86,13 @@ class Template(object):
                 parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
                 parameters = parameters.split(" ")
             if not buffer.StartsWith("]]", consume=True):
-                raise self._Throw(buffer, "Expected end-tag marker ]]")
-            content = None
-            return NodeTag(tag, parameters, content)
+                self._Throw(buffer, "Expected end-tag marker ]]")
+            try:
+                tag_def = self._tags[tag]
+            except KeyError:
+                self._Throw(buffer, "Unknown tag %s" % tag)
+            content = tag_def.has_content
+            return NodeTag(tag, tag_def, parameters, content)
         else:
             literal = buffer.SkipTo("[[")
             return NodeLiteral(literal)

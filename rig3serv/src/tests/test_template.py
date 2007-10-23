@@ -15,6 +15,7 @@ from tests.rig_test_case import RigTestCase
 from rig.template import Template
 from rig.buffer import Buffer
 from rig.node import *
+from rig.tag import *
 
 #------------------------
 class MockParse(Template):
@@ -41,6 +42,10 @@ class TemplateTest(RigTestCase):
         """
         self.assertRaises(TypeError, Template)
         self.assertRaises(TypeError, Template, self.Log())
+        m = MockParse(self.Log(), file=None, source="something")
+        self.assertSame(self.Log(), m._log)
+        self.assertIsInstance(dict, m._tags)
+        self.assertIsInstance(dict, m._filters)
 
     def testInitParse(self):
         """
@@ -71,7 +76,8 @@ class TemplateTest(RigTestCase):
         self.assertRaises(SyntaxError, m._GetNextNode, b)
         
         b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
-        self.assertEquals(NodeTag("tag", [ "param1", "param2" ], content=None),
+        m._tags["tag"] = TagDef(has_content=False)
+        self.assertEquals(NodeTag("tag", None, [ "param1", "param2" ], content=None),
                           m._GetNextNode(b))
 
 
