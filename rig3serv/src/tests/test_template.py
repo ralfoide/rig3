@@ -65,6 +65,13 @@ class TemplateTest(RigTestCase):
         b = Buffer("file", "literal string")
         self.assertEquals(NodeLiteral("literal string"), m._GetNextNode(b))
 
+        b = Buffer("file", "[[tag")
+        self.assertRaises(SyntaxError, m._GetNextNode, b)
+        
+        b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
+        self.assertEquals(NodeTag("tag", [ "param1", "param2" ], content=None),
+                          m._GetNextNode(b))
+
 
 #------------------------
 class BufferTest(RigTestCase):

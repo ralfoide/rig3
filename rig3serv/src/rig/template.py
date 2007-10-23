@@ -9,10 +9,12 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import os
+import re
 import sys
 
 #------------------------
 _WS = " \t\f"
+_EOL = "\r\n"
 
 #------------------------
 class Buffer(object):
@@ -182,6 +184,13 @@ class Node(object):
     def __init__(self):
         raise NotImplementedError("Abstract class Node cannot be instanciated")
 
+    def __eq__(self, rhs):
+        if rhs is None:
+            raise RuntimeError("Can't compare %s with None" % repr(self))
+        else:
+            raise RuntimeError("Can't compare %s with %s" % (repr(self), repr(rhs)))
+
+
 class NodeList(Node):
     def __init__(self, list=[]):
         self.list = list
@@ -285,22 +294,36 @@ class Template(object):
         buffer = Buffer(os.path.basename(filename), source, 0)
         nodes = NodeList()
         self._nodes = nodes
-        #while not buffer.EndReached():
-        #    n = self._GetNextNode(buffer)
-        #    if n:
-        #        nodes.Append(n)
+        while not buffer.EndReached():
+            n = self._GetNextNode(buffer)
+            if n:
+                nodes.Append(n)
 
     def _GetNextNode(self, buffer):
         """
         Returns the next node in the buffer.
         """
         if buffer.StartsWith("[[", consume=True):
-            #word = buffer.GetWord()
-            pass
+            tag = buffer.NextWord()
+            parameters = buffer.SkipTo("]]")
+            if parameters:
+                # strip whitespace and uniformize it, then split by space
+                parameters = parameters.strip(_WS + _EOL)
+                parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
+                parameters = parameters.split(" ")
+            if not buffer.StartsWith("]]", consume=True):
+                raise self._Throw(buffer, "Expected end-tag marker ]]")
+            content = None
+            return NodeTag(tag, parameters, content)
         else:
             literal = buffer.SkipTo("[[")
             return NodeLiteral(literal)
-        
+
+    def _Throw(self, buffer, msg):
+        raise SyntaxError("[%s, line %d, col %d] %s" % (buffer.filename,
+                                                   buffer.lineno,
+                                                   buffer.offset,
+                                                   msg))
 
 #------------------------
 # Local Variables:
