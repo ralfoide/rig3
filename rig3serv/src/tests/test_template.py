@@ -162,6 +162,36 @@ class BufferTest(RigTestCase):
         self.assertEquals("", m.SkipTo("6"))
         self.assertEquals(6, m.lineno)
 
+    def testNextWord(self):
+        m = Buffer("filename", "some string")
+        self.assertEquals("some", m.NextWord())
+        self.assertEquals("string", m.NextWord())
+        self.assertTrue(m.EndReached())
+        self.assertEquals("", m.NextWord())
+        self.assertTrue(m.EndReached())
+
+        m = Buffer("filename", "\n\nsome\n \nstring\n\n", linesep="\n")
+        self.assertEquals(1, m.lineno)
+        self.assertEquals("some", m.NextWord())
+        self.assertEquals(3, m.lineno)
+        self.assertEquals("string", m.NextWord())
+        self.assertEquals(5, m.lineno)
+        self.assertFalse(m.EndReached())  # end line seps are not parsed yet
+        self.assertEquals("", m.NextWord())
+        self.assertEquals(7, m.lineno)
+        self.assertTrue(m.EndReached())
+
+        m = Buffer("filename", "\r\nsome \r\nstring\r\n", linesep="\r\n")
+        self.assertEquals(1, m.lineno)
+        self.assertEquals("some", m.NextWord())
+        self.assertEquals(2, m.lineno)
+        self.assertEquals("string", m.NextWord())
+        self.assertEquals(3, m.lineno)
+        self.assertFalse(m.EndReached())  # end line seps are not parsed yet
+        self.assertEquals("", m.NextWord())
+        self.assertEquals(4, m.lineno)
+        self.assertTrue(m.EndReached())
+
 
 #------------------------
 class NodeTest(RigTestCase):

@@ -137,17 +137,22 @@ class Buffer(object):
     def NextWord(self):
         """
         Returns the next word in the buffer and consumes it.
+        Returns an empty if the end of the buffer has already been reached.
+        
         Words are any sequence of characters separated by spaces or line
         separators, or the [[ and ]] tags markers.
+        
+        Whitespace at the beginning of the buffer's current position is
+        consumed and not returned. Whitespace at the end of the word is left
+        intact.
         """
         data = self.data
         initial = offset = self.offset
-        if self.EndReached():
-            return None
+        len_buf = len(data)
         linesep = self.linesep
-        len_linesep = len(linesep)
+        len_sep = len(linesep)
         s = ""
-        while True:
+        while offset < len_buf:
             if data[offset:offset + 2] in ["[[", "]]"]:
                 if not s:
                     offset += 2
@@ -159,9 +164,9 @@ class Buffer(object):
                     continue
                 else:
                     break
-            if c == linesep or (len_linesep > 1 and data[offset:offset + len_linesep] == linesep):
+            if c == linesep or (len_sep > 1 and data[offset:offset + len_sep] == linesep):
                 if not s:
-                    offset += len_linesep
+                    offset += len_sep
                     self.lineno += 1
                     continue
                 else:
