@@ -12,10 +12,10 @@ import os
 import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.template import Template
-from rig.buffer import Buffer
-from rig.node import *
-from rig.tag import *
+from rig.template.template import Template
+from rig.template.buffer import Buffer
+from rig.template.node import *
+from rig.template.tag import *
 
 #------------------------
 class MockParse(Template):

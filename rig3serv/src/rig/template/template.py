@@ -11,9 +11,9 @@ __author__ = "ralfoide@gmail.com"
 import os
 import re
 
-from rig.buffer import Buffer, _WS, _EOL
-from rig.node import *
-from rig.tag import *
+from rig.template.buffer import Buffer, _WS, _EOL
+from rig.template.node import *
+from rig.template.tag import *
 
 #------------------------
 class Template(object):
@@ -91,7 +91,9 @@ class Template(object):
                 tag_def = self._tags[tag]
             except KeyError:
                 self._Throw(buffer, "Unknown tag %s" % tag)
-            content = tag_def.has_content
+            content = None
+            if tag_def.has_content:
+                pass # TODO
             return NodeTag(tag, tag_def, parameters, content)
         else:
             literal = buffer.SkipTo("[[")

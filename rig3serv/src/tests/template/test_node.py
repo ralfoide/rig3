@@ -10,8 +10,8 @@ __author__ = "ralfoide@gmail.com"
 
 
 from tests.rig_test_case import RigTestCase
-from rig.buffer import Buffer
-from rig.node import *
+from rig.template.buffer import Buffer
+from rig.template.node import *
 
 #------------------------
 class NodeTest(RigTestCase):
