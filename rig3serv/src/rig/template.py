@@ -134,40 +134,42 @@ class Buffer(object):
             self.lineno += result.count(self.linesep)
         return result
 
-
-    #def SetOffset(self, offset):
-    #    self.offset = offset
-
-    def obsolete_NextWord(self):
+    def NextWord(self):
         """
-        Returns None or tuple (string: word, int: initial position)
-        Side effect: advances current offset.
+        Returns the next word in the buffer and consumes it.
+        Words are any sequence of characters separated by spaces or line
+        separators, or the [[ and ]] tags markers.
         """
         data = self.data
         initial = offset = self.offset
         if self.EndReached():
             return None
-        if data[offset:offset + 2] == "[[":
-            return ("[[", offset + 2)
-        if data[offset:offset + 2] == "]]":
-            return ("]]", offset + 2)
+        linesep = self.linesep
+        len_linesep = len(linesep)
         s = ""
         while True:
             if data[offset:offset + 2] in ["[[", "]]"]:
+                if not s:
+                    offset += 2
                 break
             c = data[offset]
-            if c in " \t\f":
+            if c in _WS:
                 if not s:
                     offset += 1
                     continue
                 else:
                     break
-            if c in "\r\n":
-                self.lineno += 1
+            if c == linesep or (len_linesep > 1 and data[offset:offset + len_linesep] == linesep):
+                if not s:
+                    offset += len_linesep
+                    self.lineno += 1
+                    continue
+                else:
+                    break
             s += c
             offset += 1
         self.offset = offset
-        return (s, initial)
+        return s
         
 
 #------------------------
