@@ -19,22 +19,32 @@ class Buffer(object):
     """
     A buffer wraps a data string with a "current position" offset.
     All operations advance the offset.
+    
+    If the offset is 0 and the linesep argument is defined (which defaults
+    to os.linesep), then all line separators will be converted to be uniform.
+    Set linesep to None if you want to avoid line separator conversion.
     """
-    def __init__(self, filename, data, offset=0):
+    def __init__(self, filename, data, offset=0, linesep=os.linesep):
         self.filename = filename
         self.data = data
         self.offset = offset
         self.lineno = 1
+        self.linesep = linesep
+        if offset == 0 and linesep:
+            self.ConvertLineSep()
 
-    def ConvertLineSep(self):
+    def ConvertLineSep(self, linesep=None):
         """
         This method tries to convert all line endings in the buffer to the
-        'default' of the given platform (as indicated by os.linesep).
+        'default' of the given platform.
         
-        The buffer is expected to contain:
+        The buffer is expected to contain line separators consistent with:
         - only \n, aka unix mode
         - only \r, aka MacOS mode
         - only \r\n pairs, aka DOS/Windows mode
+        
+        If the linesep argument is defined, it redefines the current Buffer's
+        linesep. Otherwise the default (as given to the constructor) is used.
         
         The operation happens in-place to the whole data buffer, independant of the
         current offset position. If offset is not 0, it will raise an exception and
@@ -45,6 +55,8 @@ class Buffer(object):
         if self.offset != 0:
             raise RuntimeError("ConvertLineSep will not apply to buffer with offset=%d" %
                                self.offset)
+        if linesep is not None:
+            self.linesep = linesep
         sep = ""
         if "\r" in self.data:
             sep = "\r"
@@ -52,8 +64,8 @@ class Buffer(object):
                 sep = "\r\n"
         elif "\n" in self.data:
             sep = "\n"
-        if sep:
-            self.data = self.data.replace(sep, os.linesep)
+        if sep and sep != self.linesep:
+            self.data = self.data.replace(sep, self.linesep)
         return self
 
     def EndReached(self):
@@ -100,8 +112,9 @@ class Buffer(object):
         (not included) or to the end of the buffer.
         
         Line numbers: The method returns *everything* between the current position
-        and the first occurence of word, including line separators. These are scanned
-        for when the buffer is consumed and the Buffer.lineno is incremeted as necessary.
+        and the first occurence of word, including line separators. If linesep is
+        defined, these are scanned for when the buffer is consumed and the
+        Buffer.lineno is incremeted as necessary.
 
         Returns whatever has been read in between or an empty string is
         nothing changed (i.e. if the requested word is already at the current
@@ -117,7 +130,8 @@ class Buffer(object):
         else:
             self.offset = found
         result = self.data[offset:self.offset]
-        self.lineno += result.count(os.linesep)
+        if self.linesep:
+            self.lineno += result.count(self.linesep)
         return result
 
 
