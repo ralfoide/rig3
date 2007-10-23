@@ -14,8 +14,8 @@ import sys
 import kid
 import zlib
 
-from rig.dir_parser import DirParser
-from rig.izu_parser import IzuParser
+from rig.parser.dir import DirParser
+from rig.parser.izu import IzuParser
 
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"

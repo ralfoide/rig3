@@ -11,7 +11,7 @@ __author__ = "ralfoide@gmail.com"
 from StringIO import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.izu_parser import IzuParser
+from rig.parser.izu import IzuParser
 
 #------------------------
 class IzuParserTest(RigTestCase):
