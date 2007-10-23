@@ -69,12 +69,44 @@ class TemplateTest(RigTestCase):
 #------------------------
 class BufferTest(RigTestCase):
 
+    def setUp(self):
+        self._os_linesep = os.linesep
+
+    def tearDown(self):
+        os.linesep = self._os_linesep
+
     def testInit(self):
         m = Buffer("filename", "data", 42)
         self.assertEquals("filename", m.filename)
         self.assertEquals("data", m.data)
         self.assertEquals(42, m.offset)
         self.assertEquals(1, m.lineno)
+
+    def testConvertLineSep(self):
+        # Requires offset=0 before converting lines as such a conversion would invalidate
+        # the offset (no attemp is made to convert it too)
+        m = Buffer("filename", "data", 42)
+        self.assertRaises(RuntimeError, m.ConvertLineSep)
+
+        m = Buffer("filename", "data", 0)
+        self.assertSame(m, m.ConvertLineSep())
+        self.assertEquals("data", m.data)
+        self.assertEquals(0, m.offset)
+
+        m = Buffer("filename", "AAA\r\nBBB\r\n\r\nCCC")
+        os.linesep = "\n"
+        m.ConvertLineSep()
+        self.assertEquals("AAA\nBBB\n\nCCC", m.data)
+
+        m = Buffer("filename", "AAA\r\nBBB\r\n\r\nCCC")
+        os.linesep = "\r\n"
+        m.ConvertLineSep()
+        self.assertEquals("AAA\r\nBBB\r\n\r\nCCC", m.data)
+
+        m = Buffer("filename", "AAA\rBBB\r\rCCC")
+        os.linesep = "\r\n"
+        m.ConvertLineSep()
+        self.assertEquals("AAA\r\nBBB\r\n\r\nCCC", m.data)
 
     def testEndReached(self):
         m = Buffer("filename", "data")
@@ -127,6 +159,18 @@ class BufferTest(RigTestCase):
         m.offset += 1
         self.assertEquals("tring", m.SkipTo("st"))
         self.assertTrue(m.EndReached())
+
+        m = Buffer("filename", "1\n2\n3\n\n5\n6")
+        self.assertEquals(1, m.lineno)
+        self.assertEquals("1\n", m.SkipTo("2"))
+        self.assertEquals(2, m.lineno)
+        self.assertEquals("2\n3\n\n", m.SkipTo("5"))
+        self.assertEquals(5, m.lineno)
+        self.assertEquals("5\n", m.SkipTo("6"))
+        self.assertEquals(6, m.lineno)
+        self.assertEquals("", m.SkipTo("6"))
+        self.assertEquals(6, m.lineno)
+
 
 #------------------------
 class NodeTest(RigTestCase):

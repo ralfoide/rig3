@@ -88,6 +88,8 @@ class RigTestCase(unittest.TestCase):
         Asserts that the two reference point to the same object, not just
         equal objects. This compares the internal object ids.
         """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+              (msg or "assertSame failed", expected, actual)
         self.assertEquals(id(expected), id(actual), msg)
 
     def assertSearch(self, expected_regexp, actual, msg=None):

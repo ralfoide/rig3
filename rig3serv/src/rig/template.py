@@ -39,18 +39,22 @@ class Buffer(object):
         The operation happens in-place to the whole data buffer, independant of the
         current offset position. If offset is not 0, it will raise an exception and
         do nothing since it would ruin the current offset (no attempt is made to fix it).
+        
+        Returns self (the Buffer) so that you can chain commands.
         """
         if self.offset != 0:
-            raise RuntimeError("ConvertLineSep will not apply to buffer with offset=%d" % offset)
+            raise RuntimeError("ConvertLineSep will not apply to buffer with offset=%d" %
+                               self.offset)
         sep = ""
         if "\r" in self.data:
             sep = "\r"
-            if self.data.find("\r\n"):
+            if self.data.find("\r\n") != -1:
                 sep = "\r\n"
         elif "\n" in self.data:
             sep = "\n"
         if sep:
-            self.data.replace(sep, os.linesep)
+            self.data = self.data.replace(sep, os.linesep)
+        return self
 
     def EndReached(self):
         """
@@ -115,7 +119,7 @@ class Buffer(object):
         result = self.data[offset:self.offset]
         self.lineno += result.count(os.linesep)
         return result
-        
+
 
     #def SetOffset(self, offset):
     #    self.offset = offset
