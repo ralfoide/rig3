@@ -12,7 +12,7 @@ import os
 import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.template.template import Template
+from rig.template.template import Template, _TagEnd
 from rig.template.buffer import Buffer
 from rig.template.node import *
 from rig.template.tag import *
@@ -32,6 +32,11 @@ class MockParse(Template):
         self.filename = filename
         self.source = source
 
+        
+#------------------------
+class _TagTag(Tag):
+    def __init__(self):
+        super(_TagTag, self).__init__(tag="tag", has_content=False)
 
 #------------------------
 class TemplateTest(RigTestCase):
@@ -86,11 +91,22 @@ class TemplateTest(RigTestCase):
 
         b = Buffer("file", "[[tag")
         self.assertRaises(SyntaxError, m._GetNextNode, b)
+
+        t = m._tags["tag"] = _TagTag()
         
         b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
-        m._tags["tag"] = Tag(tag=None, has_content=False)
-        self.assertEquals(NodeTag("tag", None, [ "param1", "param2" ], content=None),
+        self.assertEquals(NodeTag(t, [ "param1", "param2" ], content=None),
                           m._GetNextNode(b))
+
+        b = Buffer("file", "word 1 [[tag 1]]  word 2  [[tag 2]] word 3[[end]]word 4   ")
+        self.assertEquals(NodeLiteral("word 1 "), m._GetNextNode(b))
+        self.assertEquals(NodeTag(t, [ "1" ], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeLiteral("  word 2  "), m._GetNextNode(b))
+        self.assertEquals(NodeTag(t, [ "2" ], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeLiteral(" word 3"), m._GetNextNode(b))
+        self.assertEquals(NodeTag(_TagEnd(), [], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeLiteral("word 4   "), m._GetNextNode(b))
+        self.assertTrue(b.EndReached())
 
 
 #------------------------

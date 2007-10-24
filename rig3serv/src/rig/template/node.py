@@ -23,6 +23,12 @@ class Node(object):
 
 #------------------------
 class NodeList(Node):
+    """
+    Constructs a list of nodes.
+    - list (list [Node]): A list of nodes instances.
+    The object can be created with an empty list and nodes can be appended
+    later. The list can be empty but should not be None.
+    """
     def __init__(self, list=[]):
         self.list = list
 
@@ -40,6 +46,11 @@ class NodeList(Node):
 
 #------------------------
 class NodeLiteral(Node):
+    """
+    Constructs a literal node.
+    - literal (string): The literal value of the node, all whitespaces and
+      end-lines included.
+    """
     def __init__(self, literal):
         self.literal = literal
 
@@ -54,25 +65,39 @@ class NodeLiteral(Node):
 
 #------------------------
 class NodeTag(Node):
-    def __init__(self, tag, tag_def, parameters=[], content=None):
+    """
+    Constructs a tag node.
+    - tag (Tag): A tag definition instance (rig.template.tag.Tag*)
+    - parameters (list [str]): List of string parameters. List can be empty
+      but not None.
+    - content (NodeList): None if this tag does not accept content, otherwise
+      must an instance of NodeList (even if it contains only one node inside.)
+    """
+    def __init__(self, tag, parameters=[], content=None):
         self.tag = tag
-        self.tag_def = tag_def
         self.parameters = parameters
         self.content = content
 
     def __eq__(self, rhs):
         if isinstance(rhs, NodeTag):
-            return (self.tag == rhs.tag and
+            return (type(self.tag) == type(rhs.tag) and
                     self.parameters == rhs.parameters and
                     self.content == rhs.content)
         return super(NodeTag, self).__eq__(rhs)
 
     def __repr__(self):
-        return "<NodeTag %s %s %s>" % (self.tag, self.parameters, self.content)
+        return "<NodeTag %s %s %s>" % (self.tag.tag, self.parameters, self.content)
 
 
 #------------------------
 class NodeVariable(Node):
+    """
+    Constructs a variable node.
+    - names (list [str]): A list of name strings that compose the variable.
+      The list cannot be empty and must contain at least one string.
+    - filter (list [Filter]): A list of filters. The list can be empty but should
+      not be None.
+    """
     def __init__(self, names=[], filters=[]):
         self.names = names
         self.filters = filters

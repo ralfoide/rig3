@@ -37,16 +37,16 @@ class Template(object):
     def __init__(self, log, file=None, source=None):
         self._log = log
         self._filters = { }
-        self._InitTags()
-        self._InitFileSource(file, source)
+        self.__InitTags()
+        self.__InitFileSource(file, source)
 
-    def _InitTags(self):
+    def __InitTags(self):
         self._tags = { "end":  _TagEnd() }
         for t in ALL_TAGS:
             tag = t()
             self._tags[tag.tag] = tag
 
-    def _InitFileSource(self, file, source):
+    def __InitFileSource(self, file, source):
         _file = file
         if _file is not None:
             if isinstance(_file, str):
@@ -98,6 +98,8 @@ class Template(object):
                 parameters = parameters.strip(_WS + _EOL)
                 parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
                 parameters = parameters.split(" ")
+            else:
+                parameters = []
             if not buffer.StartsWith("]]", consume=True):
                 self._Throw(buffer, "Expected end-tag marker ]]")
             try:
@@ -107,7 +109,7 @@ class Template(object):
             content = None
             if tag_def.has_content:
                 pass # TODO
-            return NodeTag(tag, tag_def, parameters, content)
+            return NodeTag(tag_def, parameters, content)
         else:
             literal = buffer.SkipTo("[[")
             return NodeLiteral(literal)
