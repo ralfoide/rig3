@@ -79,12 +79,33 @@ class Template(object):
         Parses a source string for the given filename.
         """
         buffer = Buffer(os.path.basename(filename), source, 0)
+        return self._GetNodeList(end_expected=false)
+    
+    def _GetNodeList(self, end_expected):
+        """
+        Parses the buffer for a node list.
+        
+        If end_expected is true, this is parsing a tag's content and
+        expects to find an end-tag marker ([[end]]). It will raise a
+        SyntaxError if such a marker is not found in the buffer.
+        
+        If end_expected is false, this is parsing a full buffer and it
+        expects NOT to find such an end-tag marker. It will raise a
+        SyntaxError if such a marker is found.
+        """
         nodes = NodeList()
         self._nodes = nodes
         while not buffer.EndReached():
             n = self._GetNextNode(buffer)
-            if n:
-                nodes.Append(n)
+            if isinstance(n, _TagEnd):
+                if not end_expected:
+                    self._Throw(buffer, "[[end]] found but not closing any tag.")
+                # end expected and found, return the list of nodes
+                return nodes
+            nodes.Append(n)
+        if end_expected:
+            self._Throw(buffer, "[[end]] not found. Did you forget to close a tag?")
+        return nodes
 
     def _GetNextNode(self, buffer):
         """
@@ -108,7 +129,7 @@ class Template(object):
                 self._Throw(buffer, "Unknown tag %s" % tag)
             content = None
             if tag_def.has_content:
-                pass # TODO
+                content = self._GetNodeList(end_expected=true)
             return NodeTag(tag_def, parameters, content)
         else:
             literal = buffer.SkipTo("[[")
