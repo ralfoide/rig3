@@ -67,6 +67,18 @@ class TemplateTest(RigTestCase):
         self.assertEquals("template from StringIO", m.source)
         self.assertEquals("file", m.filename)
 
+    def testTags(self):
+        m = MockParse(self.Log(), file=None, source="something")
+        self.assertIsInstance(dict, m._tags)
+        self.assertTrue("#" in m._tags, "Missing key '#' in %s" % m._tags)
+        self.assertTrue("end" in m._tags, "Missing key 'end' in %s" % m._tags)
+        self.assertTrue("for" in m._tags, "Missing key 'for' in %s" % m._tags)
+        self.assertTrue("if" in m._tags, "Missing key 'if' in %s" % m._tags)
+        self.assertIsInstance(TagComment, m._tags["#"])
+        self.assertIsInstance(TagFor, m._tags["for"])
+        self.assertIsInstance(TagIf, m._tags["if"])
+        self.assertIsInstance(Tag, m._tags["end"])
+
     def testGetNextNode(self):
         m = MockParse(self.Log(), source="")
         b = Buffer("file", "literal string")
@@ -76,7 +88,7 @@ class TemplateTest(RigTestCase):
         self.assertRaises(SyntaxError, m._GetNextNode, b)
         
         b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
-        m._tags["tag"] = TagDef(has_content=False)
+        m._tags["tag"] = Tag(tag=None, has_content=False)
         self.assertEquals(NodeTag("tag", None, [ "param1", "param2" ], content=None),
                           m._GetNextNode(b))
 

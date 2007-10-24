@@ -16,6 +16,15 @@ from rig.template.node import *
 from rig.template.tag import *
 
 #------------------------
+class _TagEnd(Tag):
+    """
+    Pseudo-tag to parse end-content [[end]] markers.
+    This is used internally, but never in real node tags.
+    """
+    def __init__(self):
+        super(_TagEnd, self).__init__(tag="end", has_content=False)
+
+#------------------------
 class Template(object):
     """
     Parses a template, either from a file or from a string:
@@ -27,11 +36,15 @@ class Template(object):
     """
     def __init__(self, log, file=None, source=None):
         self._log = log
-        self._tags = { "#":   TagComment(),
-                       "for": TagFor(),
-                       "if":  TagIf() }
         self._filters = { }
+        self._InitTags()
         self._InitFileSource(file, source)
+
+    def _InitTags(self):
+        self._tags = { "end":  _TagEnd() }
+        for t in ALL_TAGS:
+            tag = t()
+            self._tags[tag.tag] = tag
 
     def _InitFileSource(self, file, source):
         _file = file
