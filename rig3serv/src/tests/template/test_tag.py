@@ -32,6 +32,11 @@ class TagTest(RigTestCase):
         self.assertFalse(m.has_content)
         self.assertEquals("", m.Generate(tag_node=None, context=None))
 
+    def testTagVariable(self):
+        m = TagVariable()
+        self.assertEquals(None, m.tag)
+        self.assertFalse(m.has_content)
+
     def testTagIf(self):
         m = TagIf()
         self.assertEquals("if", m.tag)

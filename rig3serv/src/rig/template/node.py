@@ -68,8 +68,7 @@ class NodeTag(Node):
     """
     Constructs a tag node.
     - tag (Tag): A tag definition instance (rig.template.tag.Tag*)
-    - parameters (list [str]): List of string parameters. List can be empty
-      but not None.
+    - parameters (string): Parameter(s) string. Can be empty but not None.
     - content (NodeList): None if this tag does not accept content, otherwise
       must an instance of NodeList (even if it contains only one node inside.)
     """
@@ -88,28 +87,6 @@ class NodeTag(Node):
     def __repr__(self):
         return "<NodeTag %s %s %s>" % (self.tag.tag, self.parameters, self.content)
 
-
-#------------------------
-class NodeVariable(Node):
-    """
-    Constructs a variable node.
-    - names (list [str]): A list of name strings that compose the variable.
-      The list cannot be empty and must contain at least one string.
-    - filter (list [Filter]): A list of filters. The list can be empty but should
-      not be None.
-    """
-    def __init__(self, names=[], filters=[]):
-        self.names = names
-        self.filters = filters
-
-    def __eq__(self, rhs):
-        if isinstance(rhs, NodeVariable):
-            return (self.names == rhs.names and
-                    self.filters == rhs.filters )
-        return super(NodeVariable, self).__eq__(rhs)
-
-    def __repr__(self):
-        return "<NodeVar %s %s>" % (self.names, self.filters)
 
 #------------------------
 # Local Variables:

@@ -42,9 +42,10 @@ class Template(object):
 
     def __InitTags(self):
         self._tags = { "end":  _TagEnd() }
-        for t in ALL_TAGS:
-            tag = t()
-            self._tags[tag.tag] = tag
+        for tag_def in ALL_TAGS:
+            tag = tag_def()
+            if tag.tag:
+                self._tags[tag.tag] = tag
 
     def __InitFileSource(self, file, source):
         _file = file
@@ -113,20 +114,13 @@ class Template(object):
         """
         if buffer.StartsWith("[[", consume=True):
             tag = buffer.NextWord().lower()
-            parameters = buffer.SkipTo("]]")
-            if parameters:
-                # strip whitespace and uniformize it, then split by space
-                parameters = parameters.strip(_WS + _EOL)
-                parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
-                parameters = parameters.split(" ")
-            else:
-                parameters = []
+            parameters = buffer.SkipTo("]]").strip(_WS + _EOL)
             if not buffer.StartsWith("]]", consume=True):
                 self._SyntaxError(buffer, "Expected end-tag marker ]]")
             try:
                 tag_def = self._tags[tag]
             except KeyError:
-                self._SyntaxError(buffer, "Unknown tag %s" % tag)
+                tag_def = TagVariable()
             content = None
             if tag_def.has_content:
                 content = self._GetNodeList(end_expected=true)
@@ -140,6 +134,12 @@ class Template(object):
                                                    buffer.lineno,
                                                    buffer.offset,
                                                    msg))
+
+            #if parameters:
+            #    # strip whitespace and uniformize it, then split by space
+            #    parameters = parameters.strip(_WS + _EOL)
+            #    parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
+            #    parameters = parameters.split(" ")
 
 #------------------------
 # Local Variables:

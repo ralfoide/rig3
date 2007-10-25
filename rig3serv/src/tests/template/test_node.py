@@ -29,11 +29,6 @@ class NodeTest(RigTestCase):
         self.assertEquals(NodeTag("for", [ "param1", "param2" ], content),
                           NodeTag("for", [ "param1", "param2" ], content))
 
-        self.assertEquals(NodeVariable([ "var", "prop", "prop2" ],
-                                       [ "raw", "html" ]),
-                          NodeVariable([ "var", "prop", "prop2" ], 
-                                       [ "raw", "html" ]))
-
 
 #------------------------
 # Local Variables:

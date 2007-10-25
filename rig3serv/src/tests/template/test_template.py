@@ -95,16 +95,16 @@ class TemplateTest(RigTestCase):
         t = m._tags["tag"] = _TagTag()
         
         b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
-        self.assertEquals(NodeTag(t, [ "param1", "param2" ], content=None),
+        self.assertEquals(NodeTag(t, "param1 \t\t\f\r\n param2", content=None),
                           m._GetNextNode(b))
 
-        b = Buffer("file", "word 1 [[tag 1]]  word 2  [[tag 2]] word 3[[end]]word 4   ")
+        b = Buffer("file", "word 1 [[tag 1]]  word 2  [[ tag  2  ]] word 3[[  end  ]]word 4   ")
         self.assertEquals(NodeLiteral("word 1 "), m._GetNextNode(b))
-        self.assertEquals(NodeTag(t, [ "1" ], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeTag(t, "1", content=None), m._GetNextNode(b))
         self.assertEquals(NodeLiteral("  word 2  "), m._GetNextNode(b))
-        self.assertEquals(NodeTag(t, [ "2" ], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeTag(t, "2", content=None), m._GetNextNode(b))
         self.assertEquals(NodeLiteral(" word 3"), m._GetNextNode(b))
-        self.assertEquals(NodeTag(_TagEnd(), [], content=None), m._GetNextNode(b))
+        self.assertEquals(NodeTag(_TagEnd(), "", content=None), m._GetNextNode(b))
         self.assertEquals(NodeLiteral("word 4   "), m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
