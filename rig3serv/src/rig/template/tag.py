@@ -8,6 +8,10 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import re
+
+_RE_FIRST_WORD = re.compile(r"\s*(\w+)\s+(.*)")
+
 #------------------------
 class Tag(object):
     """
@@ -26,6 +30,8 @@ class Tag(object):
         """
         raise NotImplementedError("TagDef is abstract")
 
+
+#------------------------
 class TagComment(Tag):
     """
     Tag that represents a comment. It has no content.
@@ -38,19 +44,23 @@ class TagComment(Tag):
     def Generate(self, tag_node, context):
         return ""
 
-class TagVariable(Tag):
+
+#------------------------
+class TagExpression(Tag):
     """
-    Tag that represents a variable expansion.
+    Tag that represents an expression expansion.
     Template syntax:
       [[python_expression]]
     """
     def __init__(self):
-        super(TagVariable, self).__init__(tag=None, has_content=False)
+        super(TagExpression, self).__init__(tag=None, has_content=False)
     
     def Generate(self, tag_node, context):
-        raise NotImplementedError("TBD")
-        return ""
+        result = eval(tag_node.parameters, dict(context))
+        return str(result)
 
+
+#------------------------
 class TagFor(Tag):
     """
     Tag that represents a for loop. It has a content.
@@ -61,14 +71,33 @@ class TagFor(Tag):
         super(TagFor, self).__init__(tag="for", has_content=True)
     
     def Generate(self, tag_node, context):
-        raise NotImplementedError("TBD")
-        return ""
+        params = tag_node.parameters
+        
+        matches = _RE_FIRST_WORD.match(params)
+        var, params = matches.group(1), matches.group(2)
+        assert var != ""
+        
+        matches = _RE_FIRST_WORD.match(params)
+        word, params = matches.group(1), matches.group(2)
+        assert word == "in"
+        assert params != ""
+        
+        result = eval("[%s for %s in %s]" % (var, var, params), dict(context))
+        s = ""
+        content - tag_node.content
+        for value in result:
+            d = dict(context)
+            d[var] = value
+            s += content.Generate(d)
+
+        return s
 
 
+#------------------------
 class TagIf(Tag):
     """
     Tag that represents a conditional if. It has a content.
-    There's no "else" yet.
+    There's no "else" or "elif" yet.
     Template syntax:
       [[if python_expression]] content [[end]]
     """
@@ -76,7 +105,9 @@ class TagIf(Tag):
         super(TagIf, self).__init__(tag="if", has_content=True)
     
     def Generate(self, tag_node, context):
-        raise NotImplementedError("TBD")
+        result = eval(tag_node.parameters, dict(context))
+        if not not result:
+            return tag_node.content.Generate(context)
         return ""
 
 #------------------------
