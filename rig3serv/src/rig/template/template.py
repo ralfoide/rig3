@@ -99,12 +99,12 @@ class Template(object):
             n = self._GetNextNode(buffer)
             if isinstance(n, _TagEnd):
                 if not end_expected:
-                    self._Throw(buffer, "[[end]] found but not closing any tag.")
+                    self._SyntaxError(buffer, "[[end]] found but not closing any tag.")
                 # end expected and found, return the list of nodes
                 return nodes
             nodes.Append(n)
         if end_expected:
-            self._Throw(buffer, "[[end]] not found. Did you forget to close a tag?")
+            self._SyntaxError(buffer, "[[end]] not found. Did you forget to close a tag?")
         return nodes
 
     def _GetNextNode(self, buffer):
@@ -122,11 +122,11 @@ class Template(object):
             else:
                 parameters = []
             if not buffer.StartsWith("]]", consume=True):
-                self._Throw(buffer, "Expected end-tag marker ]]")
+                self._SyntaxError(buffer, "Expected end-tag marker ]]")
             try:
                 tag_def = self._tags[tag]
             except KeyError:
-                self._Throw(buffer, "Unknown tag %s" % tag)
+                self._SyntaxError(buffer, "Unknown tag %s" % tag)
             content = None
             if tag_def.has_content:
                 content = self._GetNodeList(end_expected=true)
@@ -135,7 +135,7 @@ class Template(object):
             literal = buffer.SkipTo("[[")
             return NodeLiteral(literal)
 
-    def _Throw(self, buffer, msg):
+    def _SyntaxError(self, buffer, msg):
         raise SyntaxError("[%s, line %d, col %d] %s" % (buffer.filename,
                                                    buffer.lineno,
                                                    buffer.offset,

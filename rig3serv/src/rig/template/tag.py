@@ -30,14 +30,14 @@ class TagComment(Tag):
     def __init__(self):
         super(TagComment, self).__init__(tag="#", has_content=False)
     
-    def Generates(self, tag_node, context):
+    def Generate(self, tag_node, context):
         return ""
 
 class TagFor(Tag):
     def __init__(self):
         super(TagFor, self).__init__(tag="for", has_content=True)
     
-    def Generates(self, tag_node, context):
+    def Generate(self, tag_node, context):
         raise NotImplementedError("TBD")
         return ""
 
@@ -46,7 +46,7 @@ class TagIf(Tag):
     def __init__(self):
         super(TagIf, self).__init__(tag="if", has_content=True)
     
-    def Generates(self, tag_node, context):
+    def Generate(self, tag_node, context):
         raise NotImplementedError("TBD")
         return ""
 
