@@ -12,6 +12,7 @@ __author__ = "ralfoide@gmail.com"
 from tests.rig_test_case import RigTestCase
 from rig.template.buffer import Buffer
 from rig.template.tag import *
+from rig.template.node import *
 
 #------------------------
 class TagTest(RigTestCase):
@@ -30,7 +31,8 @@ class TagTest(RigTestCase):
         m = TagComment()
         self.assertEquals("#", m.tag)
         self.assertFalse(m.has_content)
-        self.assertEquals("", m.Generate(tag_node=None, context=None))
+        n = NodeTag(m, "ignored params", content=None)
+        self.assertEquals("", m.Generate(tag_node=n, context={}))
 
     def testTagExpression(self):
         m = TagExpression()

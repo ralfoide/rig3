@@ -94,8 +94,8 @@ class TemplateTest(RigTestCase):
 
         t = m._tags["tag"] = _TagTag()
         
-        b = Buffer("file", "[[tag\r\n  param1 \t\t\f\r\n param2  \f\f \r\n]]")
-        self.assertEquals(NodeTag(t, "param1 \t\t\f\r\n param2", content=None),
+        b = Buffer("file", "[[tag\r\n  param1 \t\t\r\n param2  \f\f \r\n]]", linesep="\r\n")
+        self.assertEquals(NodeTag(t,  "param1 \t\t\r\n param2", content=None),
                           m._GetNextNode(b))
 
         b = Buffer("file", "word 1 [[tag 1]]  word 2  [[ tag  2  ]] word 3[[  end  ]]word 4   ")

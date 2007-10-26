@@ -84,7 +84,7 @@ class TagFor(Tag):
         
         result = eval("[%s for %s in %s]" % (var, var, params), dict(context))
         s = ""
-        content - tag_node.content
+        content = tag_node.content
         for value in result:
             d = dict(context)
             d[var] = value
