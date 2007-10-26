@@ -44,7 +44,7 @@ class Template(object):
         self._tags = { "end":  _TagEnd() }
         for tag_def in ALL_TAGS:
             tag = tag_def()
-            self._tags[tag.tag] = tag
+            self._tags[tag.Tag()] = tag
 
     def __InitFileSource(self, file, source):
         _file = file
@@ -121,7 +121,7 @@ class Template(object):
             except KeyError:
                 tag_def = TagExpression()
             content = None
-            if tag_def.has_content:
+            if tag_def.HasContent():
                 content = self._GetNodeList(end_expected=true)
             return NodeTag(tag_def, parameters, content)
         else:

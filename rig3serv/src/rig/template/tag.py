@@ -20,8 +20,14 @@ class Tag(object):
                              an end-tag marker.
     """
     def __init__(self, tag, has_content):
-        self.tag = tag
-        self.has_content = has_content
+        self._tag = tag
+        self._has_content = has_content
+
+    def Tag(self):
+        return self._tag
+    
+    def HasContent(self):
+        return self._has_content
 
     def Generate(self, tag_node, context):
         """
@@ -56,7 +62,7 @@ class TagExpression(Tag):
         super(TagExpression, self).__init__(tag=None, has_content=False)
     
     def Generate(self, tag_node, context):
-        result = eval(tag_node.parameters, dict(context))
+        result = eval(tag_node.Parameters(), dict(context))
         return str(result)
 
 
@@ -71,7 +77,7 @@ class TagFor(Tag):
         super(TagFor, self).__init__(tag="for", has_content=True)
     
     def Generate(self, tag_node, context):
-        params = tag_node.parameters
+        params = tag_node.Parameters()
         
         matches = _RE_FIRST_WORD.match(params)
         var, params = matches.group(1), matches.group(2)
@@ -84,9 +90,9 @@ class TagFor(Tag):
         
         result = eval("[%s for %s in %s]" % (var, var, params), dict(context))
         s = ""
-        content = tag_node.content
+        content = tag_node.Content()
         for value in result:
-            d = dict(context)
+            d = dict(context)  # clone context before udpating it
             d[var] = value
             s += content.Generate(d)
 
@@ -105,9 +111,9 @@ class TagIf(Tag):
         super(TagIf, self).__init__(tag="if", has_content=True)
     
     def Generate(self, tag_node, context):
-        result = eval(tag_node.parameters, dict(context))
+        result = eval(tag_node.Parameters(), dict(context))
         if not not result:
-            return tag_node.content.Generate(context)
+            return tag_node.Content().Generate(context)
         return ""
 
 #------------------------
