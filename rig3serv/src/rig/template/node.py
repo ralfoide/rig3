@@ -36,8 +36,8 @@ class NodeList(Node):
     The object can be created with an empty list and nodes can be appended
     later. The list can be empty but should not be None.
     """
-    def __init__(self, _list=[]):
-        self._list = _list
+    def __init__(self, _list=None):
+        self._list = _list or []
 
     def Append(self, node):
         """

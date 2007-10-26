@@ -57,7 +57,8 @@ class TagTest(RigTestCase):
         self.assertEquals("if", m.Tag())
         self.assertTrue(m.HasContent())
 
-        n = NodeTag(m, "a==1", content=NodeList().Append(NodeLiteral("some content")))
+        n = NodeList([ NodeLiteral("some content") ])
+        n = NodeTag(m, "a==1", content=n)
         self.assertEquals("", m.Generate(n, { "a": 42 }))
         self.assertEquals("some content", m.Generate(n, { "a": 1 }))
     
@@ -65,6 +66,17 @@ class TagTest(RigTestCase):
         m = TagFor()
         self.assertEquals("for", m.Tag())
         self.assertTrue(m.HasContent())
+
+        n = NodeList([ NodeLiteral("some content") ])
+        n = NodeTag(m, "v in a", content=n)
+        self.assertEquals("some contentsome contentsome content",
+                          m.Generate(n, { "a": [ 42, 43, 44 ] }))
+
+        n = NodeList([ NodeLiteral("value is "),
+                       NodeTag(TagExpression(), "'%03d ' % v", content=None) ])
+        n = NodeTag(m, "v in a", content=n)
+        self.assertEquals("value is 042 value is 043 value is 044 ",
+                          m.Generate(n, { "a": [ 42, 43, 44 ] }))
 
 #------------------------
 # Local Variables:
