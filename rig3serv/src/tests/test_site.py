@@ -84,13 +84,13 @@ class SiteTest(RigTestCase):
         # the templates dir should contain at least the "default" sub-dir
         # with at least the entry.xml and index.xml files
         self.assertTrue(os.path.exists(os.path.join(td, "default")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "index.xml")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.xml")))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", "index.html")))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.html")))
 
     def test_FillTemplate(self):
         theme = DEFAULT_THEME
         m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
-        html = m._FillTemplate(theme, "index.xml", title="MyTitle", entries=["entry1", "entry2"])
+        html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlMatches(r"""<!DOCTYPE [^>]+><html>.*<head>.*<meta.*>.*
                                    <title>MyTitle</title>.*

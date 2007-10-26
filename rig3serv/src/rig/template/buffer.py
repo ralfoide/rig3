@@ -29,9 +29,13 @@ class Buffer(object):
         self.data = data
         self.offset = offset
         self.lineno = 1
+        self.lineoffset = 0
         self.linesep = linesep
         if offset == 0 and linesep:
             self.ConvertLineSep()
+
+    def CurrCol(self):
+        return self.offset - self.lineoffset + 1
 
     def ConvertLineSep(self, linesep=None):
         """
@@ -131,7 +135,13 @@ class Buffer(object):
             self.offset = found
         result = self.data[offset:self.offset]
         if self.linesep:
-            self.lineno += result.count(self.linesep)
+            n = result.count(self.linesep)
+            if n > 0:
+                self.lineno += n
+                self.lineoffset = (self.data.rfind(self.linesep,
+                                                   offset,
+                                                   self.offset)
+                                   + len(self.linesep))
         return result
 
     def NextWord(self):
@@ -168,6 +178,7 @@ class Buffer(object):
                 if not s:
                     offset += len_sep
                     self.lineno += 1
+                    self.lineoffset = offset
                     continue
                 else:
                     break

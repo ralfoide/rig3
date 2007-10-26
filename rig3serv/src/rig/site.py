@@ -11,11 +11,11 @@ __author__ = "ralfoide@gmail.com"
 import re
 import os
 import sys
-import kid
 import zlib
 
 from rig.parser.dir import DirParser
 from rig.parser.izu import IzuParser
+from rig.template.template import Template
 
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"
@@ -33,7 +33,7 @@ class Site(object):
         self._source_dir = source_dir
         self._dest_dir = dest_dir
         self._theme = theme
-    
+
     def Process(self):
         """
         Processes the site. Do whatever is needed to get the job done.
@@ -188,8 +188,8 @@ class Site(object):
         Returns the generated HTML as a string.
         """
         template_file = os.path.join(self._TemplateDir(), theme, template)
-        template = kid.Template(file=template_file, **keywords)
-        result = template.serialize(output="html")
+        template = Template(self._log, file=template_file)
+        result = template.Generate(keywords)
         return result
 
     def _TemplateDir(self):

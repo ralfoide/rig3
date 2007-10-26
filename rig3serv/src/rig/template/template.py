@@ -36,9 +36,23 @@ class Template(object):
     """
     def __init__(self, log, file=None, source=None):
         self._log = log
-        self._filters = { }
+        self._nodes = None
+        self._filters = {}
         self.__InitTags()
         self.__InitFileSource(file, source)
+
+    def Generate(self, keywords):
+        """
+        Generate the template using the parsed content and the given
+        keywords, which is a dictionaries of variables to be used by the
+        template.
+        """
+        if self._nodes:
+            return self._nodes.Generate(keywords)
+        else:
+            return ""
+
+    # ----
 
     def __InitTags(self):
         self._tags = { "end":  _TagEnd() }
@@ -79,9 +93,10 @@ class Template(object):
         Parses a source string for the given filename.
         """
         buffer = Buffer(os.path.basename(filename), source, 0)
-        return self._GetNodeList(end_expected=false)
+        self._nodes = self._GetNodeList(buffer, end_expected=False)
+        return self
     
-    def _GetNodeList(self, end_expected):
+    def _GetNodeList(self, buffer, end_expected):
         """
         Parses the buffer for a node list.
         
@@ -93,8 +108,9 @@ class Template(object):
         expects NOT to find such an end-tag marker. It will raise a
         SyntaxError if such a marker is found.
         """
+        start_line = buffer.lineno
+        start_col = buffer.CurrCol()
         nodes = NodeList()
-        self._nodes = nodes
         while not buffer.EndReached():
             n = self._GetNextNode(buffer)
             if isinstance(n, _TagEnd):
@@ -104,7 +120,11 @@ class Template(object):
                 return nodes
             nodes.Append(n)
         if end_expected:
-            self._SyntaxError(buffer, "[[end]] not found. Did you forget to close a tag?")
+            self._SyntaxError(
+                buffer,
+                "[[end]] not found. " +
+                "Opening tag found at line %d, col %d. " % (start_line, start_col) +
+                "Did you forget to close a tag?")
         return nodes
 
     def _GetNextNode(self, buffer):
@@ -122,7 +142,7 @@ class Template(object):
                 tag_def = TagExpression()
             content = None
             if tag_def.HasContent():
-                content = self._GetNodeList(end_expected=true)
+                content = self._GetNodeList(buffer, end_expected=True)
             return NodeTag(tag_def, parameters, content)
         else:
             literal = buffer.SkipTo("[[")
@@ -130,9 +150,9 @@ class Template(object):
 
     def _SyntaxError(self, buffer, msg):
         raise SyntaxError("[%s, line %d, col %d] %s" % (buffer.filename,
-                                                   buffer.lineno,
-                                                   buffer.offset,
-                                                   msg))
+                            buffer.lineno,
+                            buffer.CurrCol(),
+                            msg))
 
             #if parameters:
             #    # strip whitespace and uniformize it, then split by space
