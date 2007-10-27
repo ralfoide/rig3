@@ -99,7 +99,7 @@ class NodeTag(Node):
     - content (NodeList): None if this tag does not accept content, otherwise
       must an instance of NodeList (even if it contains only one node inside.)
     """
-    def __init__(self, tag, parameters=[], content=None):
+    def __init__(self, tag, parameters="", content=None):
         self._tag = tag
         self._parameters = parameters
         self._content = content

@@ -113,7 +113,7 @@ class Template(object):
         nodes = NodeList()
         while not buffer.EndReached():
             n = self._GetNextNode(buffer)
-            if isinstance(n, _TagEnd):
+            if isinstance(n, NodeTag) and isinstance(n.Tag(), _TagEnd):
                 if not end_expected:
                     self._SyntaxError(buffer, "[[end]] found but not closing any tag.")
                 # end expected and found, return the list of nodes
@@ -132,14 +132,18 @@ class Template(object):
         Returns the next node in the buffer.
         """
         if buffer.StartsWith("[[", consume=True):
-            tag = buffer.NextWord().lower()
-            parameters = buffer.SkipTo("]]").strip(_WS + _EOL)
+            keyword = buffer.NextWord().lower()
+            parameters = buffer.SkipTo("]]")
             if not buffer.StartsWith("]]", consume=True):
                 self._SyntaxError(buffer, "Expected end-tag marker ]]")
             try:
-                tag_def = self._tags[tag]
+                tag_def = self._tags[keyword]
+                parameters = parameters.strip(_WS + _EOL)
             except KeyError:
                 tag_def = TagExpression()
+                # for an expression, the first word was part of the expression
+                # and in this case we strip nothing parameters
+                parameters = keyword + parameters
             content = None
             if tag_def.HasContent():
                 content = self._GetNodeList(buffer, end_expected=True)
@@ -153,12 +157,6 @@ class Template(object):
                             buffer.lineno,
                             buffer.CurrCol(),
                             msg))
-
-            #if parameters:
-            #    # strip whitespace and uniformize it, then split by space
-            #    parameters = parameters.strip(_WS + _EOL)
-            #    parameters = re.sub("[%s]+" % (_WS + _EOL), " ", parameters)
-            #    parameters = parameters.split(" ")
 
 #------------------------
 # Local Variables:

@@ -92,8 +92,9 @@ class TemplateTest(RigTestCase):
         b = Buffer("file", "[[tag")
         self.assertRaises(SyntaxError, m._GetNextNode, b)
 
-        t = m._tags["tag"] = _TagTag()
-        
+    def testGetNextNode_Tags(self):
+        m = MockParse(self.Log(), source="")
+        t = m._tags["tag"] = _TagTag()        
         b = Buffer("file", "[[tag\r\n  param1 \t\t\r\n param2  \f\f \r\n]]", linesep="\r\n")
         self.assertEquals(NodeTag(t,  "param1 \t\t\r\n param2", content=None),
                           m._GetNextNode(b))
@@ -106,6 +107,30 @@ class TemplateTest(RigTestCase):
         self.assertEquals(NodeLiteral(" word 3"), m._GetNextNode(b))
         self.assertEquals(NodeTag(_TagEnd(), "", content=None), m._GetNextNode(b))
         self.assertEquals(NodeLiteral("word 4   "), m._GetNextNode(b))
+        self.assertTrue(b.EndReached())
+
+    def testGetNextNode_Expression(self):
+        m = MockParse(self.Log(), source="")
+        b = Buffer("file", "[[expr]]")
+        self.assertEquals(NodeTag(TagExpression(), parameters="expr", content=None),
+                          m._GetNextNode(b))
+        self.assertTrue(b.EndReached())
+
+        # When parsing an expression, we preserve *all* whitespace after the
+        # beginning of the expression
+        b = Buffer("file", "[[  a+2  ]]")
+        self.assertEquals(NodeTag(TagExpression(), parameters="a+2  ", content=None),
+                          m._GetNextNode(b))
+        self.assertTrue(b.EndReached())
+
+        b = Buffer("file", "[[  a + 2  ]]")
+        self.assertEquals(NodeTag(TagExpression(), parameters="a + 2  ", content=None),
+                          m._GetNextNode(b))
+        self.assertTrue(b.EndReached())
+
+        b = Buffer("file", "[['  a' + '2  ']]")
+        self.assertEquals(NodeTag(TagExpression(), parameters="'  a' + '2  '", content=None),
+                          m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
 

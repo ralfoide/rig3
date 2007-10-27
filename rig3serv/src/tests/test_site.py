@@ -92,25 +92,31 @@ class SiteTest(RigTestCase):
         m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
         html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
-        self.assertHtmlMatches(r"""<!DOCTYPE [^>]+><html>.*<head>.*<meta.*>.*
-                                   <title>MyTitle</title>.*
-                                   </head>.*<body>.*
-                                   <div>entry1</div>.*
-                                   <div>entry2</div>.*
-                                   </body>.*</html>""",
-                                html)
-        
+        self.assertHtmlEquals(
+            r"""<head>
+                <title>MyTitle</title>
+                </head>
+                <body>
+                entry1
+                entry2
+                </body>
+                </html>""",
+            html)
+
         keywords = { "title": "MyTitle",
                      "text": "Main <b>Text Content</b> as HTML",
                      "image": "<a href='page_url'><img href='image_url'/></a>" }
-        html = m._FillTemplate(theme, "entry.xml", **keywords)
+        html = m._FillTemplate(theme, "entry.html", **keywords)
         self.assertIsInstance(str, html)
-        #self.assertHtmlMatches(r"""<div CLASS="entry">.*
-        #                           <h2>%(title)s<h2>.*""",
-        #     #r"<H2>\s*%(text<BODY>.*"
-        #     #r"<DIV>\s*entry1\s*</DIV>.*"
-        #     #r"</DIV>" % keywords),
-        #                      html)
+        self.assertHtmlEquals(
+            r"""<div class="entry">
+                <h2>MyTitle</h2>
+                Main <b>Text Content</b> as HTML
+                <br/>
+                <a href='page_url'><img href='image_url'/></a>
+                </div>
+                """,
+            html)
 
 
 #------------------------
