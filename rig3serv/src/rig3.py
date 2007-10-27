@@ -21,6 +21,7 @@ Rig3 [-h] [-v]
 
 Options:
     -h, --help:    This help
+    -n, --dry-run: Dry-run, do nothing, print what would be done
     -v, --verbose: Verbose logging (default: %(_verbose)s)
     -c, --config:  Configuration file (default: %(_configPaths)s) 
 """
@@ -29,6 +30,7 @@ Options:
         self._log = None
         self._sites_settings = None
         self._verbose = False
+        self._dry_run = False
         self._configPaths = [ "/etc/rig3.rc",
                               os.path.expanduser(os.path.join("~", ".rig3rc")) ]
 
@@ -47,8 +49,9 @@ Options:
         """
         try:
             options, args = getopt.getopt(argv[1:],
-                                          "hHvc:",
-                                          ["help", "verbose", "config="])
+                                          "hHvc:n",
+                                          ["help", "verbose", "config=",
+                                           "dry-run", "dry_run", "dryrun"])
             for opt, value in options:
                 if opt in ["-h",  "-H", "--help"]:
                     self._UsageAndExit()
@@ -56,6 +59,8 @@ Options:
                     self._verbose = True
                 elif opt in ["-c", "--config"]:
                     self._configPaths = [ value ]
+                elif opt in ["-n", "--dry-run", "--dry_run", "--dryrun"]:
+                    self._dry_run = True
         except getopt.error, msg:
             self._UsageAndExit(msg)
 
@@ -71,6 +76,7 @@ Options:
         s = self._sites_settings
         for site_id in s.Sites():
             site = Site(self._log,
+                        self._dry_run,
                         s.PublicName(site_id),
                         s.SourceDir(site_id),
                         s.DestDir(site_id),

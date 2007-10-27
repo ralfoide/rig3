@@ -23,9 +23,9 @@ class MockSite(Site):
     Behaves like a Site() but overrides the base template directory location
     to use testdata/templates instead.
     """
-    def __init__(self, test_case, log, public_name, source_dir, dest_dir, theme):
+    def __init__(self, test_case, log, dry_run, public_name, source_dir, dest_dir, theme):
         self._test_case = test_case
-        super(MockSite, self).__init__(log, public_name, source_dir, dest_dir, theme)
+        super(MockSite, self).__init__(log, dry_run, public_name, source_dir, dest_dir, theme)
 
     def _TemplateDir(self):
         """"
@@ -46,7 +46,8 @@ class SiteTest(RigTestCase):
         """
         Test init of Site
         """
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
+                 self._tempdir, DEFAULT_THEME)
         self.assertNotEqual(None, m)
         self.assertEquals("Site Name", m._public_name)
         self.assertEquals("/tmp/source/data", m._source_dir)
@@ -61,14 +62,14 @@ class SiteTest(RigTestCase):
         self.assertSearch(rig.site._VALID_FILES, "T12896_tiny_jpeg.jpg")
 
     def testAlbum(self):
-        m = Site(self.Log(), "Test Album",
+        m = Site(self.Log(), False, "Test Album",
                  os.path.join(self.getTestDataPath(), "album"),
                  self._tempdir,
                  theme=DEFAULT_THEME)
         m.Process()
     
     def testParse(self):
-        m = Site(self.Log(), "Test Album",
+        m = Site(self.Log(), False, "Test Album",
                  os.path.join(self.getTestDataPath(), "album"),
                  self._tempdir,
                  theme=DEFAULT_THEME)
@@ -82,7 +83,8 @@ class SiteTest(RigTestCase):
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
 
     def test_SimpleFileName(self):
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
+                 self._tempdir, DEFAULT_THEME)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("ab_12_txt", m._SimpleFileName("ab!@#$12%^&@&*()\\_+/.<>,txt"))
@@ -92,7 +94,8 @@ class SiteTest(RigTestCase):
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
     def test_TemplateDir(self):
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
+                 self._tempdir, DEFAULT_THEME)
         td = m._TemplateDir()
         self.assertNotEquals("", td)
         self.assertTrue(os.path.exists(td))
@@ -105,7 +108,8 @@ class SiteTest(RigTestCase):
 
     def test_FillTemplate(self):
         theme = DEFAULT_THEME
-        m = MockSite(self, self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
+        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
+                     self._tempdir, theme)
         html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(

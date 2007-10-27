@@ -42,24 +42,40 @@ class Rig3Test(RigTestCase):
         """
         self.assertNotEqual(None, self.m)
 
-    def testParseArgs(self):
+    def testParseArgs_None(self):
         """
         Tests parsing args
         """
         self.assertFalse(self.m._usageAndExitCalled)
         self.assertFalse(self.m._verbose)
+        self.assertFalse(self.m._dry_run)
         self.m.ParseArgs([ "blah" ])
         self.assertFalse(self.m._usageAndExitCalled)
         self.assertFalse(self.m._verbose)
+        self.assertFalse(self.m._dry_run)
 
+    def testParseArgs_V(self):
+        self.assertFalse(self.m._verbose)
         self.m.ParseArgs([ "blah", "-v" ])
         self.assertFalse(self.m._usageAndExitCalled)
         self.assertTrue (self.m._verbose)
 
+    def testParseArgs_H(self):
+        self.assertFalse(self.m._verbose)
+        self.assertFalse(self.m._usageAndExitCalled)
         self.m.ParseArgs([ "blah", "-h" ])
         self.assertTrue(self.m._usageAndExitCalled)
-        self.assertTrue(self.m._verbose)
+        self.assertFalse(self.m._verbose)
+
+    def testParseArgs_N(self):
+        self.assertFalse(self.m._dry_run)
+        self.assertFalse(self.m._verbose)
+        self.m.ParseArgs([ "blah", "-n" ])
+        self.assertFalse(self.m._usageAndExitCalled)
+        self.assertFalse(self.m._verbose)
+        self.assertTrue(self.m._dry_run)
         
+    def testParseArgs_C(self):
         self.assertNotEqual([ "/foo.rc" ], self.m._configPaths)
         self.m.ParseArgs([ "blah", "-c", "/foo.rc" ])
         self.assertListEquals([ "/foo.rc" ], self.m._configPaths)

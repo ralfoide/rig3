@@ -27,8 +27,9 @@ class Site(object):
     """
     Describes on site and what we can do with it.
     """
-    def __init__(self, log, public_name, source_dir, dest_dir, theme):
+    def __init__(self, log, dry_run, public_name, source_dir, dest_dir, theme):
         self._log = log
+        self._dry_run = dry_run
         self._public_name = public_name
         self._source_dir = source_dir
         self._dest_dir = dest_dir
@@ -38,7 +39,7 @@ class Site(object):
         """
         Processes the site. Do whatever is needed to get the job done.
         """
-        self._log.Info("Processing site %s.\nSource: %s\nDest: %s\nTheme: %s",
+        self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
         tree = self.Parse(self._source_dir, self._dest_dir)
         categories, items = self.GenerateItems(tree)
@@ -72,8 +73,8 @@ class Site(object):
         categories = []
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Info("Process %s => %s", source_dir, 
-                           dest_dir)
+            self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
+                           source_dir, dest_dir)
             if self.UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
                 cats, items = self.GenerateEntry(source_dir, dest_dir, all_files)
@@ -83,6 +84,8 @@ class Site(object):
                 for i in items:
                     if not i in items:
                         items.append(i)
+        self._log.Info("[%s] Found %d items, %d categories", self._public_name,
+                       len(items), len(categories))
         return categories, items
 
     def UpdateNeeded(self, source_dir, dest_dir, all_files):
@@ -99,10 +102,14 @@ class Site(object):
         try:
             dest_ts = self._DirTimeStamp(dest_dir)
         except OSError:
+            self._log.Info("[%s] Dest '%s' does not exist", self._public_name,
+                           dest_dir)
             return True
         try:
             source_ts = self._DirTimeStamp(source_dir)
         except OSError:
+            self._log.Warn("[%s] Source '%s' does not exist", self._public_name,
+                           source_dir)
             return False
         return source_ts > dest_ts
 
@@ -116,14 +123,16 @@ class Site(object):
         title = os.path.basename(source_dir)
         if INDEX_IZU in all_files:
             parser = IzuParser(self._log)
-            html, tags, cats, images = parser.RenderFileToHtml(os.path.join(source_dir, INDEX_IZU))
-            
-            #content = self._FillTemplate(self._theme, "entry.xml",
-            #                             title=title,
-            #                             text=html,
-            #                             image="")
-            #dest = self._WriteFile(content, dest_dir, _INDEX)
-            #entries.append(dest)
+            izu_file= os.path.join(source_dir, INDEX_IZU)
+            self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
+                           izu_file)
+            html, tags, cats, images = parser.RenderFileToHtml(izu_file)
+            content = self._FillTemplate(self._theme, "entry.html",
+                                         title=title,
+                                         text=html,
+                                         image="")
+            dest = self._WriteFile(content, dest_dir, INDEX_IZU)
+            entries.append(dest)
         return cats, entries
 
     # Utilities, overridable for unit tests
@@ -158,6 +167,12 @@ class Site(object):
         This method is extracted so that it can be mocked in unit tests.
         """
         leafname = self._SimpleFileName(leafname)
+        dest_file = os.path.join(dest_dir, leafname)
+        self._log.Info("[%s] Write %s", self._public_name,
+                       dest_file)
+        if not self._dry_run:
+            pass
+        return dest_file
 
     def _SimpleFileName(self, leafname, maxlen=20):
         """

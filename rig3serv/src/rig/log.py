@@ -69,7 +69,7 @@ class Log(object):
                  file=_FILENAME,
                  verbose=False,
                  use_stderr=True,
-                 format="%(levelname)s %(filename)s:%(lineno)s [%(asctime)s] %(message)s",
+                 format="%(levelname)s %(filename)s:%(lineno)3s [%(asctime)s] %(message)s",
                  date="%Y/%m/%d %H:%M:%S"):
         """
         Configures (or reconfigures) the logger with this information.
