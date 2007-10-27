@@ -18,6 +18,22 @@ from rig.site import DEFAULT_THEME
 from rig.parser.dir import DirParser
 
 #------------------------
+class MockSite(Site):
+    """
+    Behaves like a Site() but overrides the base template directory location
+    to use testdata/templates instead.
+    """
+    def __init__(self, test_case, log, public_name, source_dir, dest_dir, theme):
+        self._test_case = test_case
+        super(MockSite, self).__init__(log, public_name, source_dir, dest_dir, theme)
+
+    def _TemplateDir(self):
+        """"
+        Uses testdata/templates/ instead of templates/
+        """
+        return os.path.join(self._test_case.getTestDataPath(), "templates")
+
+#------------------------
 class SiteTest(RigTestCase):
 
     def setUp(self):
@@ -89,7 +105,7 @@ class SiteTest(RigTestCase):
 
     def test_FillTemplate(self):
         theme = DEFAULT_THEME
-        m = Site(self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
+        m = MockSite(self, self.Log(), "Site Name", "/tmp/source/data", self._tempdir, theme)
         html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
