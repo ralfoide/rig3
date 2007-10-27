@@ -7,9 +7,11 @@
 20071006 [1] Engine: Generate items, complete, UT
 20071006 [1] Engine: Generate index page, UT
 20071006 [1] Engine: Generate categories pages, UT
+20071026 [2] Engine: Template filters (raw, html, url), default html, UT
 
 ---- Done Version 0.1 ----
 
+20071026 [1] Engine: Implemented basic templating system, first iteration
 20071020 [1] Engine: Define templating system, start impl.
 20071015 [1] Tests: Need to tests rig_test_case 
 20071014 [1] Tests: Testing Kid template system
