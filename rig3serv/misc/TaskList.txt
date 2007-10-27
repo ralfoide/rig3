@@ -11,7 +11,12 @@
 
 ---- Done Version 0.1 ----
 
-20071026 [1] Engine: Implemented basic templating system, first iteration
+20071026 [1] Engine: Finished basic templating system, first iteration
+20071025 [1] Engine: Template generation, fixes, UTs
+20071024 [1] Engine: Template Nodes and Tags implementation, fixes, UTs
+20071023 [1] Engine: Extracted Buffer and Node from Template, added Tag, UTs
+20071022 [1] Engine: Template buffer line separation handling, UTs
+20071021 [1] Engine: Template class+ buffer, UTs
 20071020 [1] Engine: Define templating system, start impl.
 20071015 [1] Tests: Need to tests rig_test_case 
 20071014 [1] Tests: Testing Kid template system
