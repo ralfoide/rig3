@@ -56,7 +56,7 @@ class RigTestCase(unittest.TestCase):
             # Fix the format so that it be independant of the date, line number and
             # of the default formatting in the default configuration.
             self.__log = Log(file=self._str,
-                             verbose=self.IsVerbose(),
+                             verbose_level=self.IsVerbose() and Log.LEVEL_VERY_VERBOSE or Log.LEVEL_NORMAL,
                              use_stderr=self.IsVerbose(),
                              format="%(levelname)s %(filename)s [%(asctime)s] %(message)s",
                              date="%H:%M:%S")

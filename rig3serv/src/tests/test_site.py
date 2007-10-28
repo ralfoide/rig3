@@ -9,6 +9,7 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import os
+from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
 
@@ -138,6 +139,26 @@ class SiteTest(RigTestCase):
                 """,
             html)
 
+    def testDateFromTitle(self):
+        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
+                 self._tempdir, DEFAULT_THEME)
+
+        self.assertEquals(None, m._DateFromTitle("27"))
+        self.assertEquals(None, m._DateFromTitle("2007"))
+        self.assertEquals(None, m._DateFromTitle("2007-1"))
+        self.assertEquals(None, m._DateFromTitle("2007-10"))
+        self.assertEquals(None, m._DateFromTitle("2007-10-2"))
+        self.assertEquals(None, m._DateFromTitle("2007102"))
+        
+        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("20071027"))
+        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007-10-27"))
+        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007/10/27"))
+        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007-10/27"))
+        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("20071027121314"))
+        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10-27-12-13-14"))
+        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10-27 12-13-14"))
+        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007/10/27 12:13:14"))
+        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10/27,12/13/14"))
 
 #------------------------
 # Local Variables:

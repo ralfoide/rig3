@@ -17,7 +17,7 @@ _NAME = "rig"
 _FILENAME = "default.log"
 
 _SKIP_PATH_RE = re.compile(r"(?:logging[/\\]__init__\.py|rig[/\\]log\.py)$")
-
+        
 #------------
 class _LogFormatter(logging.Formatter):
   """
@@ -63,11 +63,14 @@ class Log(object):
     """
     A simple wrapper around Python's logging facility.
     """
+    LEVEL_VERY_VERBOSE = logging.DEBUG
+    LEVEL_NORMAL = logging.INFO
+    LEVEL_MOSLTY_SILENT = logging.WARNING
 
     def __init__(self,
                  name=_NAME,
                  file=_FILENAME,
-                 verbose=False,
+                 verbose_level=LEVEL_NORMAL,
                  use_stderr=True,
                  format="%(levelname)s %(filename)s:%(lineno)3s [%(asctime)s] %(message)s",
                  date="%Y/%m/%d %H:%M:%S"):
@@ -89,13 +92,12 @@ class Log(object):
         most notably the file argument.
         """
         self._logger = logger = logging.getLogger(name)
-        self.is_verbose = verbose
     
         for handler in logger.handlers:
             logger.removeHandler(handler)
     
         if isinstance(file, str):
-            h = logging.FileHandler(file)
+            h = logging.FileHandler(file, mode="w")
         else:
             h = logging.StreamHandler(file)
         logger.addHandler(h)
@@ -106,7 +108,7 @@ class Log(object):
             logger.addHandler(h)
             h.setFormatter(_LogFormatter(format, date))
 
-        logger.setLevel(self.is_verbose and logging.DEBUG or logging.WARNING)
+        self.SetLevel(verbose_level)
 
         # Log ourselves
         self.Info("Logging enabled: %s", str(file))
@@ -119,21 +121,20 @@ class Log(object):
             logging.shutdown()
             self._logger = None
 
-    def SetVerbose(self, verbose):
+    def SetLevel(self, level):
         """
-        Set the logger to verbose (debug level) or normal (warning level).
+        Set the logger's verbosity level, one of:
+        LEVEL_VERY_VERBOSE, LEVEL_NORMAL, LEVEL_MOSLTY_SILENT
         """
-        self.is_verbose = verbose
-    
         assert(self._logger)
-        self._logger.setLevel(verbose and logging.DEBUG or logging.WARNING)
+        self._logger.setLevel(level)
 
     def IsVerbose(self):
         """
         Indicates if the logger is in verbose mode (debug-level) or
-        normal mode (warning-level).
+        normal mode (info/warning-level).
         """
-        return self.is_verbose
+        return self._logger.level < LEVEL_NORMAL
 
     def Debug(self, msg, *args):
         """

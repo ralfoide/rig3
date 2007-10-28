@@ -22,14 +22,15 @@ Rig3 [-h] [-v]
 Options:
     -h, --help:    This help
     -n, --dry-run: Dry-run, do nothing, print what would be done
-    -v, --verbose: Verbose logging (default: %(_verbose)s)
+    -v, --verbose: Verbose logging
+    -q, --quiet:   Quiet logging
     -c, --config:  Configuration file (default: %(_configPaths)s) 
 """
     
     def __init__(self):
         self._log = None
         self._sites_settings = None
-        self._verbose = False
+        self._verbose = Log.LEVEL_NORMAL
         self._dry_run = False
         self._configPaths = [ "/etc/rig3.rc",
                               os.path.expanduser(os.path.join("~", ".rig3rc")) ]
@@ -49,14 +50,16 @@ Options:
         """
         try:
             options, args = getopt.getopt(argv[1:],
-                                          "hHvc:n",
-                                          ["help", "verbose", "config=",
+                                          "hHvqc:n",
+                                          ["help", "verbose", "quiet", "config=",
                                            "dry-run", "dry_run", "dryrun"])
             for opt, value in options:
                 if opt in ["-h",  "-H", "--help"]:
                     self._UsageAndExit()
                 elif opt in ["-v", "--verbose"]:
-                    self._verbose = True
+                    self._verbose = Log.LEVEL_VERY_VERBOSE
+                elif opt in ["-q", "--quiet"]:
+                    self._verbose = Log.LEVEL_MOSLTY_SILENT
                 elif opt in ["-c", "--config"]:
                     self._configPaths = [ value ]
                 elif opt in ["-n", "--dry-run", "--dry_run", "--dryrun"]:
@@ -68,7 +71,7 @@ Options:
         """
         Runs rig3.
         """
-        self._log = Log(verbose=self._verbose, use_stderr=self._verbose)
+        self._log = Log(verbose_level=self._verbose, use_stderr=self._verbose)
         self._sites_settings = SitesSettings(self._log).Load(self._configPaths)
         self.ProcessSites()
 

@@ -2,6 +2,10 @@
 Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
+- prev_url: None or string url
+- next_url: None or string url
+- curr_page: int, Current page number
+- max_page: int, Max page number
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.
@@ -12,12 +16,20 @@ TODO:
 Relevant links:
 - shtml: http://httpd.apache.org/docs/1.3/howto/ssi.html
 ]]
+<html>
 <head>
   <title>[[title]]</title>
 </head>
 <body>
 [[for entry in entries]]
   [[entry]]
+  <hr width="80%"/>
 [[end]]
+<hr width="80%"/>
+[[if prev_url]]<a href="[[prev_url]]">Prev</a>[[end]]
+&nbsp;||&nbsp;
+[[if next_url]]<a href="[[next_url]]">Next</a>[[end]]
+<br/>
+Page [[curr_page]] / [[max_page]]
 </body>
 </html>

@@ -12,6 +12,7 @@ import re
 import os
 import sys
 import zlib
+from datetime import datetime
 
 from rig.parser.dir import DirParser
 from rig.parser.izu import IzuParser
@@ -19,8 +20,28 @@ from rig.template.template import Template
 
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"
-_DIR_PATTERN = re.compile(r"^(?P<year>\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
+_DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g)$")
+_DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
+                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/-]?(?P<min>\d{2})(?:[:/-]?(?P<sec>\d{2}))?)?")
+_ITEMS_PER_PAGE = 20 # TODO make a site.rc pref
+
+#------------------------
+class _Item(object):
+    """
+    Represents an item:
+    - list of categories (list of string)
+    - date (datetime)
+    - abs_filename: full absolute filename of the generated file
+    """
+    def __init__(self, date, abs_filename, categories=None):
+        self.date = date
+        self.categories = categories or []
+        self.abs_filename = abs_filename
+
+    def SetContent(self, content):
+        self.content = content
+        return self
 
 #------------------------
 class Site(object):
@@ -43,7 +64,7 @@ class Site(object):
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
         tree = self.Parse(self._source_dir, self._dest_dir)
         categories, items = self.GenerateItems(tree)
-        # TODO: self.GeneratePages(categories, items)
+        self.GeneratePages(categories, items)
         # TODO: self.DeleteOldGeneratedItems()
 
     def Parse(self, source_dir, dest_dir):
@@ -68,7 +89,7 @@ class Site(object):
         An item in a RIG site is a directory that contains either an
         index.izu and/or JPEG images.
         
-        Returns a tuple (list: categories, list: items).
+        Returns a tuple (list: categories, list: _Item).
         """
         categories = []
         items = []
@@ -77,16 +98,58 @@ class Site(object):
                            source_dir, dest_dir)
             if self.UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
-                cats, items = self.GenerateEntry(source_dir, dest_dir, all_files)
-                for c in cats:
+                item = self.GenerateItem(source_dir, dest_dir, all_files)
+                if item is None:
+                    continue
+                for c in item.categories:
                     if not c in categories:
                         categories.append(c)
-                for i in items:
-                    if not i in items:
-                        items.append(i)
+                items.append(item)
         self._log.Info("[%s] Found %d items, %d categories", self._public_name,
                        len(items), len(categories))
         return categories, items
+
+    def GeneratePages(self, categories, items):
+        """
+        - categories: list of categories accumulated from each entry
+        - items: list of _Item
+        """
+        categories.sort()
+        items.sort(lambda x, y: cmp(x.date, y.date))
+
+        self.GeneratePageAll(categories, items)
+        # TODO: self.GeneratePageCategory(category, items)
+        # TODO: self.GeneratePageMonth(month, items)
+
+    def GeneratePageAll(self, categories, items):
+        """
+        Generates pages will all items, from most recent to least recent.
+
+        - categories: list of categories accumulated from each entry
+        - items: list of _Item
+        """
+        prev_url = None
+        next_url = None
+        n = len(items)
+        np = n / _ITEMS_PER_PAGE
+        i = 0
+        for p in xrange(0, np + 1):
+            url = "index%s.html" % (p > 0 and p or "")
+            if p < np:
+                next_url = "index%s.html" % (p + 1)
+            else:
+                next_url = None
+            entries = [j.content for j in items[i:i + _ITEMS_PER_PAGE] ]
+            i += _ITEMS_PER_PAGE
+            content = self._FillTemplate(self._theme, url,
+                                         title="All Items",
+                                         entries=entries,
+                                         prev_url=prev_url,
+                                         next_url=next_url,
+                                         curr_page=p + 1,
+                                         max_page=np + 1)
+            self._WriteFile(content, self._dest_dir, url)
+            prev_url = url
 
     def UpdateNeeded(self, source_dir, dest_dir, all_files):
         """
@@ -113,14 +176,13 @@ class Site(object):
             return False
         return source_ts > dest_ts
 
-    def GenerateEntry(self, source_dir, dest_dir, all_files):
+    def GenerateItem(self, source_dir, dest_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
-        Returns: tuple (list: categories, list: items)
+        Returns an _Item or None
         """
-        cats = []
-        entries = []
         title = os.path.basename(source_dir)
+        date = self._DateFromTitle(title) or datetime.today()
         if INDEX_IZU in all_files:
             parser = IzuParser(self._log)
             izu_file= os.path.join(source_dir, INDEX_IZU)
@@ -131,9 +193,10 @@ class Site(object):
                                          title=title,
                                          text=html,
                                          image="")
-            dest = self._WriteFile(content, dest_dir, INDEX_IZU)
-            entries.append(dest)
-        return cats, entries
+            filename = self._SimpleFileName(INDEX_IZU)
+            dest = self._WriteFile(content, dest_dir, filename)
+            return _Item(date, dest, categories=[]).SetContent(content)
+        return None
 
     # Utilities, overridable for unit tests
     
@@ -152,8 +215,9 @@ class Site(object):
     def _WriteFile(self, data, dest_dir, leafname):
         """
         Writes the given data to the given directory and leaf name.
-        The leafname parameter is mangled into a different name, to sanitize
-        it (i.e. the name may be used later in URLs.)
+        
+        If you need the leafname to be sanitized (i.e. if used later in
+        URLs), then call _SimpleFileName first.
         
         If data is None or anything empty (list, string, whatever), it will
         generate an empty file, but a file should be created nonetheless.
@@ -166,7 +230,6 @@ class Site(object):
         
         This method is extracted so that it can be mocked in unit tests.
         """
-        leafname = self._SimpleFileName(leafname)
         dest_file = os.path.join(dest_dir, leafname)
         self._log.Info("[%s] Write %s", self._public_name,
                        dest_file)
@@ -210,7 +273,21 @@ class Site(object):
     def _TemplateDir(self):
         f = __file__
         return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
-        
+
+    def _DateFromTitle(self, title):
+        """
+        Parses the date out of a title.
+        Returns a datetime object or None.
+        """
+        m = _DATE_YMD.match(title)
+        if m:
+            return datetime(int(m.group("year" ) or 0),
+                            int(m.group("month") or 0),
+                            int(m.group("day"  ) or 0),
+                            int(m.group("hour" ) or 0),
+                            int(m.group("min"  ) or 0),
+                            int(m.group("sec"  ) or 0))
+        return None
 
 #------------------------
 # Local Variables:

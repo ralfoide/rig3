@@ -47,32 +47,38 @@ class Rig3Test(RigTestCase):
         Tests parsing args
         """
         self.assertFalse(self.m._usageAndExitCalled)
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.assertFalse(self.m._dry_run)
         self.m.ParseArgs([ "blah" ])
         self.assertFalse(self.m._usageAndExitCalled)
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.assertFalse(self.m._dry_run)
 
     def testParseArgs_V(self):
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.m.ParseArgs([ "blah", "-v" ])
         self.assertFalse(self.m._usageAndExitCalled)
-        self.assertTrue (self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_VERY_VERBOSE)
+
+    def testParseArgs_Q(self):
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
+        self.m.ParseArgs([ "blah", "-q" ])
+        self.assertFalse(self.m._usageAndExitCalled)
+        self.assertEquals(self.m._verbose, Log.LEVEL_MOSLTY_SILENT)
 
     def testParseArgs_H(self):
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.assertFalse(self.m._usageAndExitCalled)
         self.m.ParseArgs([ "blah", "-h" ])
         self.assertTrue(self.m._usageAndExitCalled)
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
 
     def testParseArgs_N(self):
         self.assertFalse(self.m._dry_run)
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.m.ParseArgs([ "blah", "-n" ])
         self.assertFalse(self.m._usageAndExitCalled)
-        self.assertFalse(self.m._verbose)
+        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.assertTrue(self.m._dry_run)
         
     def testParseArgs_C(self):
