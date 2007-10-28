@@ -11,7 +11,7 @@ __author__ = "ralfoide@gmail.com"
 import os
 
 from tests.rig_test_case import RigTestCase
-from rig.parser.dir import DirParser
+from rig.parser.dir_parser import DirParser
 
 #------------------------
 class MockDirParser(DirParser):

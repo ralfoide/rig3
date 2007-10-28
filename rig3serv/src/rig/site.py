@@ -14,8 +14,8 @@ import sys
 import zlib
 from datetime import datetime
 
-from rig.parser.dir import DirParser
-from rig.parser.izu import IzuParser
+from rig.parser.dir_parser import DirParser
+from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
 
 DEFAULT_THEME = "default"

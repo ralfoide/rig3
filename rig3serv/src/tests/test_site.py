@@ -16,7 +16,7 @@ from tests.rig_test_case import RigTestCase
 import rig.site
 from rig.site import Site
 from rig.site import DEFAULT_THEME
-from rig.parser.dir import DirParser
+from rig.parser.dir_parser import DirParser
 
 #------------------------
 class MockSite(Site):
