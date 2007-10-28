@@ -71,12 +71,22 @@ class RigTestCase(unittest.TestCase):
     
     def RemoveDir(self, dir_path):
         """
-        Removes a directory recursively.
-        If dir_path is empty (empty string, None or equivalent), nothing is done.
+        Assuming dir_path points to an existing directory, removes all
+        files and sub-directories recursively, then removes the actual
+        directory itself.
+        
+        This is different from os.removedirs() which can only deal with
+        *empty* directories :-(
         """
         try:
-            if dir_path:
-                os.removedirs(dir_path)
+            if dir_path and os.path.exists(dir_path) and os.path.isdir(dir_path):
+                for n in os.listdir(dir_path):
+                    p = os.path.join(dir_path, n)
+                    if os.path.isdir(p):
+                        self.RemoveDir(p)
+                    else:
+                        os.unlink(p)
+                os.rmdir(dir_path)
         except OSError, e:
             self.Log().Exception("RemoveDir '%s' failed: %s", dir_path, e)
 

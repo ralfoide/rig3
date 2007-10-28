@@ -249,7 +249,9 @@ class Site(object):
         dest_file = os.path.join(dest_dir, leafname)
         self._log.Info("[%s] Write %s", self._public_name, dest_file)
         if not self._dry_run:
-            pass
+            f = file(dest_file, mode="wb")
+            f.write(data)
+            f.close()
         return dest_file
 
     def _SimpleFileName(self, leafname, maxlen=_MANGLED_NAME_LENGTH):

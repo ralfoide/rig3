@@ -24,10 +24,10 @@ class Rig3LiveTest(RigTestCase):
         # all paths are relative to the testdata dir
         os.chdir(self._testdata)
         # cleanup output and make sure it's not there anymore
-        if os.path.exists(_DEST_DIR):
-            os.removedirs(_DEST_DIR)
+        self.RemoveDir(_DEST_DIR)
         self.assertFalse(os.path.exists(_DEST_DIR))
         os.mkdir(_DEST_DIR)
+        self.assertTrue(os.path.exists(_DEST_DIR))
         self.m = Rig3()
 
     def tearDown(self):
@@ -35,12 +35,16 @@ class Rig3LiveTest(RigTestCase):
         self.m = None
 
     def testLive(self):
-        rc = os.path.join(self._testdata, "z_last_rig3_live.rc")
+        t = self._testdata
+        d = os.path.join(t, _DEST_DIR)
+        rc = os.path.join(t, "z_last_rig3_live.rc")
         args = [ "rig3", "-c", rc ]
         self.m.ParseArgs(args)
         self.m.Run()
         self.m.Close()
-
+        
+        self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
+        self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
 
 #------------------------
 # Local Variables:
