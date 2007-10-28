@@ -1,6 +1,6 @@
 ---- TODO ----
 
-20071026 [1] Engine: Dry run flag
+20071028 [1] Engine: Support index.html with izu header embedded in HTML comment
 20070830 [1] Engine: check update vs dest dirs, UT
 20071006 [1] Engine: Generate items, mock, UT
 20071006 [1] Engine: Full Izumi-to-Html converter, UT
@@ -12,6 +12,8 @@
 
 ---- Done Version 0.1 ----
 
+20071027 [1] Test: Added "rig3 live" unit test
+20071026 [1] Engine: Dry run flag
 20071026 [1] Engine: Finished basic templating system, first iteration
 20071025 [1] Engine: Template generation, fixes, UTs
 20071024 [1] Engine: Template Nodes and Tags implementation, fixes, UTs
