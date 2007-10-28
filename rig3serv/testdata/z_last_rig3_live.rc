@@ -10,6 +10,6 @@ theme = default
 
 [rig3_live]
 public_name = Rig3 Live
-source_dir  = albums
+source_dir  = album
 dest_dir    = live_dest
 

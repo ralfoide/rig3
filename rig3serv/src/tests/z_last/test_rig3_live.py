@@ -27,6 +27,7 @@ class Rig3LiveTest(RigTestCase):
         if os.path.exists(_DEST_DIR):
             os.removedirs(_DEST_DIR)
         self.assertFalse(os.path.exists(_DEST_DIR))
+        os.mkdir(_DEST_DIR)
         self.m = Rig3()
 
     def tearDown(self):
