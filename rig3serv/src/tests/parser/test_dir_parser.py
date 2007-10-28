@@ -49,7 +49,7 @@ class DirParserTest(RigTestCase):
         m = MockDirParser(self.Log(), mock_dirs)
         m.Parse( "base", "dest")
         self.assertEquals("base", m.AbsSourceDir())
-        self.assertEquals("dest", m.AbsDestDir())
+        self.assertEquals(("dest", ""), m.AbsDestDir())
         self.assertListEquals([ "file1", "file2", "file3" ],
                               m.Files())
         self.assertListEquals([], m.SubDirs())
@@ -85,7 +85,7 @@ class DirParserTest(RigTestCase):
         dir1 = MockDirParser(self.Log(), mock_dirs)
 
         m.Parse("base", "dest")
-        dir1.Parse(os.path.join("base", "dir1"), os.path.join("dest", "dir1"))
+        dir1._ParseRec(os.path.join("base", "dir1"), "dest", "dir1")
 
         self.assertListEquals([], m.Files())
         self.assertListEquals([ dir1 ], m.SubDirs())
@@ -107,10 +107,10 @@ class DirParserTest(RigTestCase):
         dir2b = MockDirParser(self.Log(), mock_dirs)
 
         m.Parse("base", "dest")
-        dir1a.Parse(os.path.join("base", "dir1a"), os.path.join("dest", "dir1a"))
-        dir1b.Parse(os.path.join("base", "dir1b"), os.path.join("dest", "dir1b"))
-        dir2a.Parse(os.path.join("base", "dir1a", "dir2a"), os.path.join("dest", "dir1a", "dir2a"))
-        dir2b.Parse(os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"))
+        dir1a._ParseRec(os.path.join("base", "dir1a"),          "dest", "dir1a")
+        dir1b._ParseRec(os.path.join("base", "dir1b"),          "dest", "dir1b")
+        dir2a._ParseRec(os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"))
+        dir2b._ParseRec(os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"))
 
         self.assertListEquals([ "file0" ], m.Files())
         self.assertListEquals([ dir1a, dir1b ], m.SubDirs())
@@ -138,15 +138,15 @@ class DirParserTest(RigTestCase):
         m.Parse("base", "dest")
 
         expected = [
-            ("base", "dest", "file0", ["file0"]),
-            (os.path.join("base", "dir1a"), os.path.join("dest", "dir1a"), "file1", [ "file1", "file2" ] ),
-            (os.path.join("base", "dir1a"), os.path.join("dest", "dir1a"), "file2", [ "file1", "file2" ] ),
-            (os.path.join("base", "dir1a", "dir2a"), os.path.join("dest", "dir1a", "dir2a"), "file5", [ "file5", "file6" ] ),
-            (os.path.join("base", "dir1a", "dir2a"), os.path.join("dest", "dir1a", "dir2a"), "file6", [ "file5", "file6" ] ),
-            (os.path.join("base", "dir1b"), os.path.join("dest", "dir1b"), "file3", [ "file3", "file4" ] ),
-            (os.path.join("base", "dir1b"), os.path.join("dest", "dir1b"), "file4", [ "file3", "file4" ] ),
-            (os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"), "file7", [ "file7", "file8" ] ),
-            (os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"), "file8", [ "file7", "file8" ] ),
+            ("base", "dest", "", "file0", ["file0"]),
+            (os.path.join("base", "dir1a"),          "dest",              "dir1a",           "file1", [ "file1", "file2" ] ),
+            (os.path.join("base", "dir1a"),          "dest",              "dir1a",           "file2", [ "file1", "file2" ] ),
+            (os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), "file5", [ "file5", "file6" ] ),
+            (os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), "file6", [ "file5", "file6" ] ),
+            (os.path.join("base", "dir1b"),          "dest",              "dir1b",           "file3", [ "file3", "file4" ] ),
+            (os.path.join("base", "dir1b"),          "dest",              "dir1b",           "file4", [ "file3", "file4" ] ),
+            (os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), "file7", [ "file7", "file8" ] ),
+            (os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), "file8", [ "file7", "file8" ] ),
             ]
         
         actual = [i for i in m.TraverseFiles()]
@@ -165,11 +165,11 @@ class DirParserTest(RigTestCase):
         m.Parse("base", "dest")
 
         expected = [
-            ("base", "dest", [ "file0" ]),
-            (os.path.join("base", "dir1a"), os.path.join("dest", "dir1a"), [ "file2", "file1" ] ),
-            (os.path.join("base", "dir1a", "dir2a"), os.path.join("dest", "dir1a", "dir2a"), [ "file6", "file5" ] ),
-            (os.path.join("base", "dir1b"), os.path.join("dest", "dir1b"), [ "file3", "file4" ] ),
-            (os.path.join("base", "dir1b", "dir2b"), os.path.join("dest", "dir1b", "dir2b"), [ "file7", "file8" ] ),
+            ("base", "dest", "", [ "file0" ]),
+            (os.path.join("base", "dir1a"),          "dest",              "dir1a",           [ "file2", "file1" ] ),
+            (os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), [ "file6", "file5" ] ),
+            (os.path.join("base", "dir1b"),          "dest",              "dir1b",           [ "file3", "file4" ] ),
+            (os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), [ "file7", "file8" ] ),
             ]
         
         actual = [i for i in m.TraverseDirs()]

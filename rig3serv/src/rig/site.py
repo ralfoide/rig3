@@ -12,6 +12,7 @@ import re
 import os
 import sys
 import zlib
+import errno
 from datetime import datetime
 
 from rig.parser.dir_parser import DirParser
@@ -24,7 +25,9 @@ _DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g)$")
 _DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                       r"(?:[ ,:/-]?(?P<hour>\d{2})[:/-]?(?P<min>\d{2})(?:[:/-]?(?P<sec>\d{2}))?)?")
-_ITEMS_PER_PAGE = 20 # TODO make a site.rc pref
+_ITEMS_DIR = "items"
+_ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
+_MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 
 #------------------------
 class _Item(object):
@@ -32,16 +35,18 @@ class _Item(object):
     Represents an item:
     - list of categories (list of string)
     - date (datetime)
-    - abs_filename: full absolute filename of the generated file
+    - rel_filename: filename of the generated file relative to the site's
+                    dest_dir.
     """
-    def __init__(self, date, abs_filename, categories=None):
+    def __init__(self, date, rel_filename, categories=None):
         self.date = date
         self.categories = categories or []
-        self.abs_filename = abs_filename
+        self.rel_filename = rel_filename
 
     def SetContent(self, content):
         self.content = content
         return self
+
 
 #------------------------
 class Site(object):
@@ -62,10 +67,17 @@ class Site(object):
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
+        self.MakeDestDirs()
         tree = self.Parse(self._source_dir, self._dest_dir)
         categories, items = self.GenerateItems(tree)
         self.GeneratePages(categories, items)
         # TODO: self.DeleteOldGeneratedItems()
+
+    def MakeDestDirs(self):
+        """
+        Creates the necessary directories in the destination.
+        """
+        self._MkDestDir(_ITEMS_DIR)            
 
     def Parse(self, source_dir, dest_dir):
         """
@@ -93,12 +105,13 @@ class Site(object):
         """
         categories = []
         items = []
-        for source_dir, dest_dir, all_files in tree.TraverseDirs():
+        for source_dir, dest_dir, curr_dir, all_files in tree.TraverseDirs():
             self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
-                           source_dir, dest_dir)
-            if self.UpdateNeeded(source_dir, dest_dir, all_files):
+                           source_dir, curr_dir)
+            if self.UpdateNeeded(source_dir, os.path.join(dest_dir, curr_dir),
+                                 all_files):
                 files = [f.lower() for f in all_files]
-                item = self.GenerateItem(source_dir, dest_dir, all_files)
+                item = self.GenerateItem(source_dir, curr_dir, all_files)
                 if item is None:
                     continue
                 for c in item.categories:
@@ -176,7 +189,7 @@ class Site(object):
             return False
         return source_ts > dest_ts
 
-    def GenerateItem(self, source_dir, dest_dir, all_files):
+    def GenerateItem(self, source_dir, rel_dest_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns an _Item or None
@@ -193,8 +206,11 @@ class Site(object):
                                          title=title,
                                          text=html,
                                          image="")
-            filename = self._SimpleFileName(INDEX_IZU)
-            dest = self._WriteFile(content, dest_dir, filename)
+            filename = self._SimpleFileName(os.path.join(rel_dest_dir, INDEX_IZU))
+            assert self._WriteFile(content,
+                                   os.path.join(self._dest_dir, _ITEMS_DIR),
+                                   filename)
+            dest = os.path.join(_ITEMS_DIR, filename)
             return _Item(date, dest, categories=[]).SetContent(content)
         return None
 
@@ -231,23 +247,22 @@ class Site(object):
         This method is extracted so that it can be mocked in unit tests.
         """
         dest_file = os.path.join(dest_dir, leafname)
-        self._log.Info("[%s] Write %s", self._public_name,
-                       dest_file)
+        self._log.Info("[%s] Write %s", self._public_name, dest_file)
         if not self._dry_run:
             pass
         return dest_file
 
-    def _SimpleFileName(self, leafname, maxlen=20):
+    def _SimpleFileName(self, leafname, maxlen=_MANGLED_NAME_LENGTH):
         """
-        Sanitizes a file name (i.e. only leaf name, not a full path name):
-        - Aggregates multiples spaces or dashes into single dashes
-          (i.e. remove spaces)
-        - Aggregates non-alphanums into single underscores
+        Sanitizes a file name or a path name to a single filename compatible
+        with a URL with no need for fancy URL escaping.
+        - Aggregates multiples "separators" such as spaces or dashes into single dashes.
+        - Aggregates non-alphanums into single underscores.
         - If the name is too long, keep a shorter version with a CRC at the end.
         Returns the new file name.
         """
-        name = re.sub("[ -]+", "-", leafname)
-        name = re.sub("[^a-zA-Z0-9-]+", "_", name)
+        name = re.sub(r"[ /\\-]+", "-", leafname)
+        name = re.sub(r"[^a-zA-Z0-9-]+", "_", name)
         if len(name) > maxlen:
             # The adler32 crc is returned as an int and can thus "seem" negative
             # convert to its true long 64-bit value, always positive
@@ -288,6 +303,18 @@ class Site(object):
                             int(m.group("min"  ) or 0),
                             int(m.group("sec"  ) or 0))
         return None
+
+    def _MkDestDir(self, rel_dir):
+        """
+        Creates a directory in the site's dest_dir.
+        Doesn't generate an error if the directory already exists.
+        """
+        try:
+            os.mkdir(os.path.join(self._dest_dir, rel_dir))
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
+
 
 #------------------------
 # Local Variables:

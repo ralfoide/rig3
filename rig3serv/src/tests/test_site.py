@@ -88,9 +88,10 @@ class SiteTest(RigTestCase):
                  self._tempdir, DEFAULT_THEME)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
-        self.assertEquals("ab_12_txt", m._SimpleFileName("ab!@#$12%^&@&*()\\_+/.<>,txt"))
+        self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc///de\\\\f/g\\h"))
+        self.assertEquals("a-ab_12_txt", m._SimpleFileName("a//\\ab!@#$12%^&@&*()_+.<>,txt"))
         self.assertEquals("long_3e3a06df", m._SimpleFileName("long_filename.txt", maxlen=13))
-        self.assertEquals("someverylon_7eea09fa", m._SimpleFileName("someverylongfilename.txt"))
+        self.assertEquals("someverylon_7eea09fa", m._SimpleFileName("someverylongfilename.txt", maxlen=20))
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof", 50))
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
