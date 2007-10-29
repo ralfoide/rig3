@@ -1,7 +1,9 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Unit tests for Rig3 site generation
+Unit tests for Rig3 site generation.
+This is a "live" test that actually generates data in testdat/live_dest.
+The destination directory is excluded from svn.
 
 Part of Rig3.
 License GPL.
@@ -43,8 +45,10 @@ class Rig3LiveTest(RigTestCase):
         self.m.Run()
         self.m.Close()
         
-        self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
+        self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
+        self.assertTrue(os.path.exists(os.path.join(d, "items", "2006-08-05-20_00_38-Progress-index_html")))
+
 
 #------------------------
 # Local Variables:

@@ -57,6 +57,7 @@ class SiteTest(RigTestCase):
 
     def testPatterns(self):
         self.assertSearch(rig.site._DIR_PATTERN, "2007-10-07_Folder 1")
+        self.assertSearch(rig.site._DIR_PATTERN, "2006-08-05 20.00.38  Progress")
         self.assertSearch(rig.site._VALID_FILES, "index.izu")
         self.assertSearch(rig.site._VALID_FILES, "image.jpg")
         self.assertSearch(rig.site._VALID_FILES, "image.jpeg")
@@ -77,11 +78,14 @@ class SiteTest(RigTestCase):
         p = m.Parse(m._source_dir, m._dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
-        self.assertEquals(1, len(p.SubDirs()))
+        self.assertEquals(2, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
+        self.assertIsInstance(DirParser, p.SubDirs()[1])
         self.assertListEquals([ "index.izu", "T12896_tiny_jpeg.jpg"], p.SubDirs()[0].Files(),
                               sort=True)
+        self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
+        self.assertListEquals([], p.SubDirs()[1].SubDirs())
 
     def test_SimpleFileName(self):
         m = Site(self.Log(), False, "Site Name", "/tmp/source/data",

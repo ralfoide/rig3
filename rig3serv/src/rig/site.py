@@ -21,10 +21,11 @@ from rig.template.template import Template
 
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"
+INDEX_HTML = "index.html"
 _DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
-_VALID_FILES = re.compile(r"\.(?:izu|jpe?g)$")
+_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 _DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
-                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/-]?(?P<min>\d{2})(?:[:/-]?(?P<sec>\d{2}))?)?")
+                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
 _ITEMS_DIR = "items"
 _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
 _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
@@ -34,18 +35,16 @@ class _Item(object):
     """
     Represents an item:
     - list of categories (list of string)
+    - content: the data of the file
     - date (datetime)
     - rel_filename: filename of the generated file relative to the site's
                     dest_dir.
     """
-    def __init__(self, date, rel_filename, categories=None):
+    def __init__(self, date, rel_filename, content, categories=None):
         self.date = date
+        self.content = content
         self.categories = categories or []
         self.rel_filename = rel_filename
-
-    def SetContent(self, content):
-        self.content = content
-        return self
 
 
 #------------------------
@@ -60,6 +59,7 @@ class Site(object):
         self._source_dir = source_dir
         self._dest_dir = dest_dir
         self._theme = theme
+        self._izu_parser = IzuParser(self._log)
 
     def Process(self):
         """
@@ -197,11 +197,10 @@ class Site(object):
         title = os.path.basename(source_dir)
         date = self._DateFromTitle(title) or datetime.today()
         if INDEX_IZU in all_files:
-            parser = IzuParser(self._log)
-            izu_file= os.path.join(source_dir, INDEX_IZU)
+            izu_file = os.path.join(source_dir, INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
                            izu_file)
-            html, tags, cats, images = parser.RenderFileToHtml(izu_file)
+            html, tags, cats, images = self._izu_parser.RenderFileToHtml(izu_file)
             content = self._FillTemplate(self._theme, "entry.html",
                                          title=title,
                                          text=html,
@@ -211,7 +210,21 @@ class Site(object):
                                    os.path.join(self._dest_dir, _ITEMS_DIR),
                                    filename)
             dest = os.path.join(_ITEMS_DIR, filename)
-            return _Item(date, dest, categories=[]).SetContent(content)
+            return _Item(date, dest, content=content, categories=cats)
+        elif INDEX_HTML in all_files:
+            html_file = os.path.join(source_dir, INDEX_HTML)
+            html = self._ReadFile(html_file)
+            content = self._FillTemplate(self._theme, "entry.html",
+                                         title=title,
+                                         text=html,
+                                         image="")
+            cats = []
+            filename = self._SimpleFileName(os.path.join(rel_dest_dir, INDEX_HTML))
+            assert self._WriteFile(content,
+                                   os.path.join(self._dest_dir, _ITEMS_DIR),
+                                   filename)
+            dest = os.path.join(_ITEMS_DIR, filename)
+            return _Item(date, dest, content=content, categories=cats)            
         return None
 
     # Utilities, overridable for unit tests
@@ -227,6 +240,16 @@ class Site(object):
         c = os.path.getctime(dir)
         m = os.path.getmtime(dir)
         return max(c, m)
+
+    def _ReadFile(self, full_path):
+        """
+        Returns the content of a file as a string.
+        Will raise an IOError if the file cannot be read.
+        """
+        f = file(full_path)
+        data = f.read()
+        f.close()
+        return data
 
     def _WriteFile(self, data, dest_dir, leafname):
         """
