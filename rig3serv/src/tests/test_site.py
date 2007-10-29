@@ -81,9 +81,8 @@ class SiteTest(RigTestCase):
         self.assertEquals(2, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
         self.assertIsInstance(DirParser, p.SubDirs()[1])
-        self.assertListEquals([ "index.izu", "T12896_tiny_jpeg.jpg"], p.SubDirs()[0].Files(),
-                              sort=True)
-        self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
+        self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
+        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[1].Files())
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
         self.assertListEquals([], p.SubDirs()[1].SubDirs())
 
@@ -119,7 +118,9 @@ class SiteTest(RigTestCase):
         html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
-            r"""<head>
+            r"""<html lang="en-US">
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
                 <title>MyTitle</title>
                 </head>
                 <body>

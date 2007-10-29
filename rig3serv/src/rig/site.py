@@ -128,7 +128,8 @@ class Site(object):
         - items: list of _Item
         """
         categories.sort()
-        items.sort(lambda x, y: cmp(x.date, y.date))
+        # Sort by decreasing date (i.e. compares y to x, not x to y)
+        items.sort(lambda x, y: cmp(y.date, x.date))
 
         self.GeneratePageAll(categories, items)
         # TODO: self.GeneratePageCategory(category, items)
@@ -154,7 +155,7 @@ class Site(object):
                 next_url = None
             entries = [j.content for j in items[i:i + _ITEMS_PER_PAGE] ]
             i += _ITEMS_PER_PAGE
-            content = self._FillTemplate(self._theme, url,
+            content = self._FillTemplate(self._theme, "index.html",
                                          title="All Items",
                                          entries=entries,
                                          prev_url=prev_url,

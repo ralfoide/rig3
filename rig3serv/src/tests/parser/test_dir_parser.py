@@ -166,8 +166,8 @@ class DirParserTest(RigTestCase):
 
         expected = [
             ("base", "dest", "", [ "file0" ]),
-            (os.path.join("base", "dir1a"),          "dest",              "dir1a",           [ "file2", "file1" ] ),
-            (os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), [ "file6", "file5" ] ),
+            (os.path.join("base", "dir1a"),          "dest",              "dir1a",           [ "file1", "file2" ] ),
+            (os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), [ "file5", "file6" ] ),
             (os.path.join("base", "dir1b"),          "dest",              "dir1b",           [ "file3", "file4" ] ),
             (os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), [ "file7", "file8" ] ),
             ]

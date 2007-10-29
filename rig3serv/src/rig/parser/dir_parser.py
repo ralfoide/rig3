@@ -17,7 +17,10 @@ class DirParser(object):
     Parses directories recursively accordingly to given file/dir regexps.
     Parses the source directories and match the corresponding destination
     structure (destinaton is not checked for existence.)
-    
+            
+    Note that SubDirs() and Files() are already sorted alphabetically.
+    This helps remove differences between various file systems.
+
     To use create the object then call Parse() on it.
     """
     def __init__(self, log):
@@ -85,6 +88,8 @@ class DirParser(object):
                                               file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
+                        p.Files().sort()
+                        p.SubDirs().sort(cmp=lambda x, y: cmp(x._rel_curr_dest_dir, y._rel_curr_dest_dir))
                         self._sub_dirs.append(p)
                         self._log.Debug("Append dir: %s", full_path)
                     else:
