@@ -1,5 +1,6 @@
 ---- TODO ----
 
+20071029 [1] Engine: Tag raw, html, url
 20071028 [1] Engine: Support index.html with izu header embedded in HTML comment
 20070830 [1] Engine: check update vs dest dirs, UT
 20071006 [1] Engine: Generate items, mock, UT
@@ -12,6 +13,7 @@
 
 ---- Done Version 0.1 ----
 
+20071028 [1] Engine: Support index.html (no izu header support yet)
 20071027 [1] Test: Added "rig3 live" unit test
 20071026 [1] Engine: Dry run flag
 20071026 [1] Engine: Finished basic templating system, first iteration

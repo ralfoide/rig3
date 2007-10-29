@@ -174,3 +174,52 @@ to support, but my experience is that this is rarely needed and I don't see the
 need for it -- I'm not writing the most universal templating system here, just
 the minimum for what I need.
  
+
+----
+20071029 Template System, revisited
+
+I finalized a first shot at the implementation of the template system.
+
+I ended up implementing these tags:
+- [[# comment]]
+- [[for var in expr]] ... [[end]]
+- [[if expr]] ... [[end]]
+- [[expr]]
+ 
+Note that "expr" is exactly that: a free string evaluated as a python expression.
+For the "for", it's expected to return some iteratable (generator or list), for "if" it's
+interpreted as a boolean using "not not x" and the last one mean that any unrecognized tag
+is interpreted as an expression and then replaced as a string.
+
+Note the lack of [[else]] and [[elif]]. These are not really needed, just use several "if" tags.
+
+Initially I wanted to have filters a-la-Django for the free expressions, i.e. I wanted:
+- [[expr|raw]]
+- [[expr|html]]
+- [[expr|url]]
+With filter chaining, so you could say [[number|inc|html]].
+
+However it's not really needed. Filters are just a Django idiom to call functions in a syntax
+that doesn't allow it. Instead you can just have a global "inc()" function and call it.
+I do want the raw/html/url encoding made explicit however, so I'm going to force them to
+create expression evaluation. [[expr]] is going away and being replaced by:
+- [[raw expr]]
+- [[html  expr]]
+- [[url expr]]
+
+This also forces the template designer to make sure s/he's aware of when escaping is
+done... or not.
+
+Finally, I'm please with the free evaluation. It's much more elegant and convenient that
+forcing a syntax for variables and "if" tags. It has two downsides: first it makes it easier
+for a template designer to break the separation between code and template (i.e. the
+dogma of having no code in templates) and second it can be too powerful and be exploited,
+there's not much of a sandbox here. If you are developing a large-scale templating system
+like Django, these matter a lot. In my case, I prefer the expressiveness since I'm both the
+engine designer and the application designer, *and* my target is static sites generation.
+
+----
+20071029 Application
+
+Now that the engine "framework" part of rig3 is more or less operational, even if very crude,
+it's time to focus on the application at hand.
