@@ -52,14 +52,44 @@ class TagComment(Tag):
 
 
 #------------------------
-class TagExpression(Tag):
+class TagRaw(Tag):
     """
-    Tag that represents an expression expansion.
+    Tag that represents a raw expression expansion. The data is represented as-is.
     Template syntax:
-      [[python_expression]]
+      [[raw python_expression]]
     """
     def __init__(self):
-        super(TagExpression, self).__init__(tag=None, has_content=False)
+        super(TagExpression, self).__init__(tag="raw", has_content=False)
+    
+    def Generate(self, tag_node, context):
+        result = eval(tag_node.Parameters(), dict(context))
+        return str(result)
+
+
+#------------------------
+class TagHtml(Tag):
+    """
+    Tag that represents an expression expansion with html encoding.
+    Template syntax:
+      [[html python_expression]]
+    """
+    def __init__(self):
+        super(TagExpression, self).__init__(tag="html", has_content=False)
+    
+    def Generate(self, tag_node, context):
+        result = eval(tag_node.Parameters(), dict(context))
+        return cgi.escape(str(result))
+
+
+#------------------------
+class TagUrl(Tag):
+    """
+    Tag that represents an expression expansion with url encoding
+    Template syntax:
+      [[url python_expression]]
+    """
+    def __init__(self):
+        super(TagExpression, self).__init__(tag="url", has_content=False)
     
     def Generate(self, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
