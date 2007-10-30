@@ -75,7 +75,7 @@ class DirParserTest(RigTestCase):
 
         # Patterns are matched using re.search so "e.*" will match "file" as well as "entry".
         m.Parse( "base", "dest", file_pattern="e.*1")
-        self.assertListEquals([ "file1", "entry1" ], m.Files())
+        self.assertListEquals([ "entry1", "file1" ], m.Files())
         self.assertListEquals([], m.SubDirs())
 
     def testDir1Level(self):

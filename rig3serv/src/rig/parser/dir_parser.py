@@ -88,8 +88,6 @@ class DirParser(object):
                                               file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
-                        p.Files().sort()
-                        p.SubDirs().sort(cmp=lambda x, y: cmp(x._rel_curr_dest_dir, y._rel_curr_dest_dir))
                         self._sub_dirs.append(p)
                         self._log.Debug("Append dir: %s", full_path)
                     else:
@@ -102,6 +100,8 @@ class DirParser(object):
                     self._log.Debug("Append file: %s", full_path)
                 else:
                     self._log.Debug("Ignore file: %s", full_path)
+        self._files.sort()
+        self._sub_dirs.sort(cmp=lambda x, y: cmp(x._rel_curr_dest_dir, y._rel_curr_dest_dir))
         return self
 
     def TraverseFiles(self):

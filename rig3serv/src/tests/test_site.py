@@ -81,6 +81,8 @@ class SiteTest(RigTestCase):
         self.assertEquals(2, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
         self.assertIsInstance(DirParser, p.SubDirs()[1])
+        self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[0]._rel_curr_dest_dir)
+        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[1]._rel_curr_dest_dir)
         self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
         self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[1].Files())
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
