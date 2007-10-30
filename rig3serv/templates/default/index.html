@@ -19,18 +19,18 @@ Relevant links:
 <html lang="en-US">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>[[title]]</title>
+  <title>[[html title]]</title>
 </head>
 <body>
 [[for entry in entries]]
-  [[entry]]
+  [[raw entry]]
   <hr width="80%"/>
 [[end]]
 <hr width="80%"/>
-[[if prev_url]]<a href="[[prev_url]]">Prev</a>[[end]]
+[[if prev_url]]<a href="[[url prev_url]]">Prev</a>[[end]]
 &nbsp;||&nbsp;
-[[if next_url]]<a href="[[next_url]]">Next</a>[[end]]
+[[if next_url]]<a href="[[url next_url]]">Next</a>[[end]]
 <br/>
-Page [[curr_page]] / [[max_page]]
+Page [[html curr_page]] / [[html max_page]]
 </body>
 </html>

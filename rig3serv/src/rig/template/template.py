@@ -140,10 +140,7 @@ class Template(object):
                 tag_def = self._tags[keyword]
                 parameters = parameters.strip(_WS + _EOL)
             except KeyError:
-                tag_def = TagExpression()
-                # for an expression, the first word was part of the expression
-                # and in this case we strip nothing parameters
-                parameters = keyword + parameters
+                self._SyntaxError(buffer, "Unknown tag '%s'" % keyword)
             content = None
             if tag_def.HasContent():
                 content = self._GetNodeList(buffer, end_expected=True)

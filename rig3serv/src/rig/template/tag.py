@@ -9,6 +9,7 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import re
+import cgi
 import urllib
 
 _RE_FIRST_WORD = re.compile(r"\s*(\w+)\s+(.*)")
@@ -61,7 +62,7 @@ class TagRaw(Tag):
       [[raw python_expression]]
     """
     def __init__(self):
-        super(TagExpression, self).__init__(tag="raw", has_content=False)
+        super(TagRaw, self).__init__(tag="raw", has_content=False)
     
     def Generate(self, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
@@ -76,7 +77,7 @@ class TagHtml(Tag):
       [[html python_expression]]
     """
     def __init__(self):
-        super(TagExpression, self).__init__(tag="html", has_content=False)
+        super(TagHtml, self).__init__(tag="html", has_content=False)
     
     def Generate(self, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
@@ -91,7 +92,7 @@ class TagUrl(Tag):
       [[url python_expression]]
     """
     def __init__(self):
-        super(TagExpression, self).__init__(tag="url", has_content=False)
+        super(TagUrl, self).__init__(tag="url", has_content=False)
     
     def Generate(self, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
@@ -104,7 +105,7 @@ def _UrlEncode(m):
         proto = urllib.quote(proto, "") + "://"
     host = m.group("host") or ""
     if host:
-        host = urllib.quote(host, ".")
+        host = urllib.quote(host, ".:@")
     path = m.group("path") or ""
     if path:
         path = "/" + urllib.quote(path, "/")
@@ -162,7 +163,7 @@ class TagIf(Tag):
         return ""
 
 #------------------------
-ALL_TAGS = [TagComment, TagFor, TagIf]
+ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagUrl]
 
 #------------------------
 # Local Variables:

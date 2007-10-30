@@ -111,25 +111,25 @@ class TemplateTest(RigTestCase):
 
     def testGetNextNode_Expression(self):
         m = MockParse(self.Log(), source="")
-        b = Buffer("file", "[[expr]]")
-        self.assertEquals(NodeTag(TagExpression(), parameters="expr", content=None),
+        b = Buffer("file", "[[raw expr]]")
+        self.assertEquals(NodeTag(TagRaw(), parameters="expr", content=None),
                           m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
         # When parsing an expression, we preserve *all* whitespace after the
         # beginning of the expression
-        b = Buffer("file", "[[  a+2  ]]")
-        self.assertEquals(NodeTag(TagExpression(), parameters="a+2  ", content=None),
+        b = Buffer("file", "[[ html  a+2  ]]")
+        self.assertEquals(NodeTag(TagHtml(), parameters="a+2", content=None),
                           m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
-        b = Buffer("file", "[[  a + 2  ]]")
-        self.assertEquals(NodeTag(TagExpression(), parameters="a + 2  ", content=None),
+        b = Buffer("file", "[[   url    a + 2  ]]")
+        self.assertEquals(NodeTag(TagUrl(), parameters="a + 2", content=None),
                           m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
-        b = Buffer("file", "[['  a' + '2  ']]")
-        self.assertEquals(NodeTag(TagExpression(), parameters="'  a' + '2  '", content=None),
+        b = Buffer("file", "[[raw '  a' + '2  ']]")
+        self.assertEquals(NodeTag(TagRaw(), parameters="'  a' + '2  '", content=None),
                           m._GetNextNode(b))
         self.assertTrue(b.EndReached())
 
