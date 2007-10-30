@@ -9,9 +9,11 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import re
+import urllib
 
 _RE_FIRST_WORD = re.compile(r"\s*(\w+)\s+(.*)")
-
+_RE_URL = re.compile(r"(?:(?P<proto>[a-z]+)://)?(?P<host>[^/]+)(?:/(?P<path>.*))?")
+                
 #------------------------
 class Tag(object):
     """
@@ -93,7 +95,20 @@ class TagUrl(Tag):
     
     def Generate(self, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
-        return str(result)
+        result = _RE_URL.sub(_UrlEncode, str(result))
+        return result
+
+def _UrlEncode(m):
+    proto = m.group("proto") or ""
+    if proto:
+        proto = urllib.quote(proto, "") + "://"
+    host = m.group("host") or ""
+    if host:
+        host = urllib.quote(host, ".")
+    path = m.group("path") or ""
+    if path:
+        path = "/" + urllib.quote(path, "/")
+    return "%s%s%s" % (proto, host, path)
 
 
 #------------------------
