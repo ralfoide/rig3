@@ -223,3 +223,78 @@ engine designer and the application designer, *and* my target is static sites ge
 
 Now that the engine "framework" part of rig3 is more or less operational, even if very crude,
 it's time to focus on the application at hand.
+
+Each directory that contains a valid entry should have:
+- an index.izu or an index.html
+- zero or more photos
+
+Right now I'll ignore directories without an index (it can be empty although
+ideally I should have something.) Later I may add a more just for pictures.
+
+The index.html is for importing old entries from the previous blog.
+They are self contained and already contain pictures link as necessary. They
+are just imported as-is. However the index.html also contain an "izu header"
+on its first line (hidden in an html comment).
+The izu parser should be able to handle that and generate the tags as
+appropriate. Currently this header contains:
+- The full date (YMD/HMS) of the original post
+- The title
+- A category (currently empty because of a bug but can be fixed). Or more
+  exactly a list of category keywords.
+- The author's name 
+
+The izu index should have the following structure:
+- An izu header on the first line (same tags).
+	- The date & title are optional.
+	- If not present, the defaults extracted from the directory name will be used.
+  	- If present, they must override these defaults.
+- Sections: "en" (english), "fr" (french), "images", "notes".
+  	- Sections are optional. "en" is the default if not specified.
+	- Sections are to be used in the template if present.
+
+The purpose of the sections is to further separate layout from content:
+even in the current HTML of the "old" wordpress blog, I have quite a bit of
+layout encoded in each post. By separating the layout, I can change the way
+sections are displayed after the fact, without having to edit back each entry.
+
+Some sections might be specialized. For example I'd like to have an "images"
+section with a list of images to display in this post and some layout logic that
+can display the images differently (for example a slideshow vs a grid, etc.)
+
+We'll start with a minimum set of izu tags and will expand later as needed.
+
+For the structure:
+- [izu:title:xyz]
+- [izu:date:YYYY/MM/DD HH:MM:SS]
+- [izu:author:xyz]
+- [izu:cat:xyz1,xyz2,...] -- for catagories, can be empty
+- [izu:refuse] -- don't serve this entry at all, can be used for temporary stuff
+- [s:(en|fr|images|notes)] -- unknown sections should generate a warning
+- [!-- .. --] -- comments
+
+For izu tags (title, date, etc.), several version can be present. The last
+one takes precedence. However it should be customary to just place them on
+the first line.
+
+For the presentation:
+- __bold__
+- ''italics''
+- new lines for paragraphs
+- * for lists, without indentation. A list ends when there's an empty line.
+- ---- for an <hr>
+- [title|url] -- for links or images.
+- [rig:url:size] -- to generate a rig link
+
+For list, I'll try something different. First I won't implement indentation
+in the first shot (will have to be later, when needed.) And a buller-point list
+will keep going till there's an empty line. That means each entry in the list
+can be multi-line as long as it doesn't start with a star.
+
+The [rig] tag will generate a thumbnail of the requested size with a link
+onto the album (or the image?).
+
+So this is the "design summary". Later I'll probably want to add some more tags,
+support for block indentation and tables for example. That will wait till it
+becomes needed though.
+
+----
