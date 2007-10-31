@@ -8,15 +8,38 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import re
 import sys
 
 #------------------------
 class _State(object):
-    def __init__(self):
-        self.html = ""
-        self.images = []
-        self.tags = []
-        self.cats = []
+    def __init__(self, _file):
+        self._file = file
+        self._tags = {}
+        self._sections = {}
+
+    def Section(self, name):
+        return self._sections.get(name, "")
+
+    def EndOfFile(self):
+        return self._file is None
+
+    def ReadLine(self):
+        """
+        Reads a line from the input stream. Strips the end-of-line terminator
+        if present.
+
+        If the end of the file has been reached, returns None.
+        """
+        line = None
+        if self._file:
+            line = self._file.readline()
+            if not line:
+                self._file = None
+                line = None
+            else:
+                line = line.strip("\r\n")
+        return line
 
 #------------------------
 class IzuParser(object):
@@ -27,9 +50,9 @@ class IzuParser(object):
     def __init__(self, log):
         self._log = log
 
-    def RenderFileToHtml(self, source):
+    def RenderFileToHtml(self, filestream):
         """
-        Parses the file 'source' and return an HTML snippet for it.
+        Parses the file 'filename' and return an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
         
         If source is a string, it is considered a path to be opened as read-only text.
@@ -37,44 +60,41 @@ class IzuParser(object):
         a string buffer.
         
         Returns a tuple:
-        - the html itself
         - list of izumi header tags (can be an empty list, but not None)
-        - list of categories defined by the izumi header (can be an empty list, but not None)
-        - list of referenced images (can be an empty list, but not None)
+            - most are just srtings. The "cat" (categories) tag is a list of strings. 
+        - list of sections.
+            - most are HTML content.
+            - the "images" section must be a list of RIG urls.
         """
         f = None
-        result = ("", [], [], [])
+        result = None
         try:
-            if isinstance(source, str):
-                f = file(source, "r", 1)  # 1=line buffered
+            if isinstance(filestream, str):
+                f = file(filestream, "rU", 1)  # 1=line buffered, universal
             else:
-                f = source
-            state = self._InitState()
-            # file.readline returns each line with its line ending and returns an empty string
-            # when the end of the file has been reached
-            l = f.readline()
-            while l:
-                self._ProcessLine(state, l)
-                l = f.readline()
-            result = self._CloseState(state)
+                f = filestream
+            
+            state = self._State(f)
+            self._ParseStream(state)
+            result = state.Close()
         except IOError:
-            if f and f != source:
+            if f and f != filestream:
                 f.close()
-            self._log.Exception("Read-error for %s" % source)
+            self._log.Exception("Read-error for %s" % filestream)
         return result
 
-    def _InitState(self):
-        s = _State();
-        s.html = "<div class='izumi'>\n"
-        return s
+    def _ParseStream(self, state):
+        is_comment = False
 
-    def _CloseState(self, state):
-        state.html += "</div>\n"
-        return state.html, state.tags, state.cats, state.images
+        while not state.EndOfFile():
+            line = state.ReadLine()
+            if line is None:
+                break
+        
+            if not is_comment:
+                m = re.match("$", string)
 
-    def _ProcessLine(self, state, line):
-        # placeholder
-        state.html += line
+        # end of file reached
 
 #------------------------
 # Local Variables:

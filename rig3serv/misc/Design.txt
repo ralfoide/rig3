@@ -286,7 +286,7 @@ For the presentation:
 - [rig:url:size] -- to generate a rig link
 
 For list, I'll try something different. First I won't implement indentation
-in the first shot (will have to be later, when needed.) And a buller-point list
+in the first shot (will have to be later, when needed.) And a bullet-point list
 will keep going till there's an empty line. That means each entry in the list
 can be multi-line as long as it doesn't start with a star.
 
