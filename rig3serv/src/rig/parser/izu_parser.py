@@ -18,8 +18,11 @@ class _State(object):
         self._tags = {}
         self._sections = {}
 
-    def Section(self, name):
-        return self._sections.get(name, "")
+    def Section(self, section):
+        return self._sections.get(section, "")
+    
+    def Append(self, section, content):
+        self._sections[section] = self._sections.get(section, "") + content
 
     def EndOfFile(self):
         return self._file is None
@@ -85,6 +88,7 @@ class IzuParser(object):
 
     def _ParseStream(self, state):
         is_comment = False
+        curr_section = "en"
 
         while not state.EndOfFile():
             line = state.ReadLine()
@@ -92,7 +96,25 @@ class IzuParser(object):
                 break
         
             if not is_comment:
-                m = re.match("$", string)
+                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", string)
+                if m:
+                    # A comment has been opened, just use the start of the line
+                    is_comment = True
+                    line = m.group("line") or ""
+            if is_comment:
+                m = re.match(".*--\](?P<line>.*)$", string)
+                if m:
+                    # A comment is being closed.
+                    # Note that this handles the case of a line such as
+                    #   ....[!-- ... --]...
+                    # but it does not handle the reverse case of
+                    #   ....--] ... [!-- ...
+                    is_comment = False
+                    line = m.group("line") or ""
+            
+            if line:
+                state.Append(curr_section, line)
+                
 
         # end of file reached
 
