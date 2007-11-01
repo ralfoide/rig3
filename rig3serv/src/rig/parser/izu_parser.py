@@ -127,7 +127,7 @@ class IzuParser(object):
 
             # --- comments
             # First take care of the case of comment that opens and close on the same line
-            line = re.sub(r"(^|[^!])\[!--.*?--\]", r"\1", line)
+            line = re.sub(r"(^|[^\[])\[!--.*?--\]", r"\1", line)
 
             # Now handle the case of a comment that gets closed and another one opened
             # on the line...
@@ -137,12 +137,19 @@ class IzuParser(object):
                     # A comment is being closed.
                     is_comment = False
                     line = m.group("line") or ""
+                else:
+                    # We're still in a comment and it's not being closed, skip line
+                    continue
+
             if not is_comment:
                 m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", line)
                 if m:
                     # A comment has been opened, just use the start of the line
                     is_comment = True
                     line = m.group("line") or ""
+                    # Skip empty lines (they don't generate <p> in a comment)
+                    if not line:
+                        continue
 
             # --- formatting tags
             # disable HTML as early as possible: only < >, not &
@@ -154,10 +161,16 @@ class IzuParser(object):
                 line = "<p>"
 
             # Bold: __word__
-            line = re.sub(r"__(.*?)__", r"<b>\1</b>", line)
+            line = re.sub(r"(^|[^_])__([^_].*?)__", r"\1<b>\2</b>", line)
 
             # Italics: ''word''
-            line = re.sub(r"''(.*?)''", r"<i>\1</i>", line)
+            line = re.sub(r"(^|[^'])''([^'].*?)''", r"\1<i>\2</i>", line)
+
+            # Remove escapes: double-[ which were used to escape normal [ tags.
+            # and same for double-underscore, double-quotes
+            line = re.sub(r"\[(\[+)", r"\1", line)
+            line = re.sub(r"_(_+)", r"\1", line)
+            line = re.sub(r"'('+)", r"\1", line)
 
             # --- append to buffer
             # skip if line is empty
