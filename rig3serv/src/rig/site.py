@@ -201,7 +201,9 @@ class Site(object):
             izu_file = os.path.join(source_dir, INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
                            izu_file)
-            html, tags, cats, images = self._izu_parser.RenderFileToHtml(izu_file)
+            tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
+            html = sections.get("en", "")
+            cats = tags.get("cat", [])
             content = self._FillTemplate(self._theme, "entry.html",
                                          title=title,
                                          text=html,

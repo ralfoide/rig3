@@ -8,8 +8,6 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
-from StringIO import StringIO
-
 from tests.rig_test_case import RigTestCase
 from rig.parser.izu_parser import IzuParser
 
@@ -29,10 +27,9 @@ class IzuParserTest(RigTestCase):
         self.assertNotEqual(None, self.m)
         
         text = "[izu-tag]\nLine 1\nLine 2\n\nLine 3"
-        f = StringIO(text)
-        html, tags, cats, images = self.m.RenderFileToHtml(f)
-        f.close()
-        self.assertEquals("<div class='izumi'>\n[izu-tag]\nLine 1\nLine 2\n\nLine 3</div>\n", html)
+        tags, sections = self.m.RenderStringToHtml(text)
+        html = sections.get("en", "")
+        self.assertEquals('<div class="izumi">[izu-tag]Line 1\nLine 2<p>Line 3</div>', html)
 
 
 #------------------------

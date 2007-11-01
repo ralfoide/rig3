@@ -15,7 +15,7 @@ from StringIO import StringIO
 #------------------------
 class _State(object):
     def __init__(self, _file):
-        self._file = file
+        self._file = _file
         self._tags = {}
         self._sections = {}
 
@@ -51,6 +51,20 @@ class _State(object):
                 line = line.strip("\r\n")
         return line
 
+    def Close(self):
+        """
+        Ends usage of the State and returns a tuple that will be returned by
+        RenderFiletoHtml.
+        
+        Returns tuple(dict: tags, dict: sections)
+        """
+        # Wrap existing HTML sessions in the appropriate div
+        for k in self._sections.keys():
+            if isinstance(self._sections[k], str):
+                self._sections[k] = '<div class="izu">%s</div>' % self._sections[k]
+        return self._tags, self._sections
+
+
 #------------------------
 class IzuParser(object):
     """
@@ -70,9 +84,9 @@ class IzuParser(object):
         a string buffer.
         
         Returns a tuple:
-        - list of izumi header tags (can be an empty list, but not None)
+        - dict of izumi header tags (can be an empty list, but not None)
             - most are just srtings. The "cat" (categories) tag is a list of strings. 
-        - list of sections.
+        - dict of sections.
             - most are HTML content.
             - the "images" section must be a list of RIG urls.
         """
