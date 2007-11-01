@@ -29,7 +29,7 @@ class IzuParserTest(RigTestCase):
         text = "[izu-tag]\nLine 1\nLine 2\n\nLine 3"
         tags, sections = self.m.RenderStringToHtml(text)
         html = sections.get("en", "")
-        self.assertEquals('<div class="izumi">[izu-tag]Line 1\nLine 2<p>Line 3</div>', html)
+        self.assertEquals('<div class="izu">[izu-tag]\nLine 1\nLine 2<p>Line 3</div>', html)
 
 
 #------------------------

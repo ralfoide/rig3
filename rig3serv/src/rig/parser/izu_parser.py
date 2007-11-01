@@ -29,7 +29,7 @@ class _State(object):
         self._sections[section] += content
 
     def EndsWith(self, section, word):
-        return self._sections[section].endsWith(word)
+        return self._sections[section].endswith(word)
 
     def EndOfFile(self):
         return self._file is None
@@ -124,7 +124,8 @@ class IzuParser(object):
             line = state.ReadLine()
             if line is None:
                 break
-        
+
+            # --- comments
             # First take care of the case of comment that opens and close on the same line
             line = re.sub(r"(^|[^!])\[!--.*?--\]", r"\1", line)
 
@@ -143,18 +144,39 @@ class IzuParser(object):
                     is_comment = True
                     line = m.group("line") or ""
 
+            # --- formatting tags
+            # disable HTML as early as possible: only < >, not &
+            line = line.replace(">", "&gt;")
+            line = line.replace("<", "&lt;")
+
+            # empty lines are paragraphs
+            if line == "":
+                line = "<p>"
+
             # Bold: __word__
             line = re.sub(r"__(.*?)__", r"<b>\1</b>", line)
 
             # Italics: ''word''
             line = re.sub(r"''(.*?)''", r"<i>\1</i>", line)
-            
-            if line:
-                append = True
-                if line in [ "<br>", "<p>" ]:
-                    append = not state.EndsWith(curr_section, line)
-                if append:
-                    state.Append(curr_section, line)
+
+            # --- append to buffer
+            # skip if line is empty
+            if not line:
+                continue
+
+            # don't append <br> to <br> or <p> to <p>
+            if (line in [ "<br>", "<p>" ] and
+                state.EndsWith(curr_section, line)):
+                continue
+
+            # if neither the previous content nor the new one is a tag,
+            # we need to add some whitespace if not already present
+            if (not line[:1] in "< \t\r\n" and
+                not state.Section(curr_section)[-1:] in "> \t\r\n" ):
+                state.Append(curr_section, "\n")
+
+            # finally append the line to the section
+            state.Append(curr_section, line)
                 
 
         # end of file reached
