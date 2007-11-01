@@ -10,6 +10,7 @@ __author__ = "ralfoide@gmail.com"
 
 import re
 import sys
+from StringIO import StringIO
 
 #------------------------
 class _State(object):
@@ -19,10 +20,16 @@ class _State(object):
         self._sections = {}
 
     def Section(self, section):
-        return self._sections.get(section, "")
+        return self._sections.get(section, None)
+
+    def StartSection(self, section):
+        self._sections[section] = self._sections.get(section, "")
     
     def Append(self, section, content):
-        self._sections[section] = self._sections.get(section, "") + content
+        self._sections[section] += content
+
+    def EndsWith(self, section, word):
+        return self._sections[section].endsWith(word)
 
     def EndOfFile(self):
         return self._file is None
@@ -77,7 +84,7 @@ class IzuParser(object):
             else:
                 f = filestream
             
-            state = self._State(f)
+            state = _State(f)
             self._ParseStream(state)
             result = state.Close()
         except IOError:
@@ -86,34 +93,54 @@ class IzuParser(object):
             self._log.Exception("Read-error for %s" % filestream)
         return result
 
+    def RenderStringToHtml(self, source):
+        """
+        Renders an Izu source to HTML.
+        This is an utility wrapper that actually calls RenderFileToHtml.
+        """
+        f = StringIO(source)
+        return self.RenderFileToHtml(f)
+
     def _ParseStream(self, state):
         is_comment = False
         curr_section = "en"
+        state.StartSection(curr_section)
 
         while not state.EndOfFile():
             line = state.ReadLine()
             if line is None:
                 break
         
+            # First take care of the case of comment that opens and close on the same line
+            line = re.sub(r"(^|[^!])\[!--.*?--\]", r"\1", line)
+
+            # Now handle the case of a comment that gets closed and another one opened
+            # on the line...
+            if is_comment:
+                m = re.match(".*?--\](?P<line>.*)$", line)
+                if m:
+                    # A comment is being closed.
+                    is_comment = False
+                    line = m.group("line") or ""
             if not is_comment:
-                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", string)
+                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", line)
                 if m:
                     # A comment has been opened, just use the start of the line
                     is_comment = True
                     line = m.group("line") or ""
-            if is_comment:
-                m = re.match(".*--\](?P<line>.*)$", string)
-                if m:
-                    # A comment is being closed.
-                    # Note that this handles the case of a line such as
-                    #   ....[!-- ... --]...
-                    # but it does not handle the reverse case of
-                    #   ....--] ... [!-- ...
-                    is_comment = False
-                    line = m.group("line") or ""
+
+            # Bold: __word__
+            line = re.sub(r"__(.*?)__", r"<b>\1</b>", line)
+
+            # Italics: ''word''
+            line = re.sub(r"''(.*?)''", r"<i>\1</i>", line)
             
             if line:
-                state.Append(curr_section, line)
+                append = True
+                if line in [ "<br>", "<p>" ]:
+                    append = not state.EndsWith(curr_section, line)
+                if append:
+                    state.Append(curr_section, line)
                 
 
         # end of file reached

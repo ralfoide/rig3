@@ -298,3 +298,11 @@ support for block indentation and tables for example. That will wait till it
 becomes needed though.
 
 ----
+20071031 Izu Implementation
+
+Tags implementation should happen in this order:
+- comments (because it's easy)
+- paragraphs
+- bold and italics
+- sections
+
