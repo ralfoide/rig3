@@ -22,6 +22,7 @@ from rig.template.template import Template
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"
 INDEX_HTML = "index.html"
+_MEDIA_DIR = "media"
 _DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 _DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
@@ -68,6 +69,7 @@ class Site(object):
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
         self.MakeDestDirs()
+        self.CopyMedia()
         tree = self.Parse(self._source_dir, self._dest_dir)
         categories, items = self.GenerateItems(tree)
         self.GeneratePages(categories, items)
@@ -78,6 +80,14 @@ class Site(object):
         Creates the necessary directories in the destination.
         """
         self._MkDestDir(_ITEMS_DIR)            
+
+    def CopyMedia(self):
+        """
+        Copy media directory from selected template to destination
+        """
+        media = os.path.join(self._source_dir, _MEDIA_DIR)
+        if os.path.exists(media) and os.path.isdir(media):
+            self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR))
 
     def Parse(self, source_dir, dest_dir):
         """
@@ -338,10 +348,46 @@ class Site(object):
         Doesn't generate an error if the directory already exists.
         """
         try:
-            os.mkdir(os.path.join(self._dest_dir, rel_dir))
+            os.makedirs(os.path.join(self._dest_dir, rel_dir))
         except OSError, e:
             if e.errno != errno.EEXIST:
                 raise
+
+    def _CopyDir(self, source_dir, dest_dir, skip=[ "CVS", ".svn" ]):
+        """
+        Copies a directory (recursively, with all its content) into
+        a given destination. OVerwrites existing content. This doesn't
+        clean the output so it will merge with existing content, if any.
+        Also it will fail if:
+        - the destination is not a directory
+        - the destination is not writable/executable
+        
+        This automatically skips CVS and .svn directories.
+        """
+        # create dest dir
+        try:
+            os.makedirs(dest_dir)
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
+
+        files = os.listdir(source_dir)
+        for name in files:
+            if name in skip:
+                continue
+            ps = os.path.join(source_dir, name)
+            if os.path.isdir(ps):
+                self._CopyDir(ps, os.path.join(dest_dir, name), skip)
+            else:
+                # copy file
+                dest = file(os.path.join(dest_dir, name), "wb")
+                source = file(ps, "rb")
+                s = source.read(4096)
+                while len(s):
+                    dest.write(s)
+                    s = source.read(4096)
+                source.close()
+                dest.close()
 
 
 #------------------------
