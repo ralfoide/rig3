@@ -91,17 +91,35 @@ class IzuParserTest(RigTestCase):
                           sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
 
+        tags, sections = self.m.RenderStringToHtml("line 1[s:en]line 2")
+        self.assertEquals('<div class="izu">line 1\nline 2</div>', sections.get("en", None))
+        self.assertEquals(None, sections.get("fr", None))
+
+        tags, sections = self.m.RenderStringToHtml("line 1\n[s:en]line 2")
+        self.assertEquals('<div class="izu">line 1\nline 2</div>', sections.get("en", None))
+        self.assertEquals(None, sections.get("fr", None))
+
         tags, sections = self.m.RenderStringToHtml("section 1\n[s:fr]section 2")
-        self.assertEquals('<div class="izu">secion 1</div>', sections.get("en", None))
-        self.assertEquals('<div class="izu">secion 2</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu">section 1</div>', sections.get("en", None))
+        self.assertEquals('<div class="izu">section 2</div>', sections.get("fr", None))
 
         tags, sections = self.m.RenderStringToHtml("[s:en]section 1\n[s:fr]section 2")
-        self.assertEquals('<div class="izu">secion 1</div>', sections.get("en", None))
-        self.assertEquals('<div class="izu">secion 2</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu">section 1</div>', sections.get("en", None))
+        self.assertEquals('<div class="izu">section 2</div>', sections.get("fr", None))
 
         tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]section 2")
-        self.assertEquals('<div class="izu">secion 2</div>', sections.get("en", None))
-        self.assertEquals('<div class="izu">secion 1</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu">section 1</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu">section 2</div>', sections.get("en", None))
+
+        # as an acceptable side effect, a section right before EOF appears as an
+        # empty line so it generates a <p>
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1[s:en]")
+        self.assertEquals('<div class="izu">section 1</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu"><p></div>', sections.get("en", None))
+
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]")
+        self.assertEquals('<div class="izu">section 1</div>', sections.get("fr", None))
+        self.assertEquals('<div class="izu"><p></div>', sections.get("en", None))
         
 
 #------------------------

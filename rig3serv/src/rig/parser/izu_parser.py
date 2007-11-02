@@ -22,8 +22,8 @@ class _State(object):
     def Section(self, section):
         return self._sections.get(section, None)
 
-    def StartSection(self, section):
-        self._sections[section] = self._sections.get(section, "")
+    def InitSection(self, section, default):
+        self._sections[section] = self._sections.get(section, default)
     
     def Append(self, section, content):
         self._sections[section] += content
@@ -119,12 +119,12 @@ class IzuParser(object):
         return self.RenderFileToHtml(f)
 
     def _ParseStream(self, state):
-        is_comment = False
-        curr_section = "en"
-        state.StartSection(curr_section)
-
         # custom section handlers. Unlisted sections use the "default" formatter
         formatters = { "images": self._ImagesSection }
+
+        is_comment = False
+        curr_section = "en"
+        curr_formatter = formatters.get(curr_section, self._DefaultSection)
 
         while not state.EndOfFile():
             line = state.ReadLine()
@@ -158,24 +158,33 @@ class IzuParser(object):
                         continue
 
             # --- structural tags
-            # section. Only supports one [s:section_name] per line.
-            m = re.match(r"(?P<start>.*?(?:^|[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
-            if m:
-                start = m.group("start") or ""
-                end   = m.group("end") or ""
-                name  = m.group("name") or ""
-                line = start + end
-                if name:
-                    curr_section = name
-                else:
-                    # log an error and ignore
-                    self._log.Error("Invalid section name in %s", self._filename)
+            while line is not None:
+                # section. Supports multile [s:section_name] per line.
+                m = re.match(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
+                if m:
+                    start = m.group("start")
+                    line  = m.group("end")
+                    name  = m.group("name")
 
-            # Process according to current formatter
-            formatters.get(curr_section, self._DefaultSection)(state, curr_section, line)
+                    if start:
+                        curr_formatter(state, curr_section, start)
+    
+                    if name:
+                        curr_section = name
+                        curr_formatter = formatters.get(curr_section, self._DefaultSection)
+                        continue
+                    else:
+                        # log an error and ignore
+                        self._log.Error("Invalid section name in %s", self._filename)
+    
+                # Process according to current formatter
+                curr_formatter(state, curr_section, line)
+                line = None
         # end of file reached
 
     def _DefaultSection(self, state, curr_section, line):
+        state.InitSection(curr_section, "")
+
         # --- formatting tags
         # disable HTML as early as possible: only < >, not &
         line = line.replace(">", "&gt;")
@@ -217,6 +226,7 @@ class IzuParser(object):
         state.Append(curr_section, line)
 
     def _ImagesSection(self, state, curr_section, line):
+        state.InitSection(curr_section, [])
         raise NotImplementedError("Izu [s:images] section not implemented yet")
 
 #------------------------
