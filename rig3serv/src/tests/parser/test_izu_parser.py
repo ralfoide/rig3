@@ -85,6 +85,24 @@ class IzuParserTest(RigTestCase):
             '<div class="izu">foo\nbar</div>',
             self._Render("foo[!-- blah blah\n\n\n\nbleh bleh --]bar"))
 
+    def testSection(self):
+        tags, sections = self.m.RenderStringToHtml("default section is en")
+        self.assertEquals('<div class="izu">default section is en</div>',
+                          sections.get("en", None))
+        self.assertEquals(None, sections.get("fr", None))
+
+        tags, sections = self.m.RenderStringToHtml("section 1\n[s:fr]section 2")
+        self.assertEquals('<div class="izu">secion 1</div>', sections.get("en", None))
+        self.assertEquals('<div class="izu">secion 2</div>', sections.get("fr", None))
+
+        tags, sections = self.m.RenderStringToHtml("[s:en]section 1\n[s:fr]section 2")
+        self.assertEquals('<div class="izu">secion 1</div>', sections.get("en", None))
+        self.assertEquals('<div class="izu">secion 2</div>', sections.get("fr", None))
+
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]section 2")
+        self.assertEquals('<div class="izu">secion 2</div>', sections.get("en", None))
+        self.assertEquals('<div class="izu">secion 1</div>', sections.get("fr", None))
+        
 
 #------------------------
 # Local Variables:

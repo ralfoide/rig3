@@ -95,12 +95,15 @@ class IzuParser(object):
         try:
             if isinstance(filestream, str):
                 f = file(filestream, "rU", 1)  # 1=line buffered, universal
+                self._filename = filestream
             else:
                 f = filestream
+                self._filename = "<unknown stream>"
             
             state = _State(f)
             self._ParseStream(state)
             result = state.Close()
+            self._filename = None
         except IOError:
             if f and f != filestream:
                 f.close()
@@ -119,6 +122,9 @@ class IzuParser(object):
         is_comment = False
         curr_section = "en"
         state.StartSection(curr_section)
+
+        # custom section handlers. Unlisted sections use the "default" formatter
+        formatters = { "images": self._ImagesSection }
 
         while not state.EndOfFile():
             line = state.ReadLine()
@@ -151,48 +157,67 @@ class IzuParser(object):
                     if not line:
                         continue
 
-            # --- formatting tags
-            # disable HTML as early as possible: only < >, not &
-            line = line.replace(">", "&gt;")
-            line = line.replace("<", "&lt;")
+            # --- structural tags
+            # section. Only supports one [s:section_name] per line.
+            m = re.match(r"(?P<start>.*?(?:^|[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
+            if m:
+                start = m.group("start") or ""
+                end   = m.group("end") or ""
+                name  = m.group("name") or ""
+                line = start + end
+                if name:
+                    curr_section = name
+                else:
+                    # log an error and ignore
+                    self._log.Error("Invalid section name in %s", self._filename)
 
-            # empty lines are paragraphs
-            if line == "":
-                line = "<p>"
-
-            # Bold: __word__
-            line = re.sub(r"(^|[^_])__([^_].*?)__", r"\1<b>\2</b>", line)
-
-            # Italics: ''word''
-            line = re.sub(r"(^|[^'])''([^'].*?)''", r"\1<i>\2</i>", line)
-
-            # Remove escapes: double-[ which were used to escape normal [ tags.
-            # and same for double-underscore, double-quotes
-            line = re.sub(r"\[(\[+)", r"\1", line)
-            line = re.sub(r"_(_+)", r"\1", line)
-            line = re.sub(r"'('+)", r"\1", line)
-
-            # --- append to buffer
-            # skip if line is empty
-            if not line:
-                continue
-
-            # don't append <br> to <br> or <p> to <p>
-            if (line in [ "<br>", "<p>" ] and
-                state.EndsWith(curr_section, line)):
-                continue
-
-            # if neither the previous content nor the new one is a tag,
-            # we need to add some whitespace if not already present
-            if (not line[:1] in "< \t\r\n" and
-                not state.Section(curr_section)[-1:] in "> \t\r\n" ):
-                state.Append(curr_section, "\n")
-
-            # finally append the line to the section
-            state.Append(curr_section, line)
-                
-
+            # Process according to current formatter
+            formatters.get(curr_section, self._DefaultSection)(state, curr_section, line)
         # end of file reached
+
+    def _DefaultSection(self, state, curr_section, line):
+        # --- formatting tags
+        # disable HTML as early as possible: only < >, not &
+        line = line.replace(">", "&gt;")
+        line = line.replace("<", "&lt;")
+
+        # empty lines are paragraphs
+        if line == "":
+            line = "<p>"
+
+        # Bold: __word__
+        line = re.sub(r"(^|[^_])__([^_].*?)__", r"\1<b>\2</b>", line)
+
+        # Italics: ''word''
+        line = re.sub(r"(^|[^'])''([^'].*?)''", r"\1<i>\2</i>", line)
+
+        # Remove escapes: double-[ which were used to escape normal [ tags.
+        # and same for double-underscore, double-quotes
+        line = re.sub(r"\[(\[+)", r"\1", line)
+        line = re.sub(r"_(_+)", r"\1", line)
+        line = re.sub(r"'('+)", r"\1", line)
+
+        # --- append to buffer
+        # skip if line is empty
+        if not line:
+            return
+
+        # don't append <br> to <br> or <p> to <p>
+        if (line in [ "<br>", "<p>" ] and
+            state.EndsWith(curr_section, line)):
+            return
+
+        # if neither the previous content nor the new one is a tag,
+        # we need to add some whitespace if not already present
+        if (not line[:1] in "< \t\r\n" and
+            not state.Section(curr_section)[-1:] in "> \t\r\n" ):
+            state.Append(curr_section, "\n")
+
+        # finally append the line to the section
+        state.Append(curr_section, line)
+
+    def _ImagesSection(self, state, curr_section, line):
+        raise NotImplementedError("Izu [s:images] section not implemented yet")
 
 #------------------------
 # Local Variables:
