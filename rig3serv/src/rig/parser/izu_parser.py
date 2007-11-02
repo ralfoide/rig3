@@ -12,12 +12,30 @@ import re
 import sys
 from StringIO import StringIO
 
+_DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
+                       r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
+
 #------------------------
 class _State(object):
     def __init__(self, _file):
         self._file = _file
         self._tags = {}
         self._sections = {}
+        self._curr_section = None
+        self._curr_formatter = None
+
+    def Tags(self):
+        return self._tags
+
+    def CurrSection(self):
+        return self._curr_section
+
+    def SetCurrSection(self, curr_section, curr_formatter):
+        self._curr_section = curr_section
+        self._curr_formatter = curr_formatter
+
+    def CurrFormatter(self):
+        return self._curr_formatter
 
     def Section(self, section):
         return self._sections.get(section, None)
@@ -73,10 +91,14 @@ class IzuParser(object):
     """
     def __init__(self, log):
         self._log = log
+        # custom section handlers. Unlisted sections use the "default" formatter
+        self._formatters = { "images": self._ImagesSection }
+        self._tag_handlers = { "cat": self._CatHandler,
+                               "date": self._DateHandler }
 
     def RenderFileToHtml(self, filestream):
         """
-        Parses the file 'filename' and return an HTML snippet for it.
+        Parses the file 'filename' and returns an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
         
         If source is a string, it is considered a path to be opened as read-only text.
@@ -119,12 +141,9 @@ class IzuParser(object):
         return self.RenderFileToHtml(f)
 
     def _ParseStream(self, state):
-        # custom section handlers. Unlisted sections use the "default" formatter
-        formatters = { "images": self._ImagesSection }
-
         is_comment = False
-        curr_section = "en"
-        curr_formatter = formatters.get(curr_section, self._DefaultSection)
+        state.SetCurrSection("en",
+                             self._formatters.get("en", self._DefaultSection))
 
         while not state.EndOfFile():
             line = state.ReadLine()
@@ -159,30 +178,62 @@ class IzuParser(object):
 
             # --- structural tags
             while line is not None:
-                # section. Supports multile [s:section_name] per line.
-                m = re.match(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
-                if m:
-                    start = m.group("start")
-                    line  = m.group("end")
-                    name  = m.group("name")
-
-                    if start:
-                        curr_formatter(state, curr_section, start)
-    
-                    if name:
-                        curr_section = name
-                        curr_formatter = formatters.get(curr_section, self._DefaultSection)
-                        continue
-                    else:
-                        # log an error and ignore
-                        self._log.Error("Invalid section name in %s", self._filename)
-    
+                line = self._ParseIzuTags(state, line)
+                loop, line = self._ParseIzuSection(state, line)
+                if loop:
+                    continue
                 # Process according to current formatter
-                curr_formatter(state, curr_section, line)
+                state.CurrFormatter()(state, line)
                 line = None
         # end of file reached
 
-    def _DefaultSection(self, state, curr_section, line):
+
+    # --- structural parsers
+
+    def _ParseIzuTags(self, state, line):
+        while line:
+            m = re.match("(?P<start>(?:^|.*[^\[]))\[izu:(?P<tag>[^:\]]+):(?P<value>[^\]]*)\](?P<end>.*)$", line)
+            if m:
+                start = m.group("start") or ""
+                end   = m.group("end") or ""
+                line = start + end
+
+                tag  = m.group("tag")
+                value  = m.group("value")
+                if tag:
+                    self._tag_handlers.get(tag, self._DefaultTagHandler)(state, tag, value)
+                else:
+                    # log an error and ignore
+                    self._log.Error("Invalid tag %s:%s in %s", tag, value, self._filename)
+            else:
+                break
+        return line
+
+    def _ParseIzuSection(self, state, line):
+        # section. Supports multile [s:section_name] per line.
+        m = re.match(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
+        if m:
+            start = m.group("start")
+            line  = m.group("end")
+            name  = m.group("name")
+
+            if start:
+                state.CurrFormatter()(state, start)
+
+            if name:
+                state.SetCurrSection(name,
+                                     self._formatters.get(name, self._DefaultSection))
+                return True, line  # loop on line
+            else:
+                # log an error and ignore
+                self._log.Error("Invalid section name in %s", self._filename)
+        return False, line  # don't loop
+
+
+    # --- section formatters
+
+    def _DefaultSection(self, state, line):
+        curr_section = state.CurrSection()
         state.InitSection(curr_section, "")
 
         # --- formatting tags
@@ -228,6 +279,26 @@ class IzuParser(object):
     def _ImagesSection(self, state, curr_section, line):
         state.InitSection(curr_section, [])
         raise NotImplementedError("Izu [s:images] section not implemented yet")
+
+
+    # --- tag handlers
+
+    def _DefaultTagHandler(self, state, tag, value):
+        state.Tags()[tag] = value.strip()
+
+    def _DateHandler(self, state, tag, value):
+        m = _DATE_YMD.match(value.strip())
+        if m:
+            d = datetime(int(m.group("year" ) or 0),
+                         int(m.group("month") or 0),
+                         int(m.group("day"  ) or 0),
+                         int(m.group("hour" ) or 0),
+                         int(m.group("min"  ) or 0),
+                         int(m.group("sec"  ) or 0))
+            state.Tags()[tag] = d
+
+    def _CatHandler(self, state, tag, value):
+        state.Tags()[tag] = [s.strip() for s in value.split(",")]
 
 #------------------------
 # Local Variables:
