@@ -10,6 +10,7 @@ __author__ = "ralfoide@gmail.com"
 
 import re
 import sys
+from datetime import datetime
 from StringIO import StringIO
 
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"

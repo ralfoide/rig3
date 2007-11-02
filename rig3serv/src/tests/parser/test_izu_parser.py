@@ -8,6 +8,8 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+from datetime import datetime
+
 from tests.rig_test_case import RigTestCase
 from rig.parser.izu_parser import IzuParser
 
@@ -120,7 +122,20 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]")
         self.assertEquals('<div class="izu">section 1</div>', sections.get("fr", None))
         self.assertEquals('<div class="izu"><p></div>', sections.get("en", None))
-        
+    
+    def testIzuTags(self):
+        tags, sections = self.m.RenderStringToHtml("[izu:author:ralf]")
+        self.assertDictEquals({ "author": "ralf" }, tags)
+
+        tags, sections = self.m.RenderStringToHtml("[izu:date:2006-05-28 17:18:05]")
+        self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 5) }, tags)
+
+        tags, sections = self.m.RenderStringToHtml("[izu:cat:videos,photos]")
+        self.assertDictEquals({ "cat":  [ "videos", "photos" ] }, tags)
+
+        tags, sections = self.m.RenderStringToHtml("[izu:title:some random title with : colon]")
+        self.assertDictEquals({ "title":  "some random title with : colon" }, tags)
+
 
 #------------------------
 # Local Variables:
