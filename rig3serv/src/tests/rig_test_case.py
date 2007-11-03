@@ -65,7 +65,8 @@ class RigTestCase(unittest.TestCase):
     def MakeTempDir(self):
         """
         Utility to create a temp directory. Use RemoveDir() to remove it later.
-        Really, just a wrapper around tempfile.mkdtemp.        
+        Really, just a wrapper around tempfile.mkdtemp. Beause the directory is
+        new, we are pretty much guaranteed it will be empty.
         """
         return tempfile.mkdtemp()
     

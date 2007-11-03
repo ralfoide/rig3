@@ -88,7 +88,7 @@ class SiteTest(RigTestCase):
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
         self.assertListEquals([], p.SubDirs()[1].SubDirs())
 
-    def test_SimpleFileName(self):
+    def testSimpleFileName(self):
         m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
                  self._tempdir, DEFAULT_THEME)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
@@ -100,7 +100,7 @@ class SiteTest(RigTestCase):
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof", 50))
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
-    def test_TemplateDir(self):
+    def testTemplateDir(self):
         m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
                  self._tempdir, DEFAULT_THEME)
         td = m._TemplateDir()
@@ -113,7 +113,7 @@ class SiteTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(td, "default", "index.html")))
         self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.html")))
 
-    def test_FillTemplate(self):
+    def testFillTemplate(self):
         theme = DEFAULT_THEME
         m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
                      self._tempdir, theme)
@@ -167,6 +167,15 @@ class SiteTest(RigTestCase):
         self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10-27 12-13-14"))
         self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007/10/27 12:13:14"))
         self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10/27,12/13/14"))
+
+    def testCopyMedia(self):
+        theme = DEFAULT_THEME
+        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
+                     self._tempdir, theme)
+        m.CopyMedia()
+        self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
+        self.assertTrue(os.path.exists(os.path.join(self._tempdir, "media", "style.css")))
+        
 
 #------------------------
 # Local Variables:

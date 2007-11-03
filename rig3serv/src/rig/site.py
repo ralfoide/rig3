@@ -85,10 +85,9 @@ class Site(object):
         """
         Copy media directory from selected template to destination
         """
-        media = os.path.join(self._TemplateDir(), _MEDIA_DIR)
-        if os.path.exists(media):
-            if os.path.isdir(media):
-                self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR))
+        media = os.path.join(self._TemplateDir(), self._theme, _MEDIA_DIR)
+        if os.path.isdir(media):
+            self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR))
 
     def Parse(self, source_dir, dest_dir):
         """
