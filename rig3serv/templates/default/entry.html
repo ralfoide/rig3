@@ -8,14 +8,28 @@ Parameters:
 - image: string, An optional image (a full <img/> tag)
 ]]
 <div class="entry">
+
 <div class="title">[[html title]]</div>
+
+<div class="content intro">
 [[html date]]
 [[if "author" in tags]]by [[html tags["author"] ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
-<br/> 
+</div>
+
+<div class="content en">
+<img src="http://www.samchris.com/images/flag_usa.gif" />
 [[raw text]]
+</div>
+
+<div class="content fr">
+<img src="http://www.samchris.com/images/flag_usa.fr" />
+</div>
+
 [[if image]]
-<br/>
+<div class="content images">
 [[raw image]]
+</div>
 [[end]]
+
 </div>

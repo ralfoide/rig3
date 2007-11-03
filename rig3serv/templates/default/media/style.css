@@ -1,6 +1,41 @@
 /* Default style for default template */
 
-.entry h2 {
+/* --- base style extracted from my own wordpress theme
+   http://www.samchris.com/blog/wp-content/themes/ralf1/style.css 
+*/
+
+body {
+	color:#29303B;
+	background: #F3F6ED url(http://www.samchris.com/blog/wp-content/themes/ralf1/img/content_bg.gif) repeat;
+}
+
+.header {
+	background:#fff url(http://www.samchris.com/images/WP-Top-Banner-Beach.jpg) no-repeat bottom; 	
+ 	height: 183px;
+	margin: 0 auto;
+	width:760px;
+	padding:0;
+	border:#fc9 1px solid;
+}
+
+/* --- custom local style */
+
+.entry {
+  margin-left: 1em;
+}
+
+.izu {
+  display: inline;
+}
+
+.entry .title {
   background-color: green;
   color: yellow; 
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-left: 0em;
+  padding-left: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.3em;
 }
