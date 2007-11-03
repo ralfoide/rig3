@@ -137,8 +137,8 @@ class SiteTest(RigTestCase):
             html)
 
         keywords = { "title": "MyTitle",
-                     "text": "Main <b>Text Content</b> as HTML",
-                     "image": "<a href='page_url'><img href='image_url'/></a>" }
+                     "sections": { "en": "Main <b>Text Content</b> as HTML",
+                                   "images": "<a href='page_url'><img href='image_url'/></a>" } }
         html = m._FillTemplate(theme, "entry.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
@@ -147,6 +147,7 @@ class SiteTest(RigTestCase):
                 Main <b>Text Content</b> as HTML
                 <br/>
                 <a href='page_url'><img href='image_url'/></a>
+                <br/>
                 </div>
                 """,
             html)
@@ -203,7 +204,8 @@ class SiteTest(RigTestCase):
         item = m.GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
-        self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>', item.content)
+        self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
+                               item.content)
         self.assertListEquals([], item.categories)
         self.assertEquals(os.path.join("items", "2006-05_Movies-index_html"),
                           item.rel_filename)

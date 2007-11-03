@@ -11,7 +11,7 @@ Parameters:
 ]]
 <div class="entry">
 <h2>[[html title]]</h2>
-[[raw text]]
-<br/>
-[[raw image]]
+[[for name in ["en", "html", "images"] ]]
+  [[if name in sections]][[raw sections[name] ]] <br/> [[end]]
+[[end]]
 </div>

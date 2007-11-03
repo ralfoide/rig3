@@ -24,9 +24,8 @@ Relevant links:
 </head>
 <body>
 <div class="header"></div>
-[[for entry in entries]]
-  [[raw entry]]
-  <hr width="80%"/>
+[[for html_entry in entries]]
+  [[raw html_entry]]
 [[end]]
 <hr width="80%"/>
 [[if prev_url]]<a href="[[url prev_url]]">Prev</a>[[end]]

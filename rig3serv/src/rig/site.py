@@ -208,17 +208,18 @@ class Site(object):
         title = os.path.basename(source_dir)
         date = self._DateFromTitle(title) or datetime.today()
         main_filename = ""
+        sections = {}
+        tags = {}
         if INDEX_IZU in all_files:
             main_filename = INDEX_IZU
             izu_file = os.path.join(source_dir, INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
-            html = sections.get("en", "")
         elif INDEX_HTML in all_files:
             main_filename = INDEX_HTML
             html_file = os.path.join(source_dir, INDEX_HTML)
-            html = self._ReadFile(html_file)
+            html = sections["html"] = self._ReadFile(html_file)
             tags = self._izu_parser.ParseFirstLine(html)
         else:
             self._log.Error("No content for source %s", source_dir)
@@ -230,11 +231,10 @@ class Site(object):
 
         content = self._FillTemplate(self._theme, "entry.html",
                                      title=title,
-                                     text=html,
+                                     sections=sections,
                                      date=date,
                                      tags=tags,
-                                     categories=cats,
-                                     image="")
+                                     categories=cats)
         filename = self._SimpleFileName(os.path.join(rel_dest_dir, main_filename))
         assert self._WriteFile(content,
                                os.path.join(self._dest_dir, _ITEMS_DIR),
