@@ -8,8 +8,14 @@ Parameters:
 - image: string, An optional image (a full <img/> tag)
 ]]
 <div class="entry">
-<h2>[[html title]]</h2>
+<div class="title">[[html title]]</div>
+[[html date]]
+[[if "author" in tags]]by [[html author]][[end]]
+[[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
+<br/> 
 [[raw text]]
+[[if image]]
 <br/>
 [[raw image]]
+[[end]]
 </div>

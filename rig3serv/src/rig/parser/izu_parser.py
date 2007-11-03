@@ -141,6 +141,17 @@ class IzuParser(object):
         f = StringIO(source)
         return self.RenderFileToHtml(f)
 
+    def ParseFirstLine(self, source):
+        a = source.find("\n")
+        if a != -1:
+            source = source[:a]
+        a = source.find("\r")
+        if a != -1:
+            source = source[:a]
+        tags, sections = self.RenderStringToHtml(source)
+        return tags
+            
+
     def _ParseStream(self, state):
         is_comment = False
         state.SetCurrSection("en",

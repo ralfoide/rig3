@@ -211,12 +211,19 @@ class Site(object):
             izu_file = os.path.join(source_dir, INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
                            izu_file)
+
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
             html = sections.get("en", "")
             cats = tags.get("cat", [])
+            date = tags.get("date", date)  # override directory's date
+            title = tags.get("title", title)  # override directory's title
+
             content = self._FillTemplate(self._theme, "entry.html",
                                          title=title,
                                          text=html,
+                                         date=date,
+                                         tags=tags,
+                                         categories=cats,
                                          image="")
             filename = self._SimpleFileName(os.path.join(rel_dest_dir, INDEX_IZU))
             assert self._WriteFile(content,
@@ -226,12 +233,21 @@ class Site(object):
             return _Item(date, dest, content=content, categories=cats)
         elif INDEX_HTML in all_files:
             html_file = os.path.join(source_dir, INDEX_HTML)
+
+            tags = self._izu_parser.ParseFirstLine(html_file)
+            cats = tags.get("cat", [])
+            date = tags.get("date", date)  # override directory's date
+            title = tags.get("title", title)  # override directory's title
+
             html = self._ReadFile(html_file)
+
             content = self._FillTemplate(self._theme, "entry.html",
                                          title=title,
                                          text=html,
+                                         date=date,
+                                         tags=tags,
+                                         categories=cats,
                                          image="")
-            cats = []
             filename = self._SimpleFileName(os.path.join(rel_dest_dir, INDEX_HTML))
             assert self._WriteFile(content,
                                    os.path.join(self._dest_dir, _ITEMS_DIR),

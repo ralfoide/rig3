@@ -1,6 +1,6 @@
 /* Default style for default template */
 
-div.entry h2 {
+.entry h2 {
   background-color: green;
   color: yellow; 
 }
