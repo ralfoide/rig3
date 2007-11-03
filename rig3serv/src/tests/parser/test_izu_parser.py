@@ -136,6 +136,18 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml("[izu:title:some random title with : colon]")
         self.assertDictEquals({ "title":  "some random title with : colon" }, tags)
 
+        tags, sections = self.m.RenderStringToHtml("[izu:date:0000-00-00 00:00:00]")
+        self.assertDictEquals({}, tags)
+
+    def testParseFirstLine(self):
+        source = "<!-- [izu:author:ralf] [izu:date:2006-05-28 17:18:05] [izu:cat:] [izu:title:Video May/Mai 2006, Part 1] -->\nline 2\nline 3\n"
+        tags = self.m.ParseFirstLine(source)
+        self.assertDictEquals({ "title":  "Video May/Mai 2006, Part 1",
+                                "author": "ralf",
+                                "date":  datetime(2006, 5, 28, 17, 18, 5),
+                                "cat": [] },
+                               tags)
+
 
 #------------------------
 # Local Variables:

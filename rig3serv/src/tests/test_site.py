@@ -78,15 +78,19 @@ class SiteTest(RigTestCase):
         p = m.Parse(m._source_dir, m._dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
-        self.assertEquals(2, len(p.SubDirs()))
+        self.assertEquals(3, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
         self.assertIsInstance(DirParser, p.SubDirs()[1])
-        self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[0]._rel_curr_dest_dir)
-        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[1]._rel_curr_dest_dir)
+        self.assertIsInstance(DirParser, p.SubDirs()[2])
+        self.assertEquals("2006-05_Movies", p.SubDirs()[0]._rel_curr_dest_dir)
+        self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[1]._rel_curr_dest_dir)
+        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[2]._rel_curr_dest_dir)
         self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
-        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[1].Files())
+        self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
+        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[2].Files())
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
         self.assertListEquals([], p.SubDirs()[1].SubDirs())
+        self.assertListEquals([], p.SubDirs()[2].SubDirs())
 
     def testSimpleFileName(self):
         m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
@@ -175,7 +179,34 @@ class SiteTest(RigTestCase):
         m.CopyMedia()
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
         self.assertTrue(os.path.exists(os.path.join(self._tempdir, "media", "style.css")))
-        
+    
+    def testGenerateItems_Izu(self):
+        theme = DEFAULT_THEME
+        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
+                     self._tempdir, theme)
+        m.MakeDestDirs()
+        source_dir = os.path.join(self.getTestDataPath(), "album", "2007-10-07_Folder 1")
+        item = m.GenerateItem(source_dir, "2007-10-07_Folder 1", [ "index.izu" ])
+        self.assertNotEquals(None, item)
+        self.assertEquals(datetime(2007, 10, 07), item.date)
+        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
+        self.assertListEquals([], item.categories)
+        self.assertEquals(os.path.join("items", "2007-10-07_Folder-1-index_izu"),
+                          item.rel_filename)
+    
+    def testGenerateItems_Html(self):
+        theme = DEFAULT_THEME
+        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
+                     self._tempdir, theme)
+        m.MakeDestDirs()
+        source_dir = os.path.join(self.getTestDataPath(), "album", "2006-05_Movies")
+        item = m.GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])
+        self.assertNotEquals(None, item)
+        self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
+        self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>', item.content)
+        self.assertListEquals([], item.categories)
+        self.assertEquals(os.path.join("items", "2006-05_Movies-index_html"),
+                          item.rel_filename)
 
 #------------------------
 # Local Variables:

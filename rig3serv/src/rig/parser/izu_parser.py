@@ -142,6 +142,13 @@ class IzuParser(object):
         return self.RenderFileToHtml(f)
 
     def ParseFirstLine(self, source):
+        """
+        Parses the *first* line of a string -- the string is actual content,
+        not a filename. It returns any Izu tags found on the line.
+        
+        This is mostly an utility method to parse izu tags embedded in the
+        first line of an HTML file.
+        """
         a = source.find("\n")
         if a != -1:
             source = source[:a]
@@ -301,16 +308,20 @@ class IzuParser(object):
     def _DateHandler(self, state, tag, value):
         m = _DATE_YMD.match(value.strip())
         if m:
-            d = datetime(int(m.group("year" ) or 0),
-                         int(m.group("month") or 0),
-                         int(m.group("day"  ) or 0),
-                         int(m.group("hour" ) or 0),
-                         int(m.group("min"  ) or 0),
-                         int(m.group("sec"  ) or 0))
-            state.Tags()[tag] = d
+            try:
+                d = datetime(int(m.group("year" ) or 0),
+                             int(m.group("month") or 0),
+                             int(m.group("day"  ) or 0),
+                             int(m.group("hour" ) or 0),
+                             int(m.group("min"  ) or 0),
+                             int(m.group("sec"  ) or 0))
+                state.Tags()[tag] = d
+            except ValueError:
+                self._log.Error("Invalid tag 'izu:%s:%s' in %s", tag, value, self._filename)
+
 
     def _CatHandler(self, state, tag, value):
-        state.Tags()[tag] = [s.strip() for s in value.split(",")]
+        state.Tags()[tag] = [s.strip() for s in value.split(",") if s.strip()]
 
 #------------------------
 # Local Variables:

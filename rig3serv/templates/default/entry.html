@@ -10,7 +10,7 @@ Parameters:
 <div class="entry">
 <div class="title">[[html title]]</div>
 [[html date]]
-[[if "author" in tags]]by [[html author]][[end]]
+[[if "author" in tags]]by [[html tags["author"] ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
 <br/> 
 [[raw text]]
