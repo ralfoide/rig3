@@ -312,8 +312,40 @@ Tags implementation should happen in this order:
 Now I need tags for links/image inclusing, rig images and the application
 specific code for images.
 
+The image handle is an application logic, not a framework logic.
+At the framework part, there's nothing needed. An [s:images] section is currently
+implemented but I won't use it, so I might remove it.
+
+Instead what happens is that at the site level, when parsing one entry, we get a
+list of images. They have a specific name pattern, right now I use (pseudo-regexp):
+ ([A-Z][0-9]+)([ ._-+])(name).(jpe?g|.web.wmv|.web.mov|.original.mov)
+where the groups mean:
+ (index)      (rating) (name) (extension)
+
+The index is composed of a letter (camera's owner) and a unique index for the camera.
+An optional "p" can follow for a panorama.
+The rating mean:
+- no rating: space (I tend to avoid this)
+- poor: a dot
+- normal: an underscore
+- good: a dash
+- excellent: a plus
+
+For a given index, there might be several images which varying extensions.
+Typically for movies I have:
+- a thumbnail: .jpg
+- a web .mov and a web .wmv in low quality
+- the full MJPEG as original.mov
+
+The first idea is to have an heuristic as follow:
+- if there are any + ratings, show these images as medium size (i.e. 300-400 pixels)
+- if there are some - ratings, show these as thumbnails (say 64 pixels)
+- otherwise show nothing
+If any of the +/- ratings are movies (.mov/.wmv), show the .jpg thumbnail instead if it exists.
+  
+
 ----
-2007 Application
+2007 Site vs template logic
 
 Speaking of which, I should separate the generic code for parsing/generating
 a site from the code that actually generates the templates.
@@ -333,4 +365,18 @@ Similarly we could have the index contain "ajax" (asynchronous javascript) calls
 to read each entry and replace a div. This also means more load for the server.
 
 The only benefit of this scheme is if I want to have several indexes: one for
-the most recent, one per category, one per month/year, etc. In this case
+the most recent, one per category, one per month/year, etc. In this case, if there are
+thousand of entries that are going to be copied in a dozen indexes, it *may* make sense
+to overall size at the detriment of a longer page load and heavier server load.
+
+However in my case, disk space is mostly irrelevant and server cpu is at a premium,
+so I will prefer to have full indexes. Consequently I don't need to generate each
+entry in a separate file.
+
+Eventually, each template should be able to choose from. That's why I need to
+refactor the Site class: part of the logic is template dependent and should be
+handled as such. 
+
+----
+
+ 
