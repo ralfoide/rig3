@@ -306,3 +306,31 @@ Tags implementation should happen in this order:
 - bold and italics
 - sections
 
+----
+20071103 Izu Implementation
+
+Now I need tags for links/image inclusing, rig images and the application
+specific code for images.
+
+----
+2007 Application
+
+Speaking of which, I should separate the generic code for parsing/generating
+a site from the code that actually generates the templates.
+
+Currently what gets generated is:
+- the content for each entry
+- a set of index pages that contain N entries
+
+Because the index actually contains the text, I don't need the entries as
+files on the side. This was originally done because I though I could have
+the index using server-side html include (.shtml) for each entry. Indeed it
+can, but right now it's not worth it: this makes it a lot more work for
+Apache to server a page, as it needs to read N+1 files instead of one index
+file.
+
+Similarly we could have the index contain "ajax" (asynchronous javascript) calls
+to read each entry and replace a div. This also means more load for the server.
+
+The only benefit of this scheme is if I want to have several indexes: one for
+the most recent, one per category, one per month/year, etc. In this case
