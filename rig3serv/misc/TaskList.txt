@@ -1,18 +1,23 @@
 ---- TODO ----
 
-20071029 [1] Engine: Tag raw, html, url
-20071028 [1] Engine: Support index.html with izu header embedded in HTML comment
+20071104 [1] Engine: Izu image/link tag
+20071104 [1] Engine: Image entry generation
+20071104 [1] Engine: Easy way to add site control variables in config.rc
+20071104 [1] Engine: Make it easy to customize default template (logo, etc.)
+20071104 [1] Engine: Refactor Site's generateItem into template
+
 20070830 [1] Engine: check update vs dest dirs, UT
-20071006 [1] Engine: Generate items, mock, UT
 20071006 [1] Engine: Full Izumi-to-Html converter, UT
 20071006 [1] Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
 20071006 [1] Engine: Generate items, complete, UT
 20071006 [1] Engine: Generate index page, UT
 20071006 [1] Engine: Generate categories pages, UT
-20071026 [2] Engine: Template filters (raw, html, url), default html, UT
 
 ---- Done Version 0.1 ----
 
+20071103 [1] Engine: Generate items, mock, UT
+20071103 [1] Engine: Support index.html with izu header embedded in HTML comment
+20071103 [1] Engine: Tag raw, html, url
 20071028 [1] Engine: Support index.html (no izu header support yet)
 20071027 [1] Test: Added "rig3 live" unit test
 20071026 [1] Engine: Dry run flag
