@@ -33,7 +33,11 @@ _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 
 _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{4,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                           r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
- 
+
+_RATING = { ".": -1, "_": 0, "-": 1, "+": 2,
+            BAD: -1, DEFAULT: 0, GOOD: 1, EXCELLENT: 2,
+            BASE: -2 }
+
 #------------------------
 class _Item(object):
     """
@@ -430,6 +434,40 @@ class Site(object):
                 source.close()
                 dest.close()
 
+
+    def _GenerateImages(self, source_dir, rel_dest_dir, all_files):
+        images = {}
+        # images: index => { "top_rating": number,
+        #                    "files": [ pattern.groupdict + "full": leaf name ] }
+        num_excellent = 0
+        num_good = 0
+        num_images = 0 
+        for filename in all_files:
+            m = _IMG_PATTERN.match(filename)
+            if m:
+                num_images += 1
+                index = m.group("index")
+                entry = images.get(index, { "top_rating": _RATING.BASE, "top_rating_name": None, "files": [] })
+                rating = self._GetRating(m.group("rating"))
+                num_good += (rating == _RATING.GOOD and 1 or 0)
+                num_excellent += (rating == _RATING.EXCELLENT and 1 or 0)
+                if rating > entry["top_rating"]:
+                    entry["top_rating"] = rating
+                    entry["top_rating_name"] = filename
+                entry["files"].append(filename)
+        
+        if num_excellent:
+            size = 400
+            if num_excellent > 2:
+                size = min(200, 800 / num_excellent)
+            links = []
+            for entry in images:
+                if entry["top_rating"] == _RATING.EXCELLENT:
+                    links.append(self._GetRigLink(source_dir, entry["top_rating_name"], size))
+                    
+
+    def _GetRating(self, ascii):
+        return _RATING.get(ascii, _RATING.DEFAULT)
 
 #------------------------
 # Local Variables:
