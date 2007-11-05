@@ -15,7 +15,7 @@ from tests.rig_test_case import RigTestCase
 
 import rig.site
 from rig.site import Site
-from rig.site import DEFAULT_THEME
+from rig.site import DEFAULT_THEME, _IMG_PATTERN
 from rig.parser.dir_parser import DirParser
 
 #------------------------
@@ -75,7 +75,7 @@ class SiteTest(RigTestCase):
                  os.path.join(self.getTestDataPath(), "album"),
                  self._tempdir,
                  theme=DEFAULT_THEME)
-        p = m.Parse(m._source_dir, m._dest_dir)
+        p = m._Parse(m._source_dir, m._dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
         self.assertEquals(3, len(p.SubDirs()))
@@ -177,7 +177,7 @@ class SiteTest(RigTestCase):
         theme = DEFAULT_THEME
         m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
                      self._tempdir, theme)
-        m.CopyMedia()
+        m._CopyMedia()
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
         self.assertTrue(os.path.exists(os.path.join(self._tempdir, "media", "style.css")))
     
@@ -185,9 +185,9 @@ class SiteTest(RigTestCase):
         theme = DEFAULT_THEME
         m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
                      self._tempdir, theme)
-        m.MakeDestDirs()
+        m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "2007-10-07_Folder 1")
-        item = m.GenerateItem(source_dir, "2007-10-07_Folder 1", [ "index.izu" ])
+        item = m._GenerateItem(source_dir, "2007-10-07_Folder 1", [ "index.izu" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
@@ -199,9 +199,9 @@ class SiteTest(RigTestCase):
         theme = DEFAULT_THEME
         m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
                      self._tempdir, theme)
-        m.MakeDestDirs()
+        m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "2006-05_Movies")
-        item = m.GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])
+        item = m._GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
@@ -209,6 +209,37 @@ class SiteTest(RigTestCase):
         self.assertListEquals([], item.categories)
         self.assertEquals(os.path.join("items", "2006-05_Movies-index_html"),
                           item.rel_filename)
+
+    def testImgPattern(self):
+        self.assertEquals(None, _IMG_PATTERN.match("myimage.jpg"))
+        self.assertEquals(None, _IMG_PATTERN.match("PICT1200.jpg"))
+        self.assertEquals(None, _IMG_PATTERN.match("R12345-Some Name.bmp"))
+        self.assertEquals(None, _IMG_PATTERN.match("R12345-Some Name.gif"))
+        self.assertDictEquals({ "index": "1000",
+                                "rating": "_",
+                                "name": " Old Index ",
+                                "ext": ".jpg" }, 
+                              _IMG_PATTERN.match("1000_ Old Index .jpg").groupdict())
+        self.assertDictEquals({ "index": "R12345",
+                                "rating": "_",
+                                "name": "Some Name",
+                                "ext": ".jpg" }, 
+                              _IMG_PATTERN.match("R12345_Some Name.jpg").groupdict())
+        self.assertDictEquals({ "index": "X12345",
+                                "rating": "-",
+                                "name": "Some Movie",
+                                "ext": ".original.mov" }, 
+                              _IMG_PATTERN.match("X12345-Some Movie.original.mov").groupdict())
+        self.assertDictEquals({ "index": "Y31415",
+                                "rating": "+",
+                                "name": "Web Version",
+                                "ext": ".web.mov" }, 
+                              _IMG_PATTERN.match("Y31415+Web Version.web.mov").groupdict())
+        self.assertDictEquals({ "index": "Z31415",
+                                "rating": ".",
+                                "name": "Web Version",
+                                "ext": ".web.wmv" }, 
+                              _IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
 
 #------------------------
 # Local Variables:

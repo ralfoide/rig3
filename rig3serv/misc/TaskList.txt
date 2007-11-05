@@ -1,6 +1,6 @@
 ---- TODO ----
 
-20071104 [1] Engine: Izu image/link tag
+20071104 [1] Engine: Izu image/link tag -- need UT
 20071104 [1] Engine: Image entry generation
 20071104 [1] Engine: Easy way to add site control variables in config.rc
 20071104 [1] Engine: Make it easy to customize default template (logo, etc.)
@@ -15,6 +15,7 @@
 
 ---- Done Version 0.1 ----
 
+20071104 [1] Engine: Izu image/link tag
 20071103 [1] Engine: Generate items, mock, UT
 20071103 [1] Engine: Support index.html with izu header embedded in HTML comment
 20071103 [1] Engine: Tag raw, html, url

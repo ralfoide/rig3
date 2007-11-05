@@ -195,21 +195,33 @@ class IzuParser(object):
                     if not line:
                         continue
 
-            # --- structural tags
-            while line is not None:
-                line = self._ParseIzuTags(state, line)
-                loop, line = self._ParseIzuSection(state, line)
-                if loop:
-                    continue
-                # Process according to current formatter
-                state.CurrFormatter()(state, line)
-                line = None
+            self._ParseLine(state, line)
         # end of file reached
 
 
     # --- structural parsers
 
+    def _ParseLine(self, state, line):
+        """
+        Parses a line, or part of a line:
+        - first process all tags and strips them out
+        - then splits into sections, formatting whatever is before the current section
+        - finally formats whatever is left 
+        """
+        while line is not None:
+            line = self._ParseIzuTags(state, line)
+            loop, line = self._ParseIzuSection(state, line)
+            if loop:
+                continue
+            # Process according to current formatter
+            state.CurrFormatter()(state, line)
+            return
+
+
     def _ParseIzuTags(self, state, line):
+        """
+        Handles [izu:tag:value]
+        """
         while line:
             m = re.match("(?P<start>(?:^|.*[^\[]))\[izu:(?P<tag>[^:\]]+):(?P<value>[^\]]*)\](?P<end>.*)$", line)
             if m:
@@ -229,6 +241,9 @@ class IzuParser(object):
         return line
 
     def _ParseIzuSection(self, state, line):
+        """
+        Handles [s:section_name], allowing multiple per line.
+        """
         # section. Supports multile [s:section_name] per line.
         m = re.match(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
         if m:
@@ -252,29 +267,22 @@ class IzuParser(object):
     # --- section formatters
 
     def _DefaultSection(self, state, line):
+        """
+        Default formatter for Izu section.
+        """
         curr_section = state.CurrSection()
         state.InitSection(curr_section, "")
 
         # --- formatting tags
-        # disable HTML as early as possible: only < >, not &
-        line = line.replace(">", "&gt;")
-        line = line.replace("<", "&lt;")
+        line = self._FormatBoldItalicHtmlEmpty(line)
+        line = self._FormatLinks(line)
 
-        # empty lines are paragraphs
-        if line == "":
-            line = "<p>"
-
-        # Bold: __word__
-        line = re.sub(r"(^|[^_])__([^_].*?)__", r"\1<b>\2</b>", line)
-
-        # Italics: ''word''
-        line = re.sub(r"(^|[^'])''([^'].*?)''", r"\1<i>\2</i>", line)
-
-        # Remove escapes: double-[ which were used to escape normal [ tags.
-        # and same for double-underscore, double-quotes
+        # --- remove escapes at the very end: double-[ which were used
+        # to escape normal [ tags and same for double-underscore, double-quotes
         line = re.sub(r"\[(\[+)", r"\1", line)
         line = re.sub(r"_(_+)", r"\1", line)
         line = re.sub(r"'('+)", r"\1", line)
+        line = re.sub(r"=(=+)", r"\1", line)
 
         # --- append to buffer
         # skip if line is empty
@@ -295,7 +303,70 @@ class IzuParser(object):
         # finally append the line to the section
         state.Append(curr_section, line)
 
+    def _FormatBoldItalicHtmlEmpty(self, line):
+        """
+        Strips html, formats bold, italics, code, empty paragraphs.
+        """
+        # disable HTML as early as possible: only < >, not &
+        line = line.replace(">", "&gt;")
+        line = line.replace("<", "&lt;")
+
+        # empty lines are paragraphs
+        if line == "":
+            line = "<p>"
+
+        # Anecdote: I rewrote these regexp from scratch and they turn to be
+        # *exactly* identical to what I wrote for Izumi 3 years ago :-)
+        # Makes you put "patents obviousness" in perspective...
+
+        # Bold: __word__
+        line = re.sub(r"(^|[^_])__([^_].*?)__($|[^_])", r"\1<b>\2</b>\3", line)
+
+        # Italics: ''word''
+        line = re.sub(r"(^|[^'])''([^'].*?)''($|[^'])", r"\1<i>\2</i>\3", line)
+
+        # Code: ==word==
+        line = re.sub(r"(^|[^=])==([^=].*?)==($|[^=])", r"\1<code>\2</code>\3", line)
+       
+        return line
+
+    def _FormatLinks(self, line):
+        """
+        Formats straight URLs and tags for URLs & images
+        """
+        # -- format external links --
+        
+        # named image link: [title|http://blah/blah.gif,jpeg,jpg,png,svg], without [[
+        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|(https?://[^\]"<>]+\.(?:gif|jpe?g|png|svg))\]',
+                      r'\1<img alt="\2" title="\2" src="\3">', line)
+
+        # unnamed image link: [http://blah/blah.gif,jpeg,jpg,png,svg], without [[
+        line = re.sub(r'(^|[^\[])\[(https?://[^\]"<>]+\.(?:gif|jpe?g|png|svg))\]',
+                      r'\1<img src="\2">', line)
+
+        # named link: [name|http://blah/blah], accept ftp:// and #name, without [[
+        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|((?:https?://|ftp://|#)[^"<>]+?)\]',
+                      r'\1<a href="\3">\2</a>', line)
+
+        # unnamed link: [http://blah/blah], accepts ftp:// and #name, without [[
+        line = re.sub(r'(^|[^\[])\[((?:https?://|ftp://|#)[^"<>]+?)\]',
+                      r'\1<a href="\2">\2</a>', line)
+
+        # unformated link: http://blah or ftp:// (link cannot contain quotes)
+        # and must not be surrounded by quotes
+        # and must not be surrounded by brackets
+        # and must not be surrounded by < >        -- RM 20041120 fixed
+        # and must not be prefixed by [] or |
+        # (all these exceptions to prevent processing twice links in the form <a href="http...">http...</a>
+        line = re.sub(r'@(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])@',
+                      r'\1<a href="\2">\2</a>\3', line)
+        return line
+
     def _ImagesSection(self, state, curr_section, line):
+        """
+        Specific formatter for images section.
+        Currently TBD. Might be dropped altogether.
+        """
         state.InitSection(curr_section, [])
         raise NotImplementedError("Izu [s:images] section not implemented yet")
 

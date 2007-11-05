@@ -31,6 +31,9 @@ _ITEMS_DIR = "items"
 _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
 _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 
+_IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{4,})(?P<rating>[ \._+=-])(?P<name>.+?)"
+                          r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
+ 
 #------------------------
 class _Item(object):
     """
@@ -68,20 +71,20 @@ class Site(object):
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
                        self._public_name, self._source_dir, self._dest_dir, self._theme)
-        self.MakeDestDirs()
-        self.CopyMedia()
-        tree = self.Parse(self._source_dir, self._dest_dir)
-        categories, items = self.GenerateItems(tree)
-        self.GeneratePages(categories, items)
+        self._MakeDestDirs()
+        self._CopyMedia()
+        tree = self._Parse(self._source_dir, self._dest_dir)
+        categories, items = self._GenerateItems(tree)
+        self._GeneratePages(categories, items)
         # TODO: self.DeleteOldGeneratedItems()
 
-    def MakeDestDirs(self):
+    def _MakeDestDirs(self):
         """
         Creates the necessary directories in the destination.
         """
         self._MkDestDir(_ITEMS_DIR)            
 
-    def CopyMedia(self):
+    def _CopyMedia(self):
         """
         Copy media directory from selected template to destination
         """
@@ -89,7 +92,7 @@ class Site(object):
         if os.path.isdir(media):
             self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR))
 
-    def Parse(self, source_dir, dest_dir):
+    def _Parse(self, source_dir, dest_dir):
         """
         Calls the directory parser on the source vs dest directories
         with the default dir/file patterns.
@@ -104,7 +107,7 @@ class Site(object):
                                        dir_pattern=_DIR_PATTERN)
         return p
     
-    def GenerateItems(self, tree):
+    def _GenerateItems(self, tree):
         """
         Traverses the source tree and generates new items as needed.
         
@@ -118,10 +121,10 @@ class Site(object):
         for source_dir, dest_dir, curr_dir, all_files in tree.TraverseDirs():
             self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
                            source_dir, curr_dir)
-            if self.UpdateNeeded(source_dir, os.path.join(dest_dir, curr_dir),
+            if self._UpdateNeeded(source_dir, os.path.join(dest_dir, curr_dir),
                                  all_files):
                 files = [f.lower() for f in all_files]
-                item = self.GenerateItem(source_dir, curr_dir, all_files)
+                item = self._GenerateItem(source_dir, curr_dir, all_files)
                 if item is None:
                     continue
                 for c in item.categories:
@@ -132,7 +135,7 @@ class Site(object):
                        len(items), len(categories))
         return categories, items
 
-    def GeneratePages(self, categories, items):
+    def _GeneratePages(self, categories, items):
         """
         - categories: list of categories accumulated from each entry
         - items: list of _Item
@@ -141,11 +144,11 @@ class Site(object):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        self.GeneratePageAll(categories, items)
+        self._GeneratePageAll(categories, items)
         # TODO: self.GeneratePageCategory(category, items)
         # TODO: self.GeneratePageMonth(month, items)
 
-    def GeneratePageAll(self, categories, items):
+    def _GeneratePageAll(self, categories, items):
         """
         Generates pages will all items, from most recent to least recent.
 
@@ -175,7 +178,7 @@ class Site(object):
             self._WriteFile(content, self._dest_dir, url)
             prev_url = url
 
-    def UpdateNeeded(self, source_dir, dest_dir, all_files):
+    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
         """
         The item needs to be updated if the source directory or any of
         its internal files are more recent than the destination directory.
@@ -200,7 +203,7 @@ class Site(object):
             return False
         return source_ts > dest_ts
 
-    def GenerateItem(self, source_dir, rel_dest_dir, all_files):
+    def _GenerateItem(self, source_dir, rel_dest_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns an _Item or None
@@ -226,8 +229,13 @@ class Site(object):
             return None
 
         cats = tags.get("cat", [])
-        date = tags.get("date", date)  # override directory's date
+        date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
+
+        if not "images" in sections:
+            html_img = self._GenerateImages(source_dir, rel_dest_dir, all_files)
+            if html_img:
+                sections["images"] = html_img
 
         content = self._FillTemplate(self._theme, "entry.html",
                                      title=title,
@@ -242,6 +250,36 @@ class Site(object):
         dest = os.path.join(_ITEMS_DIR, filename)
         return _Item(date, dest, content=content, categories=cats)
 
+    def _GenerateImages(self, source_dir, rel_dest_dir, all_files):
+        """
+        Generates a table with images.
+        Heuristics:
+        - if rating+ images are present, show them with a width of 400 or 300
+        - if rating- images are present, show them as thumbnails
+        - otherwise, simply returns a link on the album (TODO later: sample based on date)
+        - if there are no files that look suitable for rig, returns None
+        
+        Also, Rig-specific stuff:
+        - all links point on the albums (i.e. parent directory)
+        - The image pattern means there might be several variations
+          (.jpg/.mov) for the same image index. For movies, uses the
+          snapshot if present. 
+        
+        TODO: currently has a lot of hardcoded things that should go into
+        site-dependent prefs.
+        """
+        images = {}  # dict { index: list [ full leaf name, regexp_groupdict ] }
+        for name in all_files:
+            m = _IMG_PATTERN.match(name)
+            if m:
+                d = m.groupdict()
+                names = images.get(d["index"], { "top_rating": "." })
+                d["fullname"] = name
+                names.append(d)
+                images[d"index"]] = names
+                
+        
+        return None
 
     # Utilities, overridable for unit tests
     
