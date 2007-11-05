@@ -268,7 +268,7 @@ class Site(object):
         TODO: currently has a lot of hardcoded things that should go into
         site-dependent prefs.
         """
-        images = {}  # dict { index: list [ full leaf name, regexp_groupdict ] }
+        images = {}  # dict[index] => dict { top_rating, names: dict { } }
         for name in all_files:
             m = _IMG_PATTERN.match(name)
             if m:
