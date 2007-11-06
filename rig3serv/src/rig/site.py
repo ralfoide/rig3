@@ -10,9 +10,11 @@ __author__ = "ralfoide@gmail.com"
 
 import re
 import os
+import cgi
 import sys
 import zlib
 import errno
+import urllib
 from datetime import datetime
 
 from rig.parser.dir_parser import DirParser
@@ -313,12 +315,21 @@ class Site(object):
         Generates the URL to a rig image, with a caption, that links to the album.
         Size: Max pixel size or -1 for a thumbnail.
         
-        If leafname & size are None, create an URL to the album.
+        If leafname & size are None, creates an URL to the album.
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        
-        return ""
+        title = cgi.encode("")
+        base = 'http://www.samchris.com/photos'
+        album = urllib.quote(source_dir)
+        link = base + '/index.php?album=' + album
+        img = urllib.quote(leafname)
+        img = base + '/index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
+        url = '<a title="%(title)s" href="%(link)s"><img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
+            "title": title,
+            "link": link,
+            "img": img }
+        return url
 
     # Utilities, overridable for unit tests
 
