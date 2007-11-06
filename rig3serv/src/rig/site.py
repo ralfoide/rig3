@@ -299,15 +299,31 @@ class Site(object):
             size = 400
             if num_excellent > 2:
                 size = min(200, 800 / num_excellent)
+            num_col = min(num_excellent, 4)
             for entry in images:
                 if entry["top_rating"] == _RATING.EXCELLENT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], size))
         elif num_good:
+            num_col = min(num_good, 6)
             for entry in images:
                 if entry["top_rating"] == _RATING.GOOD:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
-            links.append(self._GetRigLink(source_dir, None, None))
+            return self._GetRigLink(source_dir, None, None)
+
+        if links:
+            result = "<table><tr><td>\n"
+            i = 0
+            for link in links:
+                if i > 0:
+                    if i % num_col == 0:
+                        result += "</td></tr><tr><td>\n"
+                    else:
+                        result += "</td></td>"
+                result += link
+                i += 1
+            result += "</tr></td></table>"
+            return result
         return None
 
     def _GetRigLink(self, source_dir, leafname, size):
@@ -319,16 +335,22 @@ class Site(object):
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        title = cgi.encode("")
+        title = cgi.encode(os.path.basename(source_dir))
         base = 'http://www.samchris.com/photos'
         album = urllib.quote(source_dir)
         link = base + '/index.php?album=' + album
-        img = urllib.quote(leafname)
-        img = base + '/index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
-        url = '<a title="%(title)s" href="%(link)s"><img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
+        if leafname:
+            img = urllib.quote(leafname)
+            img = base + '/index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
+            content = '<img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
+                "title": title,
+                "link": link }
+        else:
+            content = title
+        url = '<a title="%(title)s" href="%(link)s">%(content)s</a>' % {
             "title": title,
             "link": link,
-            "img": img }
+            "content": content }
         return url
 
     # Utilities, overridable for unit tests
