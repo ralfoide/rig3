@@ -272,20 +272,58 @@ class Site(object):
         TODO: currently has a lot of hardcoded things that should go into
         site-dependent prefs.
         """
-        images = {}  # dict[index] => dict { top_rating, names: dict { } }
-        for name in all_files:
-            m = _IMG_PATTERN.match(name)
+        images = {}
+        # images: index => { "top_rating": number,
+        #                    "files": [ pattern.groupdict + "full": leaf name ] }
+        num_excellent = 0
+        num_good = 0
+        num_images = 0 
+        for filename in all_files:
+            m = _IMG_PATTERN.match(filename)
             if m:
-                d = m.groupdict()
-                names = images.get(d["index"], { "top_rating": "." })
-                d["fullname"] = name
-                names.append(d)
-                images[d"index"]] = names
-                
+                num_images += 1
+                index = m.group("index")
+                entry = images.get(index, { "top_rating": _RATING.BASE, "top_name": None, "files": [] })
+                rating = self._GetRating(m.group("rating"))
+                num_good += (rating == _RATING.GOOD and 1 or 0)
+                num_excellent += (rating == _RATING.EXCELLENT and 1 or 0)
+                if rating > entry["top_rating"]:
+                    entry["top_rating"] = rating
+                    entry["top_name"] = filename
+                entry["files"].append(filename)
         
+        links = []
+        if num_excellent:
+            size = 400
+            if num_excellent > 2:
+                size = min(200, 800 / num_excellent)
+            for entry in images:
+                if entry["top_rating"] == _RATING.EXCELLENT:
+                    links.append(self._GetRigLink(source_dir, entry["top_name"], size))
+        elif num_good:
+            for entry in images:
+                if entry["top_rating"] == _RATING.GOOD:
+                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
+        elif num_images:
+            links.append(self._GetRigLink(source_dir, None, None))
         return None
 
+    def _GetRigLink(self, source_dir, leafname, size):
+        """
+        Generates the URL to a rig image, with a caption, that links to the album.
+        Size: Max pixel size or -1 for a thumbnail.
+        
+        If leafname & size are None, create an URL to the album.
+        
+        TODO: site prefs (base url, size, title, thumbnail size, quality)
+        """
+        
+        return ""
+
     # Utilities, overridable for unit tests
+
+    def _GetRating(self, ascii):
+        return _RATING.get(ascii, _RATING.DEFAULT)
     
     def _DirTimeStamp(self, dir):
         """
@@ -433,41 +471,6 @@ class Site(object):
                     s = source.read(4096)
                 source.close()
                 dest.close()
-
-
-    def _GenerateImages(self, source_dir, rel_dest_dir, all_files):
-        images = {}
-        # images: index => { "top_rating": number,
-        #                    "files": [ pattern.groupdict + "full": leaf name ] }
-        num_excellent = 0
-        num_good = 0
-        num_images = 0 
-        for filename in all_files:
-            m = _IMG_PATTERN.match(filename)
-            if m:
-                num_images += 1
-                index = m.group("index")
-                entry = images.get(index, { "top_rating": _RATING.BASE, "top_rating_name": None, "files": [] })
-                rating = self._GetRating(m.group("rating"))
-                num_good += (rating == _RATING.GOOD and 1 or 0)
-                num_excellent += (rating == _RATING.EXCELLENT and 1 or 0)
-                if rating > entry["top_rating"]:
-                    entry["top_rating"] = rating
-                    entry["top_rating_name"] = filename
-                entry["files"].append(filename)
-        
-        if num_excellent:
-            size = 400
-            if num_excellent > 2:
-                size = min(200, 800 / num_excellent)
-            links = []
-            for entry in images:
-                if entry["top_rating"] == _RATING.EXCELLENT:
-                    links.append(self._GetRigLink(source_dir, entry["top_rating_name"], size))
-                    
-
-    def _GetRating(self, ascii):
-        return _RATING.get(ascii, _RATING.DEFAULT)
 
 #------------------------
 # Local Variables:
