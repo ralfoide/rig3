@@ -155,7 +155,7 @@ class IzuParserTest(RigTestCase):
 
     def testAutoLink(self):
         self.assertEquals(
-            '<div class="izu"><i>this</i> is <i>in italics</i> but not <i>this</i></div>',
+            '<div class="izu"><a href="http://www.example.code">http://www.example.code</a></div>',
             self._Render("http://www.example.code"))
 
 #------------------------
