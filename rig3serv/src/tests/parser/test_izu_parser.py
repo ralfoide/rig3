@@ -59,6 +59,11 @@ class IzuParserTest(RigTestCase):
             '<div class="izu"><i>this</i> is <i>in italics</i> but not <i>this</i></div>',
             self._Render("''this'' is ''in italics'' but not ''this''"))
 
+    def testCode(self):
+        self.assertEquals(
+            '<div class="izu"><code>this</code> is <code>in italics</code> but not <code>this</code></div>',
+            self._Render("==this== is ==in italics== but not ==this=="))
+
     def testParagraph(self):
         self.assertEquals(
             '<div class="izu">Line 1,\nline 2<p>Line 3<p><b>Line 4</b>Line 5 </div>',
@@ -148,6 +153,10 @@ class IzuParserTest(RigTestCase):
                                 "cat": [] },
                                tags)
 
+    def testAutoLink(self):
+        self.assertEquals(
+            '<div class="izu"><i>this</i> is <i>in italics</i> but not <i>this</i></div>',
+            self._Render("http://www.example.code"))
 
 #------------------------
 # Local Variables:
