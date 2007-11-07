@@ -10,16 +10,19 @@ theme = blue_template
 
 [site1]
 public_name = Site 1
+base_url	= http://example.com/mysite1/
 source_dir  = /tmp/data/site1
 dest_dir    = /tmp/generated/site1
 
 [site2]
 public_name = Site 2
+base_url	= http://example.com
 source_dir  = /tmp/data/site2
 dest_dir    = /tmp/generated/site2
 
 # site3 is defined here but not in DEFAULT>sites so it won't be served
 [site3]
 public_name = Site 3
+base_url	= http://example.com/
 source_dir  = /tmp/data/site3
 dest_dir    = /tmp/generated/site3

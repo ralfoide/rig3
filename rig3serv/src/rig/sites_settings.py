@@ -18,6 +18,26 @@ __author__ = "ralfoide@gmail.com"
 import sys
 import ConfigParser
 from rig.settings_base import SettingsBase
+from rig.site import DEFAULT_THEME
+
+#------------------------
+class SiteSettings(object):
+    """
+    Settings for one site with defaults.
+    """
+    def __init__(self,
+                 public_name="",
+                 source_dir=None,
+                 dest_dir=None,
+                 theme=DEFAULT_THEME,
+                 base_url="http://html.base.url/",
+                 rig_url="http://rig.base.url/photos/"):
+        self.public_name = public_name
+        self.source_dir = source_dir
+        self.dest_dir = dest_dir
+        self.theme = theme
+        self.base_url = base_url
+        self.rig_url = rig_url
 
 #------------------------
 class SitesSettings(SettingsBase):
@@ -45,17 +65,17 @@ class SitesSettings(SettingsBase):
         except ConfigParser.NoSectionError:
             return []
 
-    def PublicName(self, site):
-        return self._parser.get(site, "public_name")
-
-    def SourceDir(self, site):
-        return self._parser.get(site, "source_dir")
-
-    def DestDir(self, site):
-        return self._parser.get(site, "dest_dir")
-
-    def Theme(self, site):
-        return self._parser.get(site, "theme")
+    def GetSiteSettings(self, site_name):
+        """
+        Returns a SiteSetting for the given site.
+        """
+        s = SiteSettings()
+        for k in s.__dict__.iterkeys():
+            try:
+                s.__dict__[k] = self._parser.get(site_name, k)
+            except ConfigParser.NoOptionError:
+                pass  # preserve defaults from SiteSettings.__init__
+        return s
 
 #------------------------
 # Local Variables:

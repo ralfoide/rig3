@@ -12,4 +12,4 @@ theme = default
 public_name = Rig3 Live
 source_dir  = album
 dest_dir    = live_dest
-
+base_url    =

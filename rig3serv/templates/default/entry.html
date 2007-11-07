@@ -3,6 +3,7 @@
 The generated entry should be a piece of HTML, not a full document.
 
 Parameters:
+- base_url: The generated site's base URL. May be empty.
 - title: string, title of the entry.
 - tags: dict{string tag: string value}, the parsed Izu tags.
 - sections: dict{string name: string content}, the HTML for the various sections.
@@ -22,14 +23,14 @@ Parameters:
 
 [[if "en" in sections]]
 <div class="content en">
-<img src="http://www.samchris.com/images/flag_usa.gif" />
+<img src="[[url base_url]]media/flag_usa.gif" />
 [[raw sections["en"] ]]
 </div>
 [[end]]
 
 [[if "fr" in sections]]
 <div class="content fr">
-<img src="http://www.samchris.com/images/flag_fr.gif" />
+<img src="[[url base_url]]media/flag_fr.gif" />
 [[raw sections["fr"] ]]
 </div>
 [[end]]

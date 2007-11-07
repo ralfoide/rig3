@@ -1,16 +1,14 @@
 /* Default style for default template */
 
-/* --- base style extracted from my own wordpress theme
-   http://www.samchris.com/blog/wp-content/themes/ralf1/style.css 
-*/
+/* --- base style extracted from my own wordpress theme */
 
 body {
 	color:#29303B;
-	background: #F3F6ED url(http://www.samchris.com/blog/wp-content/themes/ralf1/img/content_bg.gif) repeat;
+	background: #F3F6ED url([[base_url]]/media/content_bg.gif) repeat;
 }
 
 .header {
-	background:#fff url(http://www.samchris.com/images/WP-Top-Banner-Beach.jpg) no-repeat bottom; 	
+	background:#fff url([[url base_url]]/media/top_banner.jpg) no-repeat bottom; 	
  	height: 183px;
 	margin: 0 auto;
 	width:760px;

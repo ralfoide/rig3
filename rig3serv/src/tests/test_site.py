@@ -16,6 +16,7 @@ from tests.rig_test_case import RigTestCase
 import rig.site
 from rig.site import Site
 from rig.site import DEFAULT_THEME, _IMG_PATTERN
+from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser
 
 #------------------------
@@ -24,9 +25,9 @@ class MockSite(Site):
     Behaves like a Site() but overrides the base template directory location
     to use testdata/templates instead.
     """
-    def __init__(self, test_case, log, dry_run, public_name, source_dir, dest_dir, theme):
+    def __init__(self, test_case, log, dry_run, settings):
         self._test_case = test_case
-        super(MockSite, self).__init__(log, dry_run, public_name, source_dir, dest_dir, theme)
+        super(MockSite, self).__init__(log, dry_run, settings)
 
     def _TemplateDir(self):
         """"
@@ -39,6 +40,10 @@ class SiteTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        self.s = SiteSettings(public_name="Test Album",
+                              source_dir=os.path.join(self.getTestDataPath(), "album"),
+                              dest_dir=self._tempdir,
+                              theme=DEFAULT_THEME)
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
@@ -47,8 +52,11 @@ class SiteTest(RigTestCase):
         """
         Test init of Site
         """
-        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
-                 self._tempdir, DEFAULT_THEME)
+        s = SiteSettings(public_name="Site Name",
+                         source_dir="/tmp/source/data",
+                         dest_dir=self._tempdir,
+                         theme=DEFAULT_THEME)
+        m = Site(self.Log(), False, s)
         self.assertNotEqual(None, m)
         self.assertEquals("Site Name", m._public_name)
         self.assertEquals("/tmp/source/data", m._source_dir)
@@ -64,17 +72,11 @@ class SiteTest(RigTestCase):
         self.assertSearch(rig.site._VALID_FILES, "T12896_tiny_jpeg.jpg")
 
     def testAlbum(self):
-        m = Site(self.Log(), False, "Test Album",
-                 os.path.join(self.getTestDataPath(), "album"),
-                 self._tempdir,
-                 theme=DEFAULT_THEME)
+        m = Site(self.Log(), False, self.s)
         m.Process()
     
     def testParse(self):
-        m = Site(self.Log(), False, "Test Album",
-                 os.path.join(self.getTestDataPath(), "album"),
-                 self._tempdir,
-                 theme=DEFAULT_THEME)
+        m = Site(self.Log(), False, self.s)
         p = m._Parse(m._source_dir, m._dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
@@ -93,8 +95,7 @@ class SiteTest(RigTestCase):
         self.assertListEquals([], p.SubDirs()[2].SubDirs())
 
     def testSimpleFileName(self):
-        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
-                 self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, self.s)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc///de\\\\f/g\\h"))
@@ -105,8 +106,7 @@ class SiteTest(RigTestCase):
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
     def testTemplateDir(self):
-        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
-                 self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, self.s)
         td = m._TemplateDir()
         self.assertNotEquals("", td)
         self.assertTrue(os.path.exists(td))
@@ -118,10 +118,8 @@ class SiteTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.html")))
 
     def testFillTemplate(self):
-        theme = DEFAULT_THEME
-        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
-                     self._tempdir, theme)
-        html = m._FillTemplate(theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
+        m = MockSite(self, self.Log(), False, self.s)
+        html = m._FillTemplate(self.s.theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<html lang="en-US">
@@ -139,7 +137,7 @@ class SiteTest(RigTestCase):
         keywords = { "title": "MyTitle",
                      "sections": { "en": "Main <b>Text Content</b> as HTML",
                                    "images": "<a href='page_url'><img href='image_url'/></a>" } }
-        html = m._FillTemplate(theme, "entry.html", **keywords)
+        html = m._FillTemplate(self.s.theme, "entry.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<div class="entry">
@@ -153,8 +151,7 @@ class SiteTest(RigTestCase):
             html)
 
     def testDateFromTitle(self):
-        m = Site(self.Log(), False, "Site Name", "/tmp/source/data",
-                 self._tempdir, DEFAULT_THEME)
+        m = Site(self.Log(), False, self.s)
 
         self.assertEquals(None, m._DateFromTitle("27"))
         self.assertEquals(None, m._DateFromTitle("2007"))
@@ -174,17 +171,13 @@ class SiteTest(RigTestCase):
         self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10/27,12/13/14"))
 
     def testCopyMedia(self):
-        theme = DEFAULT_THEME
-        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
-                     self._tempdir, theme)
+        m = MockSite(self, self.Log(), False, self.s)
         m._CopyMedia()
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
         self.assertTrue(os.path.exists(os.path.join(self._tempdir, "media", "style.css")))
     
     def testGenerateItems_Izu(self):
-        theme = DEFAULT_THEME
-        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
-                     self._tempdir, theme)
+        m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "2007-10-07_Folder 1")
         item = m._GenerateItem(source_dir, "2007-10-07_Folder 1", [ "index.izu" ])
@@ -196,9 +189,7 @@ class SiteTest(RigTestCase):
                           item.rel_filename)
     
     def testGenerateItems_Html(self):
-        theme = DEFAULT_THEME
-        m = MockSite(self, self.Log(), False, "Site Name", "/tmp/source/data",
-                     self._tempdir, theme)
+        m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "2006-05_Movies")
         item = m._GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])

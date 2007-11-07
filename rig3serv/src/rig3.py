@@ -78,12 +78,7 @@ Options:
     def ProcessSites(self):
         s = self._sites_settings
         for site_id in s.Sites():
-            site = Site(self._log,
-                        self._dry_run,
-                        s.PublicName(site_id),
-                        s.SourceDir(site_id),
-                        s.DestDir(site_id),
-                        s.Theme(site_id))
+            site = Site(self._log, self._dry_run, s.GetSiteSettings(site_id))
             site.Process()
 
     def Close(self):

@@ -13,7 +13,7 @@ import os
 from tests.rig_test_case import RigTestCase
 
 import rig3
-from rig.sites_settings import SitesSettings
+from rig.sites_settings import SitesSettings, SiteSettings
 
 #------------------------
 class SitesSettingsTest(RigTestCase):
@@ -30,10 +30,13 @@ class SitesSettingsTest(RigTestCase):
         self.assertSame(r, self.m)
         self.assertListEquals(["site1", "site2"], self.m.Sites())
 
-        self.assertEquals("blue_template", self.m.Theme("site1"))
-        self.assertEquals("Site 1", self.m.PublicName("site1"))
-        self.assertEquals("/tmp/data/site1", self.m.SourceDir("site1"))
-        self.assertEquals("/tmp/generated/site1", self.m.DestDir("site1"))
+        s = self.m.GetSiteSettings("site1")
+        self.assertNotEquals(None, s)
+        self.assertIsInstance(SiteSettings, s)
+        self.assertEquals("blue_template", s.theme)
+        self.assertEquals("Site 1", s.public_name)
+        self.assertEquals("/tmp/data/site1", s.source_dir)
+        self.assertEquals("/tmp/generated/site1", s.dest_dir)
 
 #------------------------
 # Local Variables:

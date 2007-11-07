@@ -68,13 +68,15 @@ class Site(object):
     """
     Describes on site and what we can do with it.
     """
-    def __init__(self, log, dry_run, public_name, source_dir, dest_dir, theme):
+    def __init__(self, log, dry_run, settings):
         self._log = log
         self._dry_run = dry_run
-        self._public_name = public_name
-        self._source_dir = source_dir
-        self._dest_dir = dest_dir
-        self._theme = theme
+        self._public_name = settings.public_name
+        self._source_dir = settings.source_dir
+        self._dest_dir = settings.dest_dir
+        self._theme = settings.theme
+        self._base_url = settings.base_url
+        self._rig_url = settings.rig_url
         self._izu_parser = IzuParser(self._log)
 
     def Process(self):
@@ -181,6 +183,7 @@ class Site(object):
             entries = [j.content for j in items[i:i + _ITEMS_PER_PAGE] ]
             i += _ITEMS_PER_PAGE
             content = self._FillTemplate(self._theme, "index.html",
+                                         base_url=self._base_url,
                                          title="All Items",
                                          entries=entries,
                                          prev_url=prev_url,
@@ -250,6 +253,7 @@ class Site(object):
                 sections["images"] = html_img
 
         content = self._FillTemplate(self._theme, "entry.html",
+                                     base_url=self._base_url,
                                      title=title,
                                      sections=sections,
                                      date=date,
@@ -342,12 +346,11 @@ class Site(object):
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
         title = cgi.escape(os.path.basename(source_dir))
-        base = 'http://www.samchris.com/photos'
         album = urllib.quote(source_dir)
-        link = base + '/index.php?album=' + album
+        link = self._rig_url + 'index.php?album=' + album
         if leafname:
             img = urllib.quote(leafname)
-            img = base + '/index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
+            img = self._rig_url + 'index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
                 "title": title,
                 "link": link }
