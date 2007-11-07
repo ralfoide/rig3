@@ -36,9 +36,15 @@ _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{4,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                           r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
 
-_RATING = { ".": -1, "_": 0, "-": 1, "+": 2,
-            BAD: -1, DEFAULT: 0, GOOD: 1, EXCELLENT: 2,
-            BASE: -2 }
+_RATING_BASE = -2
+_RATING_BAD = -1
+_RATING_DEFAULT = 0
+_RATING_GOOD = 1
+_RATING_EXCELLENT = 2
+_RATING = { ".": _RATING_BAD,
+            "_": _RATING_DEFAULT,
+            "-": _RATING_GOOD,
+            "+": _RATING_EXCELLENT }
 
 #------------------------
 class _Item(object):
@@ -285,10 +291,10 @@ class Site(object):
             if m:
                 num_images += 1
                 index = m.group("index")
-                entry = images.get(index, { "top_rating": _RATING.BASE, "top_name": None, "files": [] })
+                entry = images.get(index, { "top_rating": _RATING_BASE, "top_name": None, "files": [] })
                 rating = self._GetRating(m.group("rating"))
-                num_good += (rating == _RATING.GOOD and 1 or 0)
-                num_excellent += (rating == _RATING.EXCELLENT and 1 or 0)
+                num_good += (rating == _RATING_GOOD and 1 or 0)
+                num_excellent += (rating == _RATING_EXCELLENT and 1 or 0)
                 if rating > entry["top_rating"]:
                     entry["top_rating"] = rating
                     entry["top_name"] = filename
@@ -301,12 +307,12 @@ class Site(object):
                 size = min(200, 800 / num_excellent)
             num_col = min(num_excellent, 4)
             for entry in images:
-                if entry["top_rating"] == _RATING.EXCELLENT:
+                if entry["top_rating"] == _RATING_EXCELLENT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], size))
         elif num_good:
             num_col = min(num_good, 6)
             for entry in images:
-                if entry["top_rating"] == _RATING.GOOD:
+                if entry["top_rating"] == _RATING_GOOD:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
             return self._GetRigLink(source_dir, None, None)
@@ -335,7 +341,7 @@ class Site(object):
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        title = cgi.encode(os.path.basename(source_dir))
+        title = cgi.escape(os.path.basename(source_dir))
         base = 'http://www.samchris.com/photos'
         album = urllib.quote(source_dir)
         link = base + '/index.php?album=' + album
@@ -356,8 +362,8 @@ class Site(object):
     # Utilities, overridable for unit tests
 
     def _GetRating(self, ascii):
-        return _RATING.get(ascii, _RATING.DEFAULT)
-    
+        return _RATING.get(ascii, _RATING_DEFAULT)
+
     def _DirTimeStamp(self, dir):
         """
         Returns the most recent change or modification time stamp for the
