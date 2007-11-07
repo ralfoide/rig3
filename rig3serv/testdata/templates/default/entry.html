@@ -6,8 +6,9 @@ The generated entry should be a piece of HTML, not a full document.
 
 Parameters:
 - title: string, title of the entry
-- text: string, The main text as raw HTML
-- image: string, An optional image (a full <img/> tag)
+- tags: dict{string tag: string value}, the parsed Izu tags.
+- sections: dict{string name: string content}, the HTML for the various sections.
+	- Expected sections names: html (old html), en, fr and images.
 ]]
 <div class="entry">
 <h2>[[html title]]</h2>
