@@ -104,7 +104,8 @@ class Site(object):
         """
         media = os.path.join(self._TemplateDir(), self._theme, _MEDIA_DIR)
         if os.path.isdir(media):
-            self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR))
+            self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR),
+                          template_ext=[ "css" ])
 
     def _Parse(self, source_dir, dest_dir):
         """
@@ -478,7 +479,9 @@ class Site(object):
             if e.errno != errno.EEXIST:
                 raise
 
-    def _CopyDir(self, source_dir, dest_dir, skip=[ "CVS", ".svn" ]):
+    def _CopyDir(self, source_dir, dest_dir,
+                 skip=[ "CVS", ".svn" ],
+                 template_ext=[]):
         """
         Copies a directory (recursively, with all its content) into
         a given destination. OVerwrites existing content. This doesn't
@@ -502,7 +505,15 @@ class Site(object):
                 continue
             ps = os.path.join(source_dir, name)
             if os.path.isdir(ps):
-                self._CopyDir(ps, os.path.join(dest_dir, name), skip)
+                self._CopyDir(ps, os.path.join(dest_dir, name), skip, template_ext)
+            elif os.path.splitext(name)[1] in template_ext:
+                # Use fill template to copy/transform the file
+                template = Template(self._log, file=ps)
+                result = template.Generate(base_url=self._base_url,
+                                           public_name=self._public_name)
+                dest = file(os.path.join(dest_dir, name), "wb")
+                dest.write(result)
+                dest.close()
             else:
                 # copy file
                 dest = file(os.path.join(dest_dir, name), "wb")

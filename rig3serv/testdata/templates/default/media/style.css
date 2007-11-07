@@ -1,5 +1,8 @@
 /* Default style for default template */
 
+/* base url is [[raw base_url]] */
+/* public name is [[raw public_name]] */ 
+
 div.entry h2 {
   background-color: green;
   color: yellow; 

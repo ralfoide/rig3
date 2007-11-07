@@ -1,53 +1,55 @@
 ---- TODO ----
 
-20071104 [1] Engine: Izu image/link tag -- need UT
-20071104 [1] Engine: Image entry generation -- need testing, UT
-20071104 [1] Engine: Refactor Site's generateItem into template
+20071106 Engine: Site.CopyDir to fill template for css + UT
+20071106 Engine: UT for SiteSettings
+20071104 Engine: Izu image/link tag -- need UT
+20071104 Engine: Image entry generation -- need testing, UT
+20071104 Engine: Refactor Site's generateItem into template
 
-20070830 [1] Engine: check update vs dest dirs, UT
-20071006 [1] Engine: Full Izumi-to-Html converter, UT
-20071006 [1] Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
-20071006 [1] Engine: Generate items, complete, UT
-20071006 [1] Engine: Generate index page, UT
-20071006 [1] Engine: Generate categories pages, UT
+20070830 Engine: check update vs dest dirs, UT
+20071006 Engine: Full Izumi-to-Html converter, UT
+20071006 Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
+20071006 Engine: Generate items, complete, UT
+20071006 Engine: Generate index page, UT
+20071006 Engine: Generate categories pages, UT
 
 ---- Done Version 0.1 ----
 
-20071106 [1] Engine: Make it easy to customize default template (logo) => in theme
-20071106 [1] Engine: Easy way to add site control variables in config.rc
-20071105 [1] Engine: Image entry generation, implemented (not tested)
-20071104 [1] Engine: Izu image/link tag
-20071103 [1] Engine: Generate items, mock, UT
-20071103 [1] Engine: Support index.html with izu header embedded in HTML comment
-20071103 [1] Engine: Tag raw, html, url
-20071028 [1] Engine: Support index.html (no izu header support yet)
-20071027 [1] Test: Added "rig3 live" unit test
-20071026 [1] Engine: Dry run flag
-20071026 [1] Engine: Finished basic templating system, first iteration
-20071025 [1] Engine: Template generation, fixes, UTs
-20071024 [1] Engine: Template Nodes and Tags implementation, fixes, UTs
-20071023 [1] Engine: Extracted Buffer and Node from Template, added Tag, UTs
-20071022 [1] Engine: Template buffer line separation handling, UTs
-20071021 [1] Engine: Template class+ buffer, UTs
-20071020 [1] Engine: Define templating system, start impl.
-20071015 [1] Tests: Need to tests rig_test_case 
-20071014 [1] Tests: Testing Kid template system
-20071013 [1] Engine: Skeleton for Izumi-to-Html converter, UT
-20071008 [1] Engine: DirParser.TraverseDirs w/ UT
-20071007 [1] Engine: misc fixes, more UTs, testing dir parsing
-20071007 [1] Engine: read source dirs (glob + patterns) w/ UT
-20071006 [1] Engine: read source dirs (glob + patterns) (no UT)
-20071006 [1] Engine: rig3 process sites/site
-20071005 [1] Engine: define sites/site in settings, UT
-20071005 [1] Engine: settings reader w/ UT
-20071005 [1] Tests: Renamed rig_test_case, added getTestDataPath
-20070830 [1] Engine: basic settings reader w/ basic UT (not complete)
-20070830 [1] Tests: mock rig3 Run
-20070829 [1] Tests: rig3 ParseArgs
-20070829 [1] Engine: settings reader, first cut (no UT), list of rc paths
-20070828 [1] Engine: rig3 getopts, parse -v, .rc path, create log
-20070828 [1] Engine: Add log.py and UT
-20070828 [1] Engine: Add RigTestCase
-20070828 [1] Engine: Add UT framework (via command line and via PyDev)
-20070827 [1] SVN: Create rig3.googlecode with skeleton
-20070827 [1] Doc: Write preliminary design doc
+20071106 Engine: Make it easy to customize default template (logo) => in theme
+20071106 Engine: Easy way to add site control variables in config.rc
+20071105 Engine: Image entry generation, implemented (not tested)
+20071104 Engine: Izu image/link tag
+20071103 Engine: Generate items, mock, UT
+20071103 Engine: Support index.html with izu header embedded in HTML comment
+20071103 Engine: Tag raw, html, url
+20071028 Engine: Support index.html (no izu header support yet)
+20071027 Test: Added "rig3 live" unit test
+20071026 Engine: Dry run flag
+20071026 Engine: Finished basic templating system, first iteration
+20071025 Engine: Template generation, fixes, UTs
+20071024 Engine: Template Nodes and Tags implementation, fixes, UTs
+20071023 Engine: Extracted Buffer and Node from Template, added Tag, UTs
+20071022 Engine: Template buffer line separation handling, UTs
+20071021 Engine: Template class+ buffer, UTs
+20071020 Engine: Define templating system, start impl.
+20071015 Tests: Need to tests rig_test_case 
+20071014 Tests: Testing Kid template system
+20071013 Engine: Skeleton for Izumi-to-Html converter, UT
+20071008 Engine: DirParser.TraverseDirs w/ UT
+20071007 Engine: misc fixes, more UTs, testing dir parsing
+20071007 Engine: read source dirs (glob + patterns) w/ UT
+20071006 Engine: read source dirs (glob + patterns) (no UT)
+20071006 Engine: rig3 process sites/site
+20071005 Engine: define sites/site in settings, UT
+20071005 Engine: settings reader w/ UT
+20071005 Tests: Renamed rig_test_case, added getTestDataPath
+20070830 Engine: basic settings reader w/ basic UT (not complete)
+20070830 Tests: mock rig3 Run
+20070829 Tests: rig3 ParseArgs
+20070829 Engine: settings reader, first cut (no UT), list of rc paths
+20070828 Engine: rig3 getopts, parse -v, .rc path, create log
+20070828 Engine: Add log.py and UT
+20070828 Engine: Add RigTestCase
+20070828 Engine: Add UT framework (via command line and via PyDev)
+20070827 SVN: Create rig3.googlecode with skeleton
+20070827 Doc: Write preliminary design doc

@@ -1,14 +1,18 @@
 /* Default style for default template */
 
-/* --- base style extracted from my own wordpress theme */
+/* --- base style extracted from my own wordpress theme
+Receives the following template variables:
+- base_url: empty string or url of blog
+- public_name: the blog's name
+*/
 
 body {
 	color:#29303B;
-	background: #F3F6ED url([[base_url]]/media/content_bg.gif) repeat;
+	background: #F3F6ED url([[raw base_url]]/media/content_bg.gif) repeat;
 }
 
 .header {
-	background:#fff url([[url base_url]]/media/top_banner.jpg) no-repeat bottom; 	
+	background:#fff url([[raw base_url]]/media/top_banner.jpg) no-repeat bottom; 	
  	height: 183px;
 	margin: 0 auto;
 	width:760px;
