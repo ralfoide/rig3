@@ -358,7 +358,7 @@ class IzuParser(object):
         # and must not be surrounded by < >        -- RM 20041120 fixed
         # and must not be prefixed by [] or |
         # (all these exceptions to prevent processing twice links in the form <a href="http...">http...</a>
-        line = re.sub(r'@(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])@',
+        line = re.sub(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])',
                       r'\1<a href="\2">\2</a>\3', line)
         return line
 

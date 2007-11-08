@@ -158,6 +158,24 @@ class IzuParserTest(RigTestCase):
             '<div class="izu"><a href="http://www.example.code">http://www.example.code</a></div>',
             self._Render("http://www.example.code"))
 
+        self.assertEquals(
+            '<div class="izu"><a href="http://www.example.code">http://www.example.code</a></div>',
+            self._Render("[http://www.example.code]"))
+
+        self.assertEquals(
+            '<div class="izu"><a href="http://www.example.code">this is the link\'s description</a></div>',
+            self._Render("[this is the link's description|http://www.example.code]"))
+
+    def testAutoLinkImages(self):
+        self.assertEquals(
+            '<div class="izu"><img src="http://www.example.code/image.gif"></div>',
+            self._Render("[http://www.example.code/image.gif]"))
+
+        self.assertEquals(
+            '<div class="izu"><img alt="My Image" title="My Image" src="http://www.example.code/image.gif"></div>',
+            self._Render("[My Image|http://www.example.code/image.gif]"))
+
+
 #------------------------
 # Local Variables:
 # mode: python
