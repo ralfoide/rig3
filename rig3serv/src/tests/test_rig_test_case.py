@@ -42,6 +42,12 @@ class RigTestCaseTest(RigTestCase):
         self.assertSearch("ba+", "foobar")
         self.assertRaises(AssertionError, self.assertSearch, "ab+", "foobar")
 
+    def testAssertNotSearch(self):
+        self.assertNotSearch("baba", "foobar")
+        self.assertNotSearch("a{2,}", "foobar")
+        self.assertNotSearch("^bar", "foobar")
+        self.assertRaises(AssertionError, self.assertNotSearch, "foo", "foobar")
+
     def testAssertMatches(self):
         # Match only checks against the *beginning* of the string
         self.assertRaises(AssertionError, self.assertMatches, "bar", "foobar")

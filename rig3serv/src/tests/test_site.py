@@ -43,7 +43,9 @@ class SiteTest(RigTestCase):
         self.s = SiteSettings(public_name="Test Album",
                               source_dir=os.path.join(self.getTestDataPath(), "album"),
                               dest_dir=self._tempdir,
-                              theme=DEFAULT_THEME)
+                              theme=DEFAULT_THEME,
+                              base_url="http://www.example.com",
+                              rig_url="http://example.com/photos/")
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
@@ -173,9 +175,21 @@ class SiteTest(RigTestCase):
     def testCopyMedia(self):
         m = MockSite(self, self.Log(), False, self.s)
         m._CopyMedia()
+        
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
-        self.assertTrue(os.path.exists(os.path.join(self._tempdir, "media", "style.css")))
-    
+        
+        style_css_path = os.path.join(self._tempdir, "media", "style.css")
+        self.assertTrue(os.path.exists(style_css_path))
+        
+        # Check that the style.css has been transformed
+        f = file(style_css_path, "rb")
+        style_css = f.read()
+        f.close()
+        self.assertNotSearch("base_url", style_css)
+        self.assertNotSearch("public_name", style_css)
+        self.assertSearch("base url is http://www.example.com", style_css)
+        self.assertSearch("public name is Test Album", style_css)
+
     def testGenerateItems_Izu(self):
         m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()

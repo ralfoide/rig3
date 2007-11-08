@@ -1,4 +1,7 @@
-/* Default style for default template */
+[[# Default style for default template
+
+****WARNING: THIS IS THE TESTDATA TEMPLATE, NOT THE PRODUCTION ONE !!****
+]]
 
 /* base url is [[raw base_url]] */
 /* public name is [[raw public_name]] */ 

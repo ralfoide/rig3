@@ -102,10 +102,20 @@ class Site(object):
         """
         Copy media directory from selected template to destination
         """
+        _keywords = { "base_url": self._base_url,
+                    "public_name": self._public_name }
+        def _apply_template(source, dest):
+            # Use fill template to copy/transform the file
+            template = Template(self._log, file=source)
+            result = template.Generate(_keywords)
+            fdest = file(dest, "wb")
+            fdest.write(result)
+            fdest.close()
+
         media = os.path.join(self._TemplateDir(), self._theme, _MEDIA_DIR)
         if os.path.isdir(media):
             self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR),
-                          template_ext=[ "css" ])
+                          filter_ext={ ".css": _apply_template })
 
     def _Parse(self, source_dir, dest_dir):
         """
@@ -481,7 +491,7 @@ class Site(object):
 
     def _CopyDir(self, source_dir, dest_dir,
                  skip=[ "CVS", ".svn" ],
-                 template_ext=[]):
+                 filter_ext={}):
         """
         Copies a directory (recursively, with all its content) into
         a given destination. OVerwrites existing content. This doesn't
@@ -489,6 +499,11 @@ class Site(object):
         Also it will fail if:
         - the destination is not a directory
         - the destination is not writable/executable
+        
+        filter_ext is a dict { extension => filter_method }.
+        Methods should have a signature (source_name, dest_name) and should
+        copy the source to the dest, using whatever transformation desired.
+        Extensions must start with dot in them (i.e. ".css", not "css")
         
         This automatically skips CVS and .svn directories.
         """
@@ -504,18 +519,14 @@ class Site(object):
             if name in skip:
                 continue
             ps = os.path.join(source_dir, name)
+            ext = os.path.splitext(name)[1]
             if os.path.isdir(ps):
-                self._CopyDir(ps, os.path.join(dest_dir, name), skip, template_ext)
-            elif os.path.splitext(name)[1] in template_ext:
-                # Use fill template to copy/transform the file
-                template = Template(self._log, file=ps)
-                result = template.Generate(base_url=self._base_url,
-                                           public_name=self._public_name)
-                dest = file(os.path.join(dest_dir, name), "wb")
-                dest.write(result)
-                dest.close()
+                self._CopyDir(ps, os.path.join(dest_dir, name), skip, filter_ext)
+            elif ext in filter_ext or ("." + ext) in filter_ext:
+                # use a filter to copy from source to dest
+                filter_ext[ext](ps, os.path.join(dest_dir, name))
             else:
-                # copy file
+                # regular file copy
                 dest = file(os.path.join(dest_dir, name), "wb")
                 source = file(ps, "rb")
                 s = source.read(4096)

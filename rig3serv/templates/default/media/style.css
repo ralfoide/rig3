@@ -1,23 +1,26 @@
-/* Default style for default template */
+[[# Default style for default template */
 
-/* --- base style extracted from my own wordpress theme
+--- base style extracted from my own wordpress theme
 Receives the following template variables:
 - base_url: empty string or url of blog
 - public_name: the blog's name
-*/
+]]
 
 body {
-	color:#29303B;
-	background: #F3F6ED url([[raw base_url]]/media/content_bg.gif) repeat;
+	color: #29303B;
+	background: #F3F6ED url([[raw base_url]]media/content_bg.gif) repeat;
 }
 
 .header {
-	background:#fff url([[raw base_url]]/media/top_banner.jpg) no-repeat bottom; 	
- 	height: 183px;
+	text-align: center;
+	width: 100%;
+}
+
+.header img {
+	background:#fff;
 	margin: 0 auto;
-	width:760px;
-	padding:0;
-	border:#fc9 1px solid;
+	padding: 0;
+	border: #fc9 1px solid;
 }
 
 /* --- custom local style */

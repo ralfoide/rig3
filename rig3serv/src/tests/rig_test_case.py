@@ -105,15 +105,27 @@ class RigTestCase(unittest.TestCase):
 
     def assertSearch(self, expected_regexp, actual, msg=None):
         """
-        Asserts that the actual string value matches the expected regexp
+        Asserts that the expected regexp can be found in the actual string
         using a free search, not a complete match.
         Parameters:
-        - expected_regexp (string): A regexp string to match.
-        - actual (string): The actual value to match with.
+        - expected_regexp (string): A regexp string to search for.
+        - actual (string): The actual value to search within.
         """
         msg = "%s\nExpected regexp: %s\nActual  : %s" % \
-              (msg or "assertMatches failed", expected_regexp, actual)
+              (msg or "assertSearch failed", expected_regexp, actual)
         self.assertTrue(re.search(expected_regexp, actual), msg)
+
+    def assertNotSearch(self, unwanted_regexp, actual, msg=None):
+        """
+        Asserts that the expected regexp cannot be found in the actual string
+        using a free search, not a complete match.
+        Parameters:
+        - expected_regexp (string): A regexp string to search for.
+        - actual (string): The actual value to search within.
+        """
+        msg = "%s\nUnwanted regexp: %s\nActual  : %s" % \
+              (msg or "assertNotSearch failed", unwanted_regexp, actual)
+        self.assertFalse(re.search(unwanted_regexp, actual), msg)
 
     def assertMatches(self, expected_regexp, actual, msg=None):
         """
