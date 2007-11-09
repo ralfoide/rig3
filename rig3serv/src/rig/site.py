@@ -356,19 +356,21 @@ class Site(object):
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        title = cgi.escape(os.path.basename(source_dir))
+        album_title = cgi.escape(os.path.basename(source_dir))
         album = urllib.quote(source_dir)
         link = self._rig_url + 'index.php?album=' + album
         if leafname:
+            title = os.path.splitext(leafname)[0]
             img = urllib.quote(leafname)
-            img = self._rig_url + 'index.php?th=&album='+album+'img='+img+'&sz='+size+'&q=75'
+            img = '%sindex.php?th=&album=%s&img=%s&sz=%s&q=75' % (
+                  self._rig_url, album, img, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
                 "title": title,
-                "link": link }
+                "img": link }
         else:
-            content = title
+            content = album_title
         url = '<a title="%(title)s" href="%(link)s">%(content)s</a>' % {
-            "title": title,
+            "title": album_title,
             "link": link,
             "content": content }
         return url

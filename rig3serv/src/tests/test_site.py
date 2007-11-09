@@ -246,6 +246,27 @@ class SiteTest(RigTestCase):
                                 "ext": ".web.wmv" }, 
                               _IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
 
+    def testGetRigLink(self):
+        m = Site(self.Log(), False, self.s)
+
+        expected = (
+            '<a title="2007-11-08 Album Title" '
+            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title">'
+            '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"'
+            '/></a>'
+            )
+
+        self.assertEquals(
+          expected,
+          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+                        "Best of 2007.jpg",
+                        400))
+#'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/></a>' != 
+#'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="2007-11-08 Album Title" alt="2007-11-08 Album Title" src="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title" /></a>'
+
+'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/></a>' != 
+'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title" /></a>'
+
 #------------------------
 # Local Variables:
 # mode: python
