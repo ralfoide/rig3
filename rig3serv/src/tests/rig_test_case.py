@@ -201,6 +201,8 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertHtmlEquals failed", repr(expected), repr(actual))
+        self.assertTrue(expected != None, msg)
+        self.assertTrue(actual   != None, msg)
         actual = self.NormalizeHtml(actual)
         expected = self.NormalizeHtml(expected)
         self.assertEquals(expected, actual, msg)
@@ -215,6 +217,8 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertHtmlMatches failed", repr(expected_regexp), repr(actual))
+        self.assertTrue(expected_regexp != None, msg)
+        self.assertTrue(actual          != None, msg)
         actual = self.NormalizeHtml(actual)
         expected_regexp = self.NormalizeHtml(expected_regexp)
         self.assertMatches(expected_regexp, actual, msg)

@@ -257,10 +257,10 @@ class SiteTest(RigTestCase):
             )
 
         self.assertHtmlEquals(
-          expected,
-          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
-                        "Best of 2007.jpg",
-                        400))
+            expected,
+            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+                          "Best of 2007.jpg",
+                          400))
 
         expected = (
             '<a title="2007-11-08 Album Title" '
@@ -270,10 +270,10 @@ class SiteTest(RigTestCase):
             )
 
         self.assertHtmlEquals(
-          expected,
-          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
-                        "Best of 2007.jpg",
-                        -1))
+            expected,
+            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+                          "Best of 2007.jpg",
+                          -1))
 
         expected = (
             '<a title="2007-11-08 Album &amp; Title" '
@@ -282,11 +282,35 @@ class SiteTest(RigTestCase):
             )
 
         self.assertHtmlEquals(
-          expected,
-          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album & Title",
-                        None,
-                        -1))
+            expected,
+            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album & Title",
+                          None,
+                          -1))
 
+    def testGenerateImages(self):
+        m = Site(self.Log(), False, self.s)
+
+        self.assertEquals(
+            None,
+            m._GenerateImages("blah", "", []))
+
+        self.assertEquals(
+            None,
+            m._GenerateImages("blah", "", [ "index.izu",
+                                           "index.html",
+                                           "image.jpeg" ]))
+
+        self.assertEquals(
+            None,
+            m._GenerateImages("blah", "", [ "J1234_sound.mp3" ]))
+        
+        self.assertHtmlEquals(
+            m._GetRigLink("blah", None, -1),
+            m._GenerateImages("blah", "", [ "J1234_image.jpg" ]))
+
+        self.assertHtmlEquals(
+            "<table><tr><td>\n" + m._GetRigLink("blah", "J1234-image.jpg", -1) + "</tr></td></table>",
+            m._GenerateImages("blah", "", [ "J1234-image.jpg" ]))
 
 #------------------------
 # Local Variables:
