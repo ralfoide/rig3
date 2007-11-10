@@ -364,9 +364,9 @@ class Site(object):
             img = urllib.quote(leafname)
             img = '%sindex.php?th=&album=%s&img=%s&sz=%s&q=75' % (
                   self._rig_url, album, img, size)
-            content = '<img title="%(title)s" alt="%(title)s" src="%(img)s" />' % {
+            content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
                 "title": title,
-                "img": link }
+                "img": img }
         else:
             content = album_title
         url = '<a title="%(title)s" href="%(link)s">%(content)s</a>' % {

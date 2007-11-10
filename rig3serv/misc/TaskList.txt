@@ -10,8 +10,10 @@
 20071006 Engine: Generate index page, UT
 20071006 Engine: Generate categories pages, UT
 
+
 ---- Done Version 0.1 ----
 
+20071108 Engine: UT for Site.GetRigLink
 20071107 Engine: Site.CopyDir to fill template for css + UT
 20071107 Engine: Izu image/link tag -- need UT
 20071106 Engine: UT for SiteSettings

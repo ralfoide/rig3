@@ -252,20 +252,41 @@ class SiteTest(RigTestCase):
         expected = (
             '<a title="2007-11-08 Album Title" '
             'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title">'
-            '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"'
-            '/></a>'
+            '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/>'
+            '</a>'
             )
 
-        self.assertEquals(
+        self.assertHtmlEquals(
           expected,
           m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
                         "Best of 2007.jpg",
                         400))
-#'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/></a>' != 
-#'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="2007-11-08 Album Title" alt="2007-11-08 Album Title" src="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title" /></a>'
 
-'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/></a>' != 
-'<a title="2007-11-08 Album Title" href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title"><img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title" /></a>'
+        expected = (
+            '<a title="2007-11-08 Album Title" '
+            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title">'
+            '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=-1&q=75"/>'
+            '</a>'
+            )
+
+        self.assertHtmlEquals(
+          expected,
+          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+                        "Best of 2007.jpg",
+                        -1))
+
+        expected = (
+            '<a title="2007-11-08 Album &amp; Title" '
+            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20%26%20Title">'
+            '2007-11-08 Album &amp; Title</a>'
+            )
+
+        self.assertHtmlEquals(
+          expected,
+          m._GetRigLink("My Albums/Year_2007/2007-11-08 Album & Title",
+                        None,
+                        -1))
+
 
 #------------------------
 # Local Variables:
