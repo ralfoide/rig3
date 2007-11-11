@@ -27,8 +27,15 @@ class RelDir(object):
             return (self.abs_base == rhs.abs_base and
                     self.rel_curr == rhs.rel_curr and
                     self.abs_dir  == rhs.abs_dir)
-        return super(RelDir, self).__eq__(rhs)
+        return False
 
+    def __str__(self):
+        return "[%s => %s]" % (self.abs_base, self.rel_curr)
+
+    def __repr__(self):
+        return "%s[%s => %s]" % (super(RelDir, self).__repr__(),
+                                 self.abs_base,
+                                 self.rel_curr)
 
 #------------------------
 class DirParser(object):
@@ -104,13 +111,13 @@ class DirParser(object):
         self._log.Debug("Parse dir: %s", abs_source_curr_dir)
         names = self._listdir(abs_source_curr_dir)
         for name in names:
-            full_path = os.path.join(self._abs_source_dir, name)
+            full_path = os.path.join(abs_source_curr_dir, name)
             if self._isdir(full_path):
                 if dir_pattern.search(name):
                     rel_name = name
                     if rel_curr_dir:
                         rel_name = os.path.join(rel_curr_dir, name)
-                    p = self._new()._ParseRec(name, file_pattern, dir_pattern)
+                    p = self._new()._ParseRec(rel_name, file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
                         self._sub_dirs.append(p)
@@ -139,7 +146,7 @@ class DirParser(object):
         """
         yield (self.AbsSourceDir(), self.AbsDestDir(), self._files)
         dirs = list(self._sub_dirs)
-        dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
+        dirs.sort(lambda x, y: cmp(x._rel_curr_dir, y._rel_curr_dir))
         for d in dirs:
             for i in d.TraverseDirs():
                 yield i

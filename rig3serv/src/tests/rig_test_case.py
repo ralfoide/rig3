@@ -10,6 +10,7 @@ __author__ = "ralfoide@gmail.com"
 
 import os
 import re
+import difflib
 import unittest
 import StringIO
 import tempfile
@@ -192,7 +193,10 @@ class RigTestCase(unittest.TestCase):
             else:
                 expected.sort(cmp=sort)
                 actual.sort(cmp=sort)
-        self.assertEquals(expected, actual, msg)
+        if expected != actual:
+            for p in difflib.Differ().compare([str(i) for i in expected], [str(j) for j in actual]):
+                msg += "\n" + p
+            self.assertEquals(expected, actual, msg)
 
     def assertHtmlEquals(self, expected, actual, msg=None):
         """

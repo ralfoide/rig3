@@ -44,3 +44,13 @@ body {
   padding-top: 0.5em;
   padding-bottom: 0.3em;
 }
+
+.content.image {
+	text-align: center;
+	width: 100%;
+}
+
+.image-table {
+	text-align: center;
+	width: 100%;
+}

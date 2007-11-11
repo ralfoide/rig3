@@ -145,7 +145,7 @@ class Site(object):
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
-                           source_dir.rel_curr, curr_dir.rel_curr)
+                           source_dir.rel_curr, dest_dir.rel_curr)
             if self._UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
                 item = self._GenerateItem(source_dir, all_files)
@@ -253,7 +253,7 @@ class Site(object):
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
         elif INDEX_HTML in all_files:
             main_filename = INDEX_HTML
-            html_file = os.path.join(source_dir, INDEX_HTML)
+            html_file = os.path.join(source_dir.abs_dir, INDEX_HTML)
             html = sections["html"] = self._ReadFile(html_file)
             tags = self._izu_parser.ParseFirstLine(html)
         else:
@@ -336,7 +336,7 @@ class Site(object):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == _RATING_EXCELLENT:
-                    links.append(self._GetRigLink(source_dir.rel_curr, entry["top_name"], size))
+                    links.append(self._GetRigLink(source_dir, entry["top_name"], size))
         elif num_good:
             num_col = min(num_good, 6)
             keys = images.keys()
@@ -344,23 +344,22 @@ class Site(object):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == _RATING_GOOD:
-                    links.append(self._GetRigLink(source_dir.rel_curr, entry["top_name"], -1))
+                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
             return self._GetRigLink(source_dir, None, None)
 
         if links:
-            result = "<table><tr><td>\n"
+            lines = []
             i = 0
             for link in links:
-                if i > 0:
-                    if i % num_col == 0:
-                        result += "</td></tr><tr><td>\n"
-                    else:
-                        result += "</td></td>"
-                result += link
+                if i % num_col == 0:
+                    curr = []
+                    lines.append(curr)
+                curr.append(link)
                 i += 1
-            result += "</tr></td></table>"
-            return result
+            content = self._FillTemplate(self._theme, "image_table.html",
+                                         lines=lines)
+            return content
         return None
 
     def _GetRigLink(self, source_dir, leafname, size):
@@ -373,7 +372,7 @@ class Site(object):
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
         album_title = cgi.escape(os.path.basename(source_dir.rel_curr))
-        album = urllib.quote(source_dir)
+        album = urllib.quote(source_dir.rel_curr)
         link = self._rig_url + 'index.php?album=' + album
         if leafname:
             title = os.path.splitext(leafname)[0]

@@ -17,7 +17,7 @@ import rig.site
 from rig.site import Site
 from rig.site import DEFAULT_THEME, _IMG_PATTERN
 from rig.sites_settings import SiteSettings
-from rig.parser.dir_parser import DirParser
+from rig.parser.dir_parser import DirParser, RelDir
 
 #------------------------
 class MockSite(Site):
@@ -193,8 +193,8 @@ class SiteTest(RigTestCase):
     def testGenerateItems_Izu(self):
         m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
-        source_dir = os.path.join(self.getTestDataPath(), "album", "2007-10-07_Folder 1")
-        item = m._GenerateItem(source_dir, "2007-10-07_Folder 1", [ "index.izu" ])
+        source_dir = os.path.join(self.getTestDataPath(), "album")
+        item = m._GenerateItem(RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
@@ -205,8 +205,8 @@ class SiteTest(RigTestCase):
     def testGenerateItems_Html(self):
         m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
-        source_dir = os.path.join(self.getTestDataPath(), "album", "2006-05_Movies")
-        item = m._GenerateItem(source_dir, "2006-05_Movies", [ "index.html" ])
+        source_dir = os.path.join(self.getTestDataPath(), "album")
+        item = m._GenerateItem(RelDir(source_dir, "2006-05_Movies"), [ "index.html" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
@@ -258,7 +258,7 @@ class SiteTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           400))
 
@@ -271,7 +271,7 @@ class SiteTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album Title",
+            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           -1))
 
@@ -283,7 +283,7 @@ class SiteTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink("My Albums/Year_2007/2007-11-08 Album & Title",
+            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album & Title"),
                           None,
                           -1))
 
@@ -292,25 +292,25 @@ class SiteTest(RigTestCase):
 
         self.assertEquals(
             None,
-            m._GenerateImages("blah", "", []))
+            m._GenerateImages(RelDir("base", ""), []))
 
         self.assertEquals(
             None,
-            m._GenerateImages("blah", "", [ "index.izu",
-                                           "index.html",
-                                           "image.jpeg" ]))
+            m._GenerateImages(RelDir("base", ""), [ "index.izu",
+                                                    "index.html",
+                                                    "image.jpeg" ]))
 
         self.assertEquals(
             None,
-            m._GenerateImages("blah", "", [ "J1234_sound.mp3" ]))
+            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ]))
         
         self.assertHtmlEquals(
-            m._GetRigLink("blah", None, -1),
-            m._GenerateImages("blah", "", [ "J1234_image.jpg" ]))
+            m._GetRigLink(RelDir("base", ""), None, -1),
+            m._GenerateImages(RelDir("base", ""), [ "J1234_image.jpg" ]))
 
         self.assertHtmlEquals(
-            "<table><tr><td>\n" + m._GetRigLink("blah", "J1234-image.jpg", -1) + "</tr></td></table>",
-            m._GenerateImages("blah", "", [ "J1234-image.jpg" ]))
+            "<table><tr><td>\n" + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + "</tr></td></table>",
+            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
 
 #------------------------
 # Local Variables:
