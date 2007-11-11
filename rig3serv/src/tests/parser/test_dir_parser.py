@@ -125,33 +125,6 @@ class DirParserTest(RigTestCase):
         self.assertListEquals([ "file7", "file8" ], dir2b.Files())
         self.assertListEquals([], dir2b.SubDirs())
 
-    def testTraverseFiles(self):
-        mock_dirs={ "base": [ "dir1b", "dir1a", "file0" ],
-                   os.path.join("base", "dir1a"): [ "file2", "file1", "dir2a" ],
-                   os.path.join("base", "dir1b"): [ "file3", "file4", "dir2b" ],
-                   os.path.join("base", "dir1a", "dir2a"): [ "file6", "file5", "dir3a" ],
-                   os.path.join("base", "dir1b", "dir2b"): [ "file7", "file8", "dir3b" ],
-                   os.path.join("base", "dir1a", "dir2a", "dir3a"): [],
-                   os.path.join("base", "dir1b", "dir2b", "dir3b"): [] }
-
-        m = MockDirParser(self.Log(), mock_dirs)
-        m.Parse("base", "dest")
-
-        expected = [
-            ("base", "dest", "", "file0", ["file0"]),
-            (             "dir1a",           "dest",              "dir1a",           "file1", [ "file1", "file2" ] ),
-            (             "dir1a",           "dest",              "dir1a",           "file2", [ "file1", "file2" ] ),
-            (os.path.join("dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), "file5", [ "file5", "file6" ] ),
-            (os.path.join("dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"), "file6", [ "file5", "file6" ] ),
-            (             "dir1b",           "dest",              "dir1b",           "file3", [ "file3", "file4" ] ),
-            (             "dir1b",           "dest",              "dir1b",           "file4", [ "file3", "file4" ] ),
-            (os.path.join("dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), "file7", [ "file7", "file8" ] ),
-            (os.path.join("dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"), "file8", [ "file7", "file8" ] ),
-            ]
-        
-        actual = [i for i in m.TraverseFiles()]
-        self.assertListEquals(expected, actual)
-
     def testTraverseDirs(self):
         mock_dirs={ "base": [ "dir1b", "dir1a", "file0" ],
                    os.path.join("base", "dir1a"): [ "file2", "file1", "dir2a" ],

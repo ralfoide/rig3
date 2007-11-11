@@ -129,28 +129,6 @@ class DirParser(object):
         self._sub_dirs.sort(cmp=lambda x, y: cmp(x._rel_curr_dir, y._rel_curr_dir))
         return self
 
-    def TraverseFiles(self):
-        """
-        Generator that traverses all files in the directory structure.
-        Returns a tuple (source_dir, dest_dir, leaf_name, all_files) for each file.
-        all_files is the current list of files for this directory. It's a copy
-        so the caller can remove elements to be processed next and can use it
-        to lookup specific files ahead.
-        Processes local files then each subdirectories in alphabetical
-        order.
-        """
-        all_files = list(self._files)
-        all_files.sort()
-        for f in all_files:
-            yield (self._abs_source_dir,
-                   self._abs_dest_dir, self._rel_curr_dir,
-                   f, all_files)
-        dirs = list(self._sub_dirs)
-        dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
-        for d in dirs:
-            for i in d.TraverseFiles():
-                yield i
-
     def TraverseDirs(self):
         """
         Generator that traverses the directories in the directory structure.
