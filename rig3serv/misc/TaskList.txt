@@ -1,6 +1,7 @@
 ---- TODO ----
 
-20071104 Engine: Image entry generation -- need testing, UT
+20071111 Engine: Ability to override logo URL in template
+20071111 Engine: Fix IzuParser to add space between paragraph lines
 20071104 Engine: Refactor Site's generateItem into template
 
 20070830 Engine: check update vs dest dirs, UT
@@ -13,6 +14,7 @@
 
 ---- Done Version 0.1 ----
 
+20071108 Engine: Image entry generation -- need testing, UT
 20071108 Engine: UT for Site.GetRigLink
 20071107 Engine: Site.CopyDir to fill template for css + UT
 20071107 Engine: Izu image/link tag -- need UT
