@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
 #-----------------------------------------------------------------------------|
 """
 Unit tests for IzuParser
@@ -175,6 +176,10 @@ class IzuParserTest(RigTestCase):
             '<div class="izu"><img alt="My Image" title="My Image" src="http://www.example.code/image.gif"></div>',
             self._Render("[My Image|http://www.example.code/image.gif]"))
 
+    def testConvertAccents(self):
+        self.assertEquals(
+              "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
+              self.m._ConvertAccents("ça, où est le pré près du prêt?"))
 
 #------------------------
 # Local Variables:

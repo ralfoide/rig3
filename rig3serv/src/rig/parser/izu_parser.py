@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
 #-----------------------------------------------------------------------------|
 """
 Rig3 module: Parses Izumi files to HTML
@@ -15,6 +16,39 @@ from StringIO import StringIO
 
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                        r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
+
+_ACCENTS_TO_HTML = {
+    "á": "&aacute;",
+    "à": "&agrave;",
+    "â": "&acirc;",
+    "ä": "&auml;",
+    "ã": "&atilde;",
+
+    "ç": "&ccedil;",
+
+    "é": "&eacute;",
+    "è": "&egrave;",
+    "ê": "&ecirc;",
+    "ë": "&euml;",
+
+    "í": "&iacute;",
+    "ì": "&igrave;",
+    "î": "&icirc;",
+    "ï": "&iuml;",
+
+    "ñ": "&mtilde;",
+
+    "ó": "&oacute;",
+    "ò": "&ograve;",
+    "ô": "&ocirc;",
+    "ö": "&ouml;",
+    "õ": "&otilde;",
+
+    "ú": "&uacute;",
+    "ù": "&ugrave;",
+    "û": "&ucirc;",
+    "ü": "&uuml;",
+}
 
 #------------------------
 class _State(object):
@@ -310,6 +344,9 @@ class IzuParser(object):
         Converts accents to HTML encoding entities. 
         Returns the formatted line.
         """
+        for k, v in _ACCENTS_TO_HTML.iteritems():
+            if k in line:
+                line = line.replace(k, v)
         return line
 
     def _FormatBoldItalicHtmlEmpty(self, line):
