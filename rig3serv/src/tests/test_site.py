@@ -309,7 +309,7 @@ class SiteTest(RigTestCase):
             m._GenerateImages(RelDir("base", ""), [ "J1234_image.jpg" ]))
 
         self.assertHtmlEquals(
-            "<table><tr><td>\n" + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + "</tr></td></table>",
+            '<table class="image-table"><tr><td>\n' + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
 
 #------------------------
