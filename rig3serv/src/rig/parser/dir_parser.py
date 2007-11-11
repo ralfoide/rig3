@@ -12,11 +12,30 @@ import os
 import re
 
 #------------------------
+class RelDir(object):
+    """
+    Represents a 'relative' directory, with a base and a relative sub directory.
+    The full absolute dir path is available too. 
+    """
+    def __init__(self, abs_base, rel_curr):
+        self.abs_base = abs_base
+        self.rel_curr = rel_curr
+        self.abs_dir = os.path.join(abs_base, rel_curr)
+
+    def __eq__(self, rhs):
+        if isinstance(rhs, RelDir):
+            return (self.abs_base == rhs.abs_base and
+                    self.rel_curr == rel_curr and
+                    self.abs_dir  == rhs.abs_dir)
+        return super(RelDir, self).__eq__(rhs)
+
+
+#------------------------
 class DirParser(object):
     """
     Parses directories recursively accordingly to given file/dir regexps.
     Parses the source directories and match the corresponding destination
-    structure (destinaton is not checked for existence.)
+    structure (destination is not checked for existence.)
             
     Note that SubDirs() and Files() are already sorted alphabetically.
     This helps remove differences between various file systems.
@@ -28,18 +47,24 @@ class DirParser(object):
         self._files = []
         self._sub_dirs = []
         self._abs_source_dir = None
-        self._abs_dest_dir_base = None
-        self._rel_curr_dest_dir = None
-    
+        self._abs_dest_dir = None
+        self._rel_curr_dir = None
+
     def AbsSourceDir(self):
-        return self._abs_source_dir
-    
+        """
+        Returns a RelDir that describes the source directory (source + relative + absolute)
+        """
+        return RelDir(self._abs_source_dir, self._rel_curr_dir)
+
     def AbsDestDir(self):
-        return (self._abs_dest_dir_base, self._rel_curr_dest_dir)
-    
+        """
+        Returns a RelDir that describes the destination directory (source + relative + absolute)
+        """
+        return RelDir(self._abs_dest_dir, self._rel_curr_dir)
+
     def Files(self):
         return self._files
-    
+
     def SubDirs(self):
         return self._sub_dirs
 
@@ -55,10 +80,11 @@ class DirParser(object):
         
         Returns self for chaining.
         """
-        return self._ParseRec(abs_source_dir, abs_dest_dir, "", file_pattern, dir_pattern)
-    
-    def _ParseRec(self, abs_source_dir, abs_dest_dir_base, rel_curr_dest_dir,
-                  file_pattern=".", dir_pattern="."):
+        self._abs_source_dir = abs_source_dir
+        self._abs_dest_dir = abs_dest_dir
+        return self._ParseRec("", file_pattern, dir_pattern)
+
+    def _ParseRec(self, rel_curr_dir, file_pattern=".", dir_pattern="."):
         """
         Implementation helper for Parse().
         Most arguments are the same, see Parse(), except:
@@ -67,24 +93,19 @@ class DirParser(object):
         """
         self._files = []
         self._sub_dirs = []
-        self._abs_source_dir = abs_source_dir
-        self._abs_dest_dir_base = abs_dest_dir_base
-        self._rel_curr_dest_dir = rel_curr_dest_dir
+        self._rel_curr_dir = rel_curr_dir
         if isinstance(dir_pattern, str):
             dir_pattern = re.compile(dir_pattern)
         if isinstance(file_pattern, str):
             file_pattern = re.compile(file_pattern)
-        root_dir = self._abs_source_dir
-        dest_dir = self._rel_curr_dest_dir
-        self._log.Debug("Parse dir: %s", root_dir)
-        names = self._listdir(root_dir)
+        abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
+        self._log.Debug("Parse dir: %s", abs_source_curr_dir)
+        names = self._listdir(abs_source_curr_dir)
         for name in names:
-            full_path = os.path.join(root_dir, name)
+            full_path = os.path.join(self._abs_source_dir, name)
             if self._isdir(full_path):
                 if dir_pattern.search(name):
-                    p = self._new()._ParseRec(full_path,
-                                              abs_dest_dir_base,
-                                              os.path.join(dest_dir, name),
+                    p = self._new()._ParseRec(os.path.join(rel_curr_dir, name),
                                               file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
@@ -101,7 +122,7 @@ class DirParser(object):
                 else:
                     self._log.Debug("Ignore file: %s", full_path)
         self._files.sort()
-        self._sub_dirs.sort(cmp=lambda x, y: cmp(x._rel_curr_dest_dir, y._rel_curr_dest_dir))
+        self._sub_dirs.sort(cmp=lambda x, y: cmp(x._rel_curr_dir, y._rel_curr_dir))
         return self
 
     def TraverseFiles(self):
@@ -118,7 +139,7 @@ class DirParser(object):
         all_files.sort()
         for f in all_files:
             yield (self._abs_source_dir,
-                   self._abs_dest_dir_base, self._rel_curr_dest_dir,
+                   self._abs_dest_dir, self._rel_curr_dir,
                    f, all_files)
         dirs = list(self._sub_dirs)
         dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
@@ -134,9 +155,7 @@ class DirParser(object):
         The all_files list is not sorted in any particular order.
         Callers should treat the tuples as immutable and not change the values.
         """
-        yield (self._abs_source_dir,
-               self._abs_dest_dir_base, self._rel_curr_dest_dir,
-               self._files)
+        yield (self.AbsSourceDir(), self.AbsDestDir(), self._files)
         dirs = list(self._sub_dirs)
         dirs.sort(lambda x, y: cmp(x.AbsSourceDir(), y.AbsSourceDir()))
         for d in dirs:
