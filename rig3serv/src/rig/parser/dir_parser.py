@@ -42,13 +42,13 @@ class DirParser(object):
 
     To use create the object then call Parse() on it.
     """
-    def __init__(self, log):
+    def __init__(self, log, abs_source_dir=None, abs_dest_dir=None):
         self._log = log
         self._files = []
         self._sub_dirs = []
         self._abs_source_dir = None
-        self._abs_dest_dir = None
-        self._rel_curr_dir = None
+        self._abs_dest_dir = abs_source_dir
+        self._rel_curr_dir = abs_dest_dir
 
     def AbsSourceDir(self):
         """
@@ -98,7 +98,9 @@ class DirParser(object):
             dir_pattern = re.compile(dir_pattern)
         if isinstance(file_pattern, str):
             file_pattern = re.compile(file_pattern)
-        abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
+        abs_source_curr_dir = self._abs_source_dir
+        if rel_curr_dir:
+            abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
         self._log.Debug("Parse dir: %s", abs_source_curr_dir)
         names = self._listdir(abs_source_curr_dir)
         for name in names:
@@ -193,7 +195,7 @@ class DirParser(object):
         """
         Creates a new DirParser instance. Useful for mock unittests.
         """
-        return DirParser(self._log)
+        return DirParser(self._log, self._abs_source_dir, self._abs_dest_dir)
 
     def _listdir(self, dir):
         """
