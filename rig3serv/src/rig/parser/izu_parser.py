@@ -284,6 +284,8 @@ class IzuParser(object):
         line = re.sub(r"'('+)", r"\1", line)
         line = re.sub(r"=(=+)", r"\1", line)
 
+        line = self._ConvertAccents(line)
+
         # --- append to buffer
         # skip if line is empty
         if not line:
@@ -303,9 +305,17 @@ class IzuParser(object):
         # finally append the line to the section
         state.Append(curr_section, line)
 
+    def _ConvertAccents(self, line):
+        """
+        Converts accents to HTML encoding entities. 
+        Returns the formatted line.
+        """
+        return line
+
     def _FormatBoldItalicHtmlEmpty(self, line):
         """
         Strips html, formats bold, italics, code, empty paragraphs.
+        Returns the formatted line.
         """
         # disable HTML as early as possible: only < >, not &
         line = line.replace(">", "&gt;")
@@ -333,6 +343,7 @@ class IzuParser(object):
     def _FormatLinks(self, line):
         """
         Formats straight URLs and tags for URLs & images
+        Returns the formatted line.
         """
         # -- format external links --
         
@@ -374,9 +385,15 @@ class IzuParser(object):
     # --- tag handlers
 
     def _DefaultTagHandler(self, state, tag, value):
+        """
+        Handles unknown izu:<tag>
+        """
         state.Tags()[tag] = value.strip()
 
     def _DateHandler(self, state, tag, value):
+        """
+        Handles izu:date tags
+        """
         m = _DATE_YMD.match(value.strip())
         if m:
             try:
@@ -392,6 +409,9 @@ class IzuParser(object):
 
 
     def _CatHandler(self, state, tag, value):
+        """
+        Handle izu:cat (categories) tags.
+        """
         state.Tags()[tag] = [s.strip() for s in value.split(",") if s.strip()]
 
 #------------------------
