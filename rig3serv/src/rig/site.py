@@ -17,7 +17,7 @@ import errno
 import urllib
 from datetime import datetime
 
-from rig.parser.dir_parser import DirParser
+from rig.parser.dir_parser import DirParser, RelDir
 from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
 
@@ -143,13 +143,12 @@ class Site(object):
         """
         categories = []
         items = []
-        for source_dir, dest_dir, curr_dir, all_files in tree.TraverseDirs():
+        for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
-                           source_dir, curr_dir)
-            if self._UpdateNeeded(source_dir, os.path.join(dest_dir, curr_dir),
-                                 all_files):
+                           source_dir.rel_curr, curr_dir.rel_curr)
+            if self._UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
-                item = self._GenerateItem(source_dir, curr_dir, all_files)
+                item = self._GenerateItem(source_dir, all_files)
                 if item is None:
                     continue
                 for c in item.categories:
@@ -210,38 +209,45 @@ class Site(object):
         its internal files are more recent than the destination directory.
         And obviously it needs to be created if the destination does not
         exist yet.
+        
+        Arguments:
+        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+        - dest_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         """
-        if not os.path.exists(dest_dir):
+        if not os.path.exists(dest_dir.abs_dir):
             return True
         source_ts = None
         dest_ts = None
         try:
-            dest_ts = self._DirTimeStamp(dest_dir)
+            dest_ts = self._DirTimeStamp(dest_dir.abs_dir)
         except OSError:
             self._log.Info("[%s] Dest '%s' does not exist", self._public_name,
-                           dest_dir)
+                           dest_dir.abs_dir)
             return True
         try:
-            source_ts = self._DirTimeStamp(source_dir)
+            source_ts = self._DirTimeStamp(source_dir.abs_dir)
         except OSError:
             self._log.Warn("[%s] Source '%s' does not exist", self._public_name,
-                           source_dir)
+                           source_dir.abs_dir)
             return False
         return source_ts > dest_ts
 
-    def _GenerateItem(self, source_dir, rel_dest_dir, all_files):
+    def _GenerateItem(self, source_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns an _Item or None
+
+        Arguments:
+        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         """
-        title = os.path.basename(source_dir)
+        title = os.path.basename(source_dir.rel_curr)
         date = self._DateFromTitle(title) or datetime.today()
         main_filename = ""
         sections = {}
         tags = {}
         if INDEX_IZU in all_files:
             main_filename = INDEX_IZU
-            izu_file = os.path.join(source_dir, INDEX_IZU)
+            izu_file = os.path.join(source_dir.abs_dir, INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
@@ -259,7 +265,7 @@ class Site(object):
         title = tags.get("title", title)  # override directory's title
 
         if not "images" in sections:
-            html_img = self._GenerateImages(source_dir, rel_dest_dir, all_files)
+            html_img = self._GenerateImages(source_dir, all_files)
             if html_img:
                 sections["images"] = html_img
 
@@ -270,16 +276,20 @@ class Site(object):
                                      date=date,
                                      tags=tags,
                                      categories=cats)
-        filename = self._SimpleFileName(os.path.join(rel_dest_dir, main_filename))
+        filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
         assert self._WriteFile(content,
                                os.path.join(self._dest_dir, _ITEMS_DIR),
                                filename)
         dest = os.path.join(_ITEMS_DIR, filename)
         return _Item(date, dest, content=content, categories=cats)
 
-    def _GenerateImages(self, source_dir, rel_dest_dir, all_files):
+    def _GenerateImages(self, source_dir, all_files):
         """
         Generates a table with images.
+        
+        Arguments:
+        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+
         Heuristics:
         - if rating+ images are present, show them with a width of 400 or 300
         - if rating- images are present, show them as thumbnails
@@ -326,7 +336,7 @@ class Site(object):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == _RATING_EXCELLENT:
-                    links.append(self._GetRigLink(source_dir, entry["top_name"], size))
+                    links.append(self._GetRigLink(source_dir.rel_curr, entry["top_name"], size))
         elif num_good:
             num_col = min(num_good, 6)
             keys = images.keys()
@@ -334,7 +344,7 @@ class Site(object):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == _RATING_GOOD:
-                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
+                    links.append(self._GetRigLink(source_dir.rel_curr, entry["top_name"], -1))
         elif num_images:
             return self._GetRigLink(source_dir, None, None)
 
@@ -362,7 +372,7 @@ class Site(object):
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        album_title = cgi.escape(os.path.basename(source_dir))
+        album_title = cgi.escape(os.path.basename(source_dir.rel_curr))
         album = urllib.quote(source_dir)
         link = self._rig_url + 'index.php?album=' + album
         if leafname:

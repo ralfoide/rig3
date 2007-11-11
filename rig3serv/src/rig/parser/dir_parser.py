@@ -25,7 +25,7 @@ class RelDir(object):
     def __eq__(self, rhs):
         if isinstance(rhs, RelDir):
             return (self.abs_base == rhs.abs_base and
-                    self.rel_curr == rel_curr and
+                    self.rel_curr == rhs.rel_curr and
                     self.abs_dir  == rhs.abs_dir)
         return super(RelDir, self).__eq__(rhs)
 
@@ -46,9 +46,9 @@ class DirParser(object):
         self._log = log
         self._files = []
         self._sub_dirs = []
-        self._abs_source_dir = None
-        self._abs_dest_dir = abs_source_dir
-        self._rel_curr_dir = abs_dest_dir
+        self._abs_source_dir = abs_source_dir
+        self._abs_dest_dir = abs_dest_dir
+        self._rel_curr_dir = None
 
     def AbsSourceDir(self):
         """
@@ -107,8 +107,10 @@ class DirParser(object):
             full_path = os.path.join(self._abs_source_dir, name)
             if self._isdir(full_path):
                 if dir_pattern.search(name):
-                    p = self._new()._ParseRec(os.path.join(rel_curr_dir, name),
-                                              file_pattern, dir_pattern)
+                    rel_name = name
+                    if rel_curr_dir:
+                        rel_name = os.path.join(rel_curr_dir, name)
+                    p = self._new()._ParseRec(name, file_pattern, dir_pattern)
                     # Skip empty sub-dirs
                     if p.Files() or p.SubDirs():
                         self._sub_dirs.append(p)

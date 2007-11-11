@@ -36,6 +36,9 @@ class MockSubDir(MockDirParser):
         self._abs_dest_dir = abs_dest_dir
         self._ParseRec(rel_curr_dir)
 
+    def _new(self):
+        return MockSubDir(self._log, self._mock_dirs, self._abs_source_dir, self._abs_dest_dir)
+
 #------------------------
 class DirParserTest(RigTestCase):
 
@@ -86,7 +89,7 @@ class DirParserTest(RigTestCase):
         m = MockDirParser(self.Log(), mock_dirs)
 
         m.Parse("base", "dest")
-        dir1 = MockSubDir(self.Log(), mock_dirs, "base", "dir1", "dest", "dir1")
+        dir1 = MockSubDir(self.Log(), mock_dirs, "base", "dest", "dir1")
 
         self.assertListEquals([], m.Files())
         self.assertListEquals([ dir1 ], m.SubDirs())
@@ -104,11 +107,10 @@ class DirParserTest(RigTestCase):
         m = MockDirParser(self.Log(), mock_dirs)
 
         m.Parse("base", "dest")
-        dir1a
-        dir1a = MockSubDir(self.Log(), mock_dirs, "dir1a", "dest", "dir1a")
-        dir1b = MockSubDir(self.Log(), mock_dirs, "dir1b", "dest", "dir1b")
-        dir2a = MockSubDir(self.Log(), mock_dirs, os.path.join("base", "dir1a", "dir2a"), "dest", os.path.join("dir1a", "dir2a"))
-        dir2b = MockSubDir(self.Log(), mock_dirs, os.path.join("base", "dir1b", "dir2b"), "dest", os.path.join("dir1b", "dir2b"))
+        dir1a = MockSubDir(self.Log(), mock_dirs, "base", "dest", "dir1a")
+        dir1b = MockSubDir(self.Log(), mock_dirs, "base", "dest", "dir1b")
+        dir2a = MockSubDir(self.Log(), mock_dirs, "base", "dest", os.path.join("dir1a", "dir2a"))
+        dir2b = MockSubDir(self.Log(), mock_dirs, "base", "dest", os.path.join("dir1b", "dir2b"))
 
         self.assertListEquals([ "file0" ], m.Files())
         self.assertListEquals([ dir1a, dir1b ], m.SubDirs())
