@@ -121,13 +121,18 @@ class SiteTest(RigTestCase):
 
     def testFillTemplate(self):
         m = MockSite(self, self.Log(), False, self.s)
-        html = m._FillTemplate("index.html", theme=self.s.theme, title="MyTitle", entries=["entry1", "entry2"])
+
+        keywords = self.s.AsDict()
+        keywords["title"] = "MyTitle"
+        keywords["entries"] = ["entry1", "entry2"]
+
+        html = m._FillTemplate("index.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<html lang="en-US">
                 <head>
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-                <title>MyTitle</title>
+                <title>Test Album - MyTitle</title>
                 </head>
                 <body>
                 entry1
@@ -136,10 +141,11 @@ class SiteTest(RigTestCase):
                 </html>""",
             html)
 
-        keywords = { "title": "MyTitle",
-                     "sections": { "en": "Main <b>Text Content</b> as HTML",
-                                   "images": "<a href='page_url'><img href='image_url'/></a>" } }
-        html = m._FillTemplate("entry.html", theme=self.s.theme, **keywords)
+        keywords = self.s.AsDict()
+        keywords["title"] = "MyTitle"
+        keywords["sections"] = { "en": "Main <b>Text Content</b> as HTML",
+                                 "images": "<a href='page_url'><img href='image_url'/></a>" }
+        html = m._FillTemplate("entry.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<div class="entry">
