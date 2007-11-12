@@ -71,12 +71,7 @@ class Site(object):
     def __init__(self, log, dry_run, settings):
         self._log = log
         self._dry_run = dry_run
-        self._public_name = settings.public_name
-        self._source_dir = settings.source_dir
-        self._dest_dir = settings.dest_dir
-        self._theme = settings.theme
-        self._base_url = settings.base_url
-        self._rig_url = settings.rig_url
+        self._settings = settings
         self._izu_parser = IzuParser(self._log)
 
     def Process(self):
@@ -84,10 +79,10 @@ class Site(object):
         Processes the site. Do whatever is needed to get the job done.
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._public_name, self._source_dir, self._dest_dir, self._theme)
+                       self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
         self._MakeDestDirs()
         self._CopyMedia()
-        tree = self._Parse(self._source_dir, self._dest_dir)
+        tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
         categories, items = self._GenerateItems(tree)
         self._GeneratePages(categories, items)
         # TODO: self.DeleteOldGeneratedItems()
@@ -102,8 +97,8 @@ class Site(object):
         """
         Copy media directory from selected template to destination
         """
-        _keywords = { "base_url": self._base_url,
-                    "public_name": self._public_name }
+        _keywords = { "base_url": self._settings.base_url,
+                    "public_name": self._settings.public_name }
         def _apply_template(source, dest):
             # Use fill template to copy/transform the file
             template = Template(self._log, file=source)
@@ -112,9 +107,9 @@ class Site(object):
             fdest.write(result)
             fdest.close()
 
-        media = os.path.join(self._TemplateDir(), self._theme, _MEDIA_DIR)
+        media = os.path.join(self._TemplateDir(), self._settings.theme, _MEDIA_DIR)
         if os.path.isdir(media):
-            self._CopyDir(media, os.path.join(self._dest_dir, _MEDIA_DIR),
+            self._CopyDir(media, os.path.join(self._settings.dest_dir, _MEDIA_DIR),
                           filter_ext={ ".css": _apply_template })
 
     def _Parse(self, source_dir, dest_dir):
@@ -144,7 +139,7 @@ class Site(object):
         categories = []
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Info("[%s] Process '%s' to '%s'", self._public_name,
+            self._log.Info("[%s] Process '%s' to '%s'", self._settings.public_name,
                            source_dir.rel_curr, dest_dir.rel_curr)
             if self._UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
@@ -155,7 +150,7 @@ class Site(object):
                     if not c in categories:
                         categories.append(c)
                 items.append(item)
-        self._log.Info("[%s] Found %d items, %d categories", self._public_name,
+        self._log.Info("[%s] Found %d items, %d categories", self._settings.public_name,
                        len(items), len(categories))
         return categories, items
 
@@ -192,15 +187,15 @@ class Site(object):
                 next_url = None
             entries = [j.content for j in items[i:i + _ITEMS_PER_PAGE] ]
             i += _ITEMS_PER_PAGE
-            content = self._FillTemplate(self._theme, "index.html",
-                                         base_url=self._base_url,
-                                         title="All Items",
-                                         entries=entries,
-                                         prev_url=prev_url,
-                                         next_url=next_url,
-                                         curr_page=p + 1,
-                                         max_page=np + 1)
-            self._WriteFile(content, self._dest_dir, url)
+            keywords = self._settings.AsDict()
+            keywords["title"] = "All Items"
+            keywords["entries"] = entries
+            keywords["prev_url"] = prev_url
+            keywords["next_url"] = next_url
+            keywords["curr_page"] = p + 1
+            keywords["max_page"] = np + 1
+            content = self._FillTemplate("index.html", **keywords)
+            self._WriteFile(content, self._settings.dest_dir, url)
             prev_url = url
 
     def _UpdateNeeded(self, source_dir, dest_dir, all_files):
@@ -221,13 +216,13 @@ class Site(object):
         try:
             dest_ts = self._DirTimeStamp(dest_dir.abs_dir)
         except OSError:
-            self._log.Info("[%s] Dest '%s' does not exist", self._public_name,
+            self._log.Info("[%s] Dest '%s' does not exist", self._settings.public_name,
                            dest_dir.abs_dir)
             return True
         try:
             source_ts = self._DirTimeStamp(source_dir.abs_dir)
         except OSError:
-            self._log.Warn("[%s] Source '%s' does not exist", self._public_name,
+            self._log.Warn("[%s] Source '%s' does not exist", self._settings.public_name,
                            source_dir.abs_dir)
             return False
         return source_ts > dest_ts
@@ -248,7 +243,7 @@ class Site(object):
         if INDEX_IZU in all_files:
             main_filename = INDEX_IZU
             izu_file = os.path.join(source_dir.abs_dir, INDEX_IZU)
-            self._log.Info("[%s] Render '%s' to HMTL", self._public_name,
+            self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
         elif INDEX_HTML in all_files:
@@ -269,16 +264,16 @@ class Site(object):
             if html_img:
                 sections["images"] = html_img
 
-        content = self._FillTemplate(self._theme, "entry.html",
-                                     base_url=self._base_url,
-                                     title=title,
-                                     sections=sections,
-                                     date=date,
-                                     tags=tags,
-                                     categories=cats)
+        keywords = self._settings.AsDict()
+        keywords["title"] = title
+        keywords["sections"] = sections
+        keywords["date"] = date
+        keywords["tags"] = tags
+        keywords["categories"] = cats
+        content = self._FillTemplate("entry.html", **keywords)
         filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
         assert self._WriteFile(content,
-                               os.path.join(self._dest_dir, _ITEMS_DIR),
+                               os.path.join(self._settings.dest_dir, _ITEMS_DIR),
                                filename)
         dest = os.path.join(_ITEMS_DIR, filename)
         return _Item(date, dest, content=content, categories=cats)
@@ -357,7 +352,8 @@ class Site(object):
                     lines.append(curr)
                 curr.append(link)
                 i += 1
-            content = self._FillTemplate(self._theme, "image_table.html",
+            content = self._FillTemplate("image_table.html",
+                                         theme=self._settings.theme,
                                          lines=lines)
             return content
         return None
@@ -373,12 +369,12 @@ class Site(object):
         """
         album_title = cgi.escape(os.path.basename(source_dir.rel_curr))
         album = urllib.quote(source_dir.rel_curr)
-        link = self._rig_url + 'index.php?album=' + album
+        link = self._settings.rig_url + 'index.php?album=' + album
         if leafname:
             title = os.path.splitext(leafname)[0]
             img = urllib.quote(leafname)
             img = '%sindex.php?th=&album=%s&img=%s&sz=%s&q=75' % (
-                  self._rig_url, album, img, size)
+                  self._settings.rig_url, album, img, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
                 "title": title,
                 "img": img }
@@ -436,7 +432,7 @@ class Site(object):
         This method is extracted so that it can be mocked in unit tests.
         """
         dest_file = os.path.join(dest_dir, leafname)
-        self._log.Info("[%s] Write %s", self._public_name, dest_file)
+        self._log.Info("[%s] Write %s", self._settings.public_name, dest_file)
         if not self._dry_run:
             f = file(dest_file, mode="wb")
             f.write(data)
@@ -465,13 +461,14 @@ class Site(object):
                 name = name[:maxlen - 1 - len(crc)] + "_" + crc
         return name
 
-    def _FillTemplate(self, theme, template, **keywords):
+    def _FillTemplate(self, template, **keywords):
         """
         Renders the given template with the given theme.
         Keywords are the special variables expected by the given template.
         Returns the generated HTML as a string.
         """
-        template_file = os.path.join(self._TemplateDir(), theme, template)
+        assert "theme" in keywords
+        template_file = os.path.join(self._TemplateDir(), keywords["theme"], template)
         template = Template(self._log, file=template_file)
         result = template.Generate(keywords)
         return result
@@ -501,7 +498,7 @@ class Site(object):
         Doesn't generate an error if the directory already exists.
         """
         try:
-            os.makedirs(os.path.join(self._dest_dir, rel_dir))
+            os.makedirs(os.path.join(self._settings.dest_dir, rel_dir))
         except OSError, e:
             if e.errno != errno.EEXIST:
                 raise

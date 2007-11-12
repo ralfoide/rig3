@@ -23,7 +23,17 @@ from rig.site import DEFAULT_THEME
 #------------------------
 class SiteSettings(object):
     """
-    Settings for one site with defaults.
+    Settings for one site with defaults:
+    - public_name (str): Site name, as published on the generated page. Free text.
+    - source_dir (str): Path of the source directories to parse. Can be relative or absolute.
+    - dest_dir (str): Path of where to generate content. Can be relative or absolute.
+    - theme (str): Name of the theme to use, must match a directory in templates.
+    - base_url (str): URL where the site will be published, in case templates wants to use that.
+      Will be used as-is, so you probably want to terminate it with a / separator.
+    - rig_url (str): URL of the RIG served album. Will be used as-is, i.e. typically by
+      appending index.php, so you really want to terminate it with a / separator.
+    - header_img_url (str): Full URL for the header image. If not present, the default one from
+      the theme will be used.
     """
     def __init__(self,
                  public_name="",
@@ -31,13 +41,22 @@ class SiteSettings(object):
                  dest_dir=None,
                  theme=DEFAULT_THEME,
                  base_url="http://html.base.url/",
-                 rig_url="http://rig.base.url/photos/"):
+                 rig_url="http://rig.base.url/photos/",
+                 header_img_url=""):
         self.public_name = public_name
         self.source_dir = source_dir
         self.dest_dir = dest_dir
         self.theme = theme
         self.base_url = base_url
         self.rig_url = rig_url
+        self.header_img_url = header_img_url
+
+    def AsDict(self):
+        """
+        Returns a copy of the settings' dictionnary.
+        It's safe for caller to modify this dictionnary.
+        """
+        return dict(self.__dict__)
 
 #------------------------
 class SitesSettings(SettingsBase):

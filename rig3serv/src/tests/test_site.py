@@ -60,10 +60,10 @@ class SiteTest(RigTestCase):
                          theme=DEFAULT_THEME)
         m = Site(self.Log(), False, s)
         self.assertNotEqual(None, m)
-        self.assertEquals("Site Name", m._public_name)
-        self.assertEquals("/tmp/source/data", m._source_dir)
-        self.assertEquals(self._tempdir, m._dest_dir)
-        self.assertEquals(DEFAULT_THEME, m._theme)
+        self.assertEquals("Site Name", m._settings.public_name)
+        self.assertEquals("/tmp/source/data", m._settings.source_dir)
+        self.assertEquals(self._tempdir, m._settings.dest_dir)
+        self.assertEquals(DEFAULT_THEME, m._settings.theme)
 
     def testPatterns(self):
         self.assertSearch(rig.site._DIR_PATTERN, "2007-10-07_Folder 1")
@@ -79,7 +79,7 @@ class SiteTest(RigTestCase):
     
     def testParse(self):
         m = Site(self.Log(), False, self.s)
-        p = m._Parse(m._source_dir, m._dest_dir)
+        p = m._Parse(m._settings.source_dir, m._settings.dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
         self.assertEquals(3, len(p.SubDirs()))
@@ -121,7 +121,7 @@ class SiteTest(RigTestCase):
 
     def testFillTemplate(self):
         m = MockSite(self, self.Log(), False, self.s)
-        html = m._FillTemplate(self.s.theme, "index.html", title="MyTitle", entries=["entry1", "entry2"])
+        html = m._FillTemplate("index.html", theme=self.s.theme, title="MyTitle", entries=["entry1", "entry2"])
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<html lang="en-US">
@@ -139,7 +139,7 @@ class SiteTest(RigTestCase):
         keywords = { "title": "MyTitle",
                      "sections": { "en": "Main <b>Text Content</b> as HTML",
                                    "images": "<a href='page_url'><img href='image_url'/></a>" } }
-        html = m._FillTemplate(self.s.theme, "entry.html", **keywords)
+        html = m._FillTemplate("entry.html", theme=self.s.theme, **keywords)
         self.assertIsInstance(str, html)
         self.assertHtmlEquals(
             r"""<div class="entry">
