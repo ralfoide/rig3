@@ -15,24 +15,20 @@ Parameters:
 
 <div class="content intro">
 [[html date]]
-[[if "author" in tags]]by [[html tags["author"] ]][[end]]
+[[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
 </div>
 
 [[if "html" in sections]][[raw sections["html"] ]][[end]]
 
 [[if "en" in sections]]
-<div class="content en">
-<img src="media/flag_usa.gif" />
-[[raw sections["en"] ]]
-</div>
+<table class="content en"><tr><td><img src="media/flag_usa.gif" /></td>
+<td>[[raw sections["en"] ]]</td></tr></table>
 [[end]]
 
 [[if "fr" in sections]]
-<div class="content fr">
-<img src="media/flag_fr.gif" />
-[[raw sections["fr"] ]]
-</div>
+<table class="content en"><tr><td><img src="media/flag_fr.gif" /></td>
+<td>[[raw sections["fr"] ]]</td></tr></table>
 [[end]]
 
 [[if "images" in sections]]

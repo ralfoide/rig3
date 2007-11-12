@@ -17,6 +17,8 @@ from StringIO import StringIO
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                        r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
 
+_WS_LINE = re.compile(r"^[ \t\r\n\f]*$")
+
 _ACCENTS_TO_HTML = {
     "á": "&aacute;",
     "à": "&agrave;",
@@ -56,6 +58,7 @@ class _State(object):
         self._file = _file
         self._tags = {}
         self._sections = {}
+        self._section_needs_paragraph = {}
         self._curr_section = None
         self._curr_formatter = None
 
@@ -68,6 +71,12 @@ class _State(object):
     def SetCurrSection(self, curr_section, curr_formatter):
         self._curr_section = curr_section
         self._curr_formatter = curr_formatter
+
+    def SectionNeedsParagraph(self, curr_section):
+        return self._section_needs_paragraph.get(curr_section, False)
+
+    def SetSectionNeedsParagraph(self, curr_section, needs_paragraph):
+        self._section_needs_paragraph[curr_section] = needs_paragraph
 
     def CurrFormatter(self):
         return self._curr_formatter
@@ -321,19 +330,40 @@ class IzuParser(object):
         line = self._ConvertAccents(line)
 
         # --- append to buffer
-        # skip if line is empty
-        if not line:
+        # empty lines or line solely made of whitespace are to be treated as
+        # paragraphs (<p>) and merged togethers *iif* we'll have content later
+        # that is inline and we *already* had content.
+        if _WS_LINE.match(line):
+            state.SetSectionNeedsParagraph(curr_section, state.Section(curr_section))
             return
 
         # don't append <br> to <br> or <p> to <p>
-        if (line in [ "<br>", "<p>" ] and
-            state.EndsWith(curr_section, line)):
+        has_br = False
+        if state.EndsWith(curr_section, "<br>"):
+            has_br = True
+            while line.startswith("<br>"):
+                line = line[4:]
+        has_p = False
+        if state.EndsWith(curr_section, "<p>"):
+            has_p = True
+            while line.startswith("<p>"):
+                line = line[3:]
+        if not line:
             return
 
-        # if neither the previous content nor the new one is a tag,
-        # we need to add some whitespace if not already present
-        if (not line[:1] in "< \t\r\n" and
-            not state.Section(curr_section)[-1:] in "> \t\r\n" ):
+        if (state.SectionNeedsParagraph(curr_section) and
+            not has_br and not has_p and
+            not line.startswith("<p>") and
+            not line.startswith("<table") and
+            not line.startswith("<ul>") and
+            not line.startswith("<pre") and
+            not line.startswith("<blockquote")):
+            state.SetSectionNeedsParagraph(curr_section, False)
+            state.Append(curr_section, "\n<p>")
+
+        if (not line.startswith("</") and
+            not line.startswith("\n") and
+            not state.Section(curr_section).endswith("\n")):
             state.Append(curr_section, "\n")
 
         # finally append the line to the section
@@ -357,10 +387,6 @@ class IzuParser(object):
         # disable HTML as early as possible: only < >, not &
         line = line.replace(">", "&gt;")
         line = line.replace("<", "&lt;")
-
-        # empty lines are paragraphs
-        if line == "":
-            line = "<p>"
 
         # Anecdote: I rewrote these regexp from scratch and they turn to be
         # *exactly* identical to what I wrote for Izumi 3 years ago :-)
