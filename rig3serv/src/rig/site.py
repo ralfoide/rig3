@@ -33,6 +33,8 @@ _ITEMS_DIR = "items"
 _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
 _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 
+_TEMPLATE_NEED_ITEM_FILES = False # TODO make a site.rc pref
+
 _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{4,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                           r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
 
@@ -272,9 +274,10 @@ class Site(object):
         keywords["categories"] = cats
         content = self._FillTemplate("entry.html", **keywords)
         filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
-        assert self._WriteFile(content,
-                               os.path.join(self._settings.dest_dir, _ITEMS_DIR),
-                               filename)
+        if _TEMPLATE_NEED_ITEM_FILES:
+            assert self._WriteFile(content,
+                                   os.path.join(self._settings.dest_dir, _ITEMS_DIR),
+                                   filename)
         dest = os.path.join(_ITEMS_DIR, filename)
         return _Item(date, dest, content=content, categories=cats)
 
