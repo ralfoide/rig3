@@ -1,7 +1,8 @@
 ---- TODO ----
 
-20071111 Engine: Ability to override logo URL in template
-20071111 Engine: Fix IzuParser to add space between paragraph lines
+20071112 Misc: Script to svn checkout and apply *only* if all tests pass
+20071112 Template: Last-updated timestamp in main page (from content) vs last-generated
+
 20071104 Engine: Refactor Site's generateItem into template
 
 20070830 Engine: check update vs dest dirs, UT
@@ -14,11 +15,13 @@
 
 ---- Done Version 0.1 ----
 
+20071111 Engine: Fix IzuParser to add space between paragraph lines
+20071111 Engine: Ability to override logo URL in template
 20071108 Engine: Image entry generation -- need testing, UT
-20071108 Engine: UT for Site.GetRigLink
+20071108 Tests:  UT for Site.GetRigLink
 20071107 Engine: Site.CopyDir to fill template for css + UT
 20071107 Engine: Izu image/link tag -- need UT
-20071106 Engine: UT for SiteSettings
+20071106 Tests:  UT for SiteSettings
 20071106 Engine: Make it easy to customize default template (logo) => in theme
 20071106 Engine: Easy way to add site control variables in config.rc
 20071105 Engine: Image entry generation, implemented (not tested)
@@ -27,7 +30,7 @@
 20071103 Engine: Support index.html with izu header embedded in HTML comment
 20071103 Engine: Tag raw, html, url
 20071028 Engine: Support index.html (no izu header support yet)
-20071027 Test: Added "rig3 live" unit test
+20071027 Tests:  Added "rig3 live" unit test
 20071026 Engine: Dry run flag
 20071026 Engine: Finished basic templating system, first iteration
 20071025 Engine: Template generation, fixes, UTs
@@ -36,8 +39,8 @@
 20071022 Engine: Template buffer line separation handling, UTs
 20071021 Engine: Template class+ buffer, UTs
 20071020 Engine: Define templating system, start impl.
-20071015 Tests: Need to tests rig_test_case 
-20071014 Tests: Testing Kid template system
+20071015 Tests:  Need to tests rig_test_case 
+20071014 Tests:  Testing Kid template system
 20071013 Engine: Skeleton for Izumi-to-Html converter, UT
 20071008 Engine: DirParser.TraverseDirs w/ UT
 20071007 Engine: misc fixes, more UTs, testing dir parsing
@@ -46,10 +49,10 @@
 20071006 Engine: rig3 process sites/site
 20071005 Engine: define sites/site in settings, UT
 20071005 Engine: settings reader w/ UT
-20071005 Tests: Renamed rig_test_case, added getTestDataPath
+20071005 Tests:  Renamed rig_test_case, added getTestDataPath
 20070830 Engine: basic settings reader w/ basic UT (not complete)
-20070830 Tests: mock rig3 Run
-20070829 Tests: rig3 ParseArgs
+20070830 Tests:  mock rig3 Run
+20070829 Tests:  rig3 ParseArgs
 20070829 Engine: settings reader, first cut (no UT), list of rc paths
 20070828 Engine: rig3 getopts, parse -v, .rc path, create log
 20070828 Engine: Add log.py and UT
