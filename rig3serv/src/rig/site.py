@@ -35,7 +35,7 @@ _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
 
 _TEMPLATE_NEED_ITEM_FILES = False # TODO make a site.rc pref
 
-_IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{4,})(?P<rating>[ \._+=-])(?P<name>.+?)"
+_IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                           r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
 
 _RATING_BASE = -2
