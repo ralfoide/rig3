@@ -215,6 +215,7 @@ class SiteTest(RigTestCase):
                           item.rel_filename)
     
     def testGenerateItems_Html(self):
+        return # -----------------DEBUG--------------------
         m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
