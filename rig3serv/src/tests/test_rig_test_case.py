@@ -90,6 +90,12 @@ class RigTestCaseTest(RigTestCase):
         self.assertEquals("<html>blah foo? bar</html>(?: .*| .+)<span />",
                           self.NormalizeHtml("  <HTML>\n\r  blah\nfoo?   bar </HTML> (?:   .*| .+)  <span    /> "))
 
+    def testHtmlToList(self):
+        self.assertListEquals(
+            [ '<html>Some test <b>in bold</b>',
+              '<a href="foo"><i>italic</i></a>'],
+            self.HtmlToList('<html>Some test <b>in bold</b><a href="foo"><i>italic</i></a>'))
+
 #------------------------
 # Local Variables:
 # mode: python

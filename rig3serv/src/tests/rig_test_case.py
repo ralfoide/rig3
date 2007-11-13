@@ -209,7 +209,10 @@ class RigTestCase(unittest.TestCase):
         self.assertTrue(actual   != None, msg)
         actual = self.NormalizeHtml(actual)
         expected = self.NormalizeHtml(expected)
-        self.assertEquals(expected, actual, msg)
+        if expected != actual:
+            for p in difflib.Differ().compare(self.HtmlToList(expected), self.HtmlToList(actual)):
+                msg += "\n" + p
+            self.assertEquals(expected, actual, msg)
 
     def assertHtmlMatches(self, expected_regexp, actual, msg=None):
         """
@@ -244,6 +247,23 @@ class RigTestCase(unittest.TestCase):
         str = re.sub("> ", ">", str)
         str = re.sub("</?[a-zA-Z0-9]+", lambda x: x.group(0).lower(), str)
         return str
+
+    def HtmlToList(self, html):
+        """
+        Converts the HTML string to a list of string.
+        Cuts on opening tags, except single-letter tags such as <b> or <i>.
+        <a ...> should split too.
+        """
+        result = []
+        r = re.compile(r"(?P<start>.+?)(?P<rest><[^/bi].*)|(?P<all>.*)")
+        while html:
+            m = r.match(html)
+            if m:
+                result.append(m.group("start") or m.group("all"))
+                html = m.group("rest")
+            else:
+                break
+        return result
 
 #------------------------
 # Local Variables:

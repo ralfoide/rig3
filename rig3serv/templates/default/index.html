@@ -6,6 +6,9 @@ Expected parameters:
 - next_url: None or string url
 - curr_page: int, Current page number
 - max_page: int, Max page number
+- last_gen_ts: the DateTime of when this page was generated
+- last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
+- rig3_version: string, a version number or SVN info for this rig3 build
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.
@@ -33,5 +36,9 @@ Relevant links:
 [[if next_url]]<a href="[[url next_url]]">Next</a>[[end]]
 <br/>
 Page [[html curr_page]] / [[html max_page]]
+<p>
+[[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
+Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
+<a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
 </body>
 </html>

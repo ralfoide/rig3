@@ -142,8 +142,7 @@ class SiteTest(RigTestCase):
                 entry2
                 <p>
                 Most recent entry: 2001-03-14 15:09:02 --
-                Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig 3.1.4.15</aP> 
-                Generated on 
+                Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig3 3.1.4.15</a> 
                 </body>
                 </html>""",
             html)
