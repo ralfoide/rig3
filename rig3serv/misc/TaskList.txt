@@ -3,7 +3,6 @@
 20071112 Engine: Reduce verbosity in error mode to really just errors
 20071112 Engine: Reduce verbosity in normal mode to really summary
 20071112 Misc: Script to svn checkout and apply *only* if all tests pass
-20071112 Template: Last-updated timestamp in main page (from content) vs last-generated
 
 20071104 Engine: Refactor Site's generateItem into template
 
@@ -17,6 +16,7 @@
 
 ---- Done Version 0.1 ----
 
+20071112 Template: Last-updated timestamp in main page (from content) vs last-generated
 20071111 Engine: Fix IzuParser to add space between paragraph lines
 20071111 Engine: Ability to override logo URL in template
 20071108 Engine: Image entry generation -- need testing, UT
