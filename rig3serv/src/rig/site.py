@@ -20,6 +20,7 @@ from datetime import datetime
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
+from rig.version import Version
 
 DEFAULT_THEME = "default"
 INDEX_IZU = "index.izu"
@@ -187,8 +188,14 @@ class Site(object):
                 next_url = "index%s.html" % (p + 1)
             else:
                 next_url = None
-            entries = [j.content for j in items[i:i + _ITEMS_PER_PAGE] ]
+            
+            entries = []
+            older_date = None
+            for j in items[i:i + _ITEMS_PER_PAGE]:
+                entries.append(j.content)
+                older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += _ITEMS_PER_PAGE
+
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
             keywords["entries"] = entries
@@ -196,6 +203,12 @@ class Site(object):
             keywords["next_url"] = next_url
             keywords["curr_page"] = p + 1
             keywords["max_page"] = np + 1
+            keywords["last_gen_ts"] = datetime.today()
+            keywords["last_content_ts"] = older_date
+            version = Version()
+            keywords["rig3_version"] = "%s.%s" % (version.VersionString(),
+                                                  version.SvnRevision())
+            
             content = self._FillTemplate("index.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, url)
             prev_url = url

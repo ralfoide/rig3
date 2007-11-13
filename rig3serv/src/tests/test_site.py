@@ -125,6 +125,9 @@ class SiteTest(RigTestCase):
         keywords = self.s.AsDict()
         keywords["title"] = "MyTitle"
         keywords["entries"] = ["entry1", "entry2"]
+        keywords["last_gen_ts"] = datetime(2007, 11, 12, 14, 15, 16)
+        keywords["last_content_ts"] = datetime(2001, 3, 14, 15, 9, 2)
+        keywords["rig3_version"] = "3.1.4.15"
 
         html = m._FillTemplate("index.html", **keywords)
         self.assertIsInstance(str, html)
@@ -137,6 +140,10 @@ class SiteTest(RigTestCase):
                 <body>
                 entry1
                 entry2
+                <p>
+                Most recent entry: 2001-03-14 15:09:02 --
+                Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig 3.1.4.15</aP> 
+                Generated on 
                 </body>
                 </html>""",
             html)

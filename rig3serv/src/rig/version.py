@@ -27,7 +27,7 @@ class Version(object):
     SVN_REVISION = "$Revision$"
     SVN_AUTHOR = "$Author$"
     SNV_HEAD_URL = "$HeadURL$"
-    SVN_ID = "$Id"
+    SVN_ID = "$Id$"
     
     RIG3_VERSION = (0, 1, 0)
 
