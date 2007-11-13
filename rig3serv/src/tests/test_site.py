@@ -82,19 +82,23 @@ class SiteTest(RigTestCase):
         p = m._Parse(m._settings.source_dir, m._settings.dest_dir)
         self.assertIsInstance(DirParser, p)
         self.assertListEquals([], p.Files())
-        self.assertEquals(3, len(p.SubDirs()))
+        self.assertEquals(4, len(p.SubDirs()))
         self.assertIsInstance(DirParser, p.SubDirs()[0])
         self.assertIsInstance(DirParser, p.SubDirs()[1])
         self.assertIsInstance(DirParser, p.SubDirs()[2])
+        self.assertIsInstance(DirParser, p.SubDirs()[3])
         self.assertEquals("2006-05_Movies", p.SubDirs()[0].AbsSourceDir().rel_curr)
         self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[1].AbsSourceDir().rel_curr)
-        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[2].AbsSourceDir().rel_curr)
+        self.assertEquals("2007-10-07 11.00_Folder 2", p.SubDirs()[2].AbsSourceDir().rel_curr)
+        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[3].AbsSourceDir().rel_curr)
         self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
         self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
-        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[2].Files())
+        self.assertListEquals([ "index.izu"], p.SubDirs()[2].Files())
+        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[3].Files())
         self.assertListEquals([], p.SubDirs()[0].SubDirs())
         self.assertListEquals([], p.SubDirs()[1].SubDirs())
         self.assertListEquals([], p.SubDirs()[2].SubDirs())
+        self.assertListEquals([], p.SubDirs()[3].SubDirs())
 
     def testSimpleFileName(self):
         m = Site(self.Log(), False, self.s)
@@ -215,7 +219,6 @@ class SiteTest(RigTestCase):
                           item.rel_filename)
     
     def testGenerateItems_Html(self):
-        return # -----------------DEBUG--------------------
         m = MockSite(self, self.Log(), False, self.s)
         m._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")

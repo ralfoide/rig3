@@ -153,6 +153,9 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml("[izu:date:2006-05-28 17:18:05]")
         self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 5) }, tags)
 
+        tags, sections = self.m.RenderStringToHtml("[izu:date:2006:05:28 17:18:22]")
+        self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 22) }, tags)
+
         tags, sections = self.m.RenderStringToHtml("[izu:cat:videos,photos]")
         self.assertDictEquals({ "cat":  [ "videos", "photos" ] }, tags)
 

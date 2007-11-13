@@ -14,7 +14,7 @@ import urllib
 
 _RE_FIRST_WORD = re.compile(r"\s*(\w+)\s+(.*)")
 _RE_URL = re.compile(r"(?:(?P<proto>[a-z]+)://)?(?P<host>[^/]+)(?:/(?P<path>.*))?")
-                
+
 #------------------------
 class Tag(object):
     """

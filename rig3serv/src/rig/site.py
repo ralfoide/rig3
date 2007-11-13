@@ -261,12 +261,11 @@ class Site(object):
             self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
-        #elif INDEX_HTML in all_files:
-        # -----------------DEBUG--------------------
-        #    main_filename = INDEX_HTML
-        #    html_file = os.path.join(source_dir.abs_dir, INDEX_HTML)
-        #    sections["html"] = self._ReadFile(html_file)
-        #    tags = self._izu_parser.ParseFirstLine(sections["html"])
+        elif INDEX_HTML in all_files:
+            main_filename = INDEX_HTML
+            html_file = os.path.join(source_dir.abs_dir, INDEX_HTML)
+            sections["html"] = self._ReadFile(html_file)
+            tags = self._izu_parser.ParseFirstLine(sections["html"])
         else:
             self._log.Error("No content for source %s", source_dir)
             return None
