@@ -14,6 +14,8 @@ import sys
 from datetime import datetime
 from StringIO import StringIO
 
+from rig.parser.utf8_accents import UTF8_ACCENTS_TO_HTML
+
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[:/-]?(?P<month>\d{2})[:/-]?(?P<day>\d{2})"
                        r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
 
@@ -377,6 +379,11 @@ class IzuParser(object):
         for k, v in _ACCENTS_TO_HTML.iteritems():
             if k in line:
                 line = line.replace(k, v)
+        
+        for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
+            pos= line.find(k)
+            if pos >= 0:
+                line = line[0:pos] + v + line[pos + min(2,len(k)):]
         return line
 
     def _FormatBoldItalicHtmlEmpty(self, line):
