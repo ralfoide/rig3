@@ -268,7 +268,7 @@ class Site(object):
             tags = self._izu_parser.ParseFirstLine(sections["html"])
             self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
-            self._log.Info("No content for source %s", source_dir)
+            self._log.Debug("No content for source %s", source_dir)
             return None
 
         cats = tags.get("cat", [])

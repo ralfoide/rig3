@@ -184,7 +184,9 @@ class DirParser(object):
                 if n < 0:
                     break
                 while n >= 0:
-                    if r.match(names[n]):
+                    name = names[n]
+                    if r.match(name):
+                        self._log.Debug("Exclude file/dir: %s", os.path.join(abs_root, name))                        
                         names.pop(n)
                     n -= 1
         finally:
