@@ -180,7 +180,7 @@ class DirParser(object):
             if not _excl_file:
                 _excl_file = file(os.path.join(abs_root, _EXCLUDE), "r")
             for regexp in _excl_file.readlines():
-                r = re.compile(regexp)
+                r = re.compile(regexp.strip())
                 n = len(names) - 1
                 if n < 0:
                     break

@@ -179,6 +179,47 @@ class DirParserTest(RigTestCase):
             m._RemoveExclude("base",
                    [ "abc", "blah", "foo", _EXCLUDE ], ex))
 
+        ex = StringIO("""2007-1[3-9]_1[3-9]_Months
+                         2007-20_20_Months""")
+        self.assertListEquals(
+          [],
+          m._RemoveExclude("base",
+            ['2007-20_20_Months', _EXCLUDE ],
+            ex))
+
+        ex = StringIO("""2007-1[3-9]_1[3-9]_Months
+                         2007-20_20_Months
+                         00-
+                         temp
+                         2005-
+                         99-
+                         .DS_Store
+                         .*\.sh
+                         \..*""")
+        self.assertListEquals(
+          [ '2007-06_18_Months', '2007-04_16_Months', '2007-09_21_Months', '2007-05_17_Months',
+            '2006-09_9_Months', '2006-10_10_Months', '2006-05_5_Months', '2006-03_3_Months',
+            '2006-06_6_Months', '2006-07_7_Months', '2007-10_22_Months', '2007-01_13_Months',
+            '2006-04_Movies', '2007-03_15_Months', '2007-07_19_Months', '2006-12_12_Months',
+            '2006-02_2_Months', '2006-08_8_Months', '2006-05_Movies', '2006-01_1_Month',
+            '2007-02_14_Months', '2006-11_11_Months', '2007-08_20_Months', '2006-04_4_Months' ],
+          m._RemoveExclude("base",
+            [ '2007-06_18_Months', '2007-04_16_Months', '2007-09_21_Months', '2007-05_17_Months',
+              '2006-09_9_Months', '2006-10_10_Months', '2006-05_5_Months', '2007-19_19_Months',
+              '00-Best - Meilleures', '.DS_Store', '2006-03_3_Months', '2006-06_6_Months',
+              '2006-07_7_Months', '.rsync-filter', '2007-10_22_Months', '2007-01_13_Months',
+              '2006-04_Movies', '2005-12', '2005-10_Before', 'temp', '2007-15_15_Months',
+              '2007-20_20_Months', '2007-03_15_Months', '2007-18_18_Months', '2007-13_13_Months',
+              '99-Calendar', '2007-07_19_Months', '2006-12_12_Months', '2007-17_17_Months',
+              '2007-16_16_Months', '2006-02_2_Months', '2006-08_8_Months', '2006-05_Movies',
+              '2006-01_1_Month', '2007-02_14_Months', '2006-11_11_Months', '2007-08_20_Months',
+              '2006-04_4_Months', _EXCLUDE ],
+            ex))
+
+
+
+
+
 #------------------------
 # Local Variables:
 # mode: python
