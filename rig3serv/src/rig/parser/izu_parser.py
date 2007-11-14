@@ -380,10 +380,15 @@ class IzuParser(object):
             if k in line:
                 line = line.replace(k, v)
         
-        for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
-            pos= line.find(k)
-            if pos >= 0:
-                line = line[0:pos] + v + line[pos + min(2,len(k)):]
+        try:
+            us = line.decode("utf-8")
+            for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
+                if k in us:
+                    us = us.replace(k, v)
+            line = us
+        except Exception:
+            pass
+                    
         return line
 
     def _FormatBoldItalicHtmlEmpty(self, line):
