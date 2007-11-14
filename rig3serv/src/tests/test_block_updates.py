@@ -17,7 +17,7 @@ class BlockUpdatesTest(RigTestCase):
         prevent prod sites from automatically updating and picking up the
         new checkout.
         """
-        #self.fail("This voluntarily blocks automatic updates")
+        self.fail("This voluntarily blocks automatic updates")
         pass
 
 
