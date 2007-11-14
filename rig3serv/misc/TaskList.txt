@@ -1,6 +1,5 @@
 ---- TODO ----
 
-20071113 Fix:    Some entries appear in double in the generated index. How to reproduce?    
 20071112 Engine: Reduce verbosity in error mode to really just errors
 20071112 Engine: Reduce verbosity in normal mode to really summary
 
@@ -16,6 +15,8 @@
 
 ---- Done Version 0.1 ----
 
+20071113 Engine: DirParser scan for .rig3-exclude w/ regexp of folders/files to exclude
+20071113 Fix:    Some entries appear in double in the generated index => dup symlinks!    
 20071113 Fix:    Fixed izu:date for format YYYY:MM:DD HH:MM
 20071112 Misc:   Script to svn checkout and apply *only* if all tests pass
 20071112 Template: Last-updated timestamp in main page (from content) vs last-generated

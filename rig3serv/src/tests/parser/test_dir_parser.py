@@ -9,9 +9,10 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import os
+from StringIO import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.parser.dir_parser import DirParser, RelDir
+from rig.parser.dir_parser import DirParser, RelDir, _EXCLUDE
 
 #------------------------
 class MockDirParser(DirParser):
@@ -150,6 +151,33 @@ class DirParserTest(RigTestCase):
         
         actual = [i for i in m.TraverseDirs()]
         self.assertListEquals(expected, actual)
+
+    def testRemoveExclude(self):
+        m = MockDirParser(self.Log(), mock_dirs={})
+
+        self.assertEquals(None, m._RemoveExclude("base", None))
+        self.assertListEquals([], m._RemoveExclude("base", []))
+
+        ex = StringIO(".")
+        self.assertListEquals([], m._RemoveExclude("base", [], ex))
+        self.assertListEquals([],
+              m._RemoveExclude("base",
+                   [ "abc", "blah", "foo", _EXCLUDE ], ex))
+
+        ex = StringIO("a")
+        self.assertListEquals([ "blah", "foo" ],
+            m._RemoveExclude("base", 
+                   [ "abc", "blah", "foo", _EXCLUDE ], ex))
+
+        ex = StringIO("[a|b]")
+        self.assertListEquals([ "foo" ],
+            m._RemoveExclude("base",
+                   [ "abc", "blah", "foo", _EXCLUDE ], ex))
+
+        ex = StringIO("oo")
+        self.assertListEquals([ "abc", "blah", "foo" ],
+            m._RemoveExclude("base",
+                   [ "abc", "blah", "foo", _EXCLUDE ], ex))
 
 #------------------------
 # Local Variables:

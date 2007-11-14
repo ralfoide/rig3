@@ -11,6 +11,8 @@ __author__ = "ralfoide@gmail.com"
 import os
 import re
 
+_EXCLUDE = ".rig3-exclude"
+
 #------------------------
 class RelDir(object):
     """
@@ -110,6 +112,7 @@ class DirParser(object):
             abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
         self._log.Debug("Parse dir: %s", abs_source_curr_dir)
         names = self._listdir(abs_source_curr_dir)
+        names = self._RemoveExclude(abs_source_curr_dir, names)
         for name in names:
             full_path = os.path.join(abs_source_curr_dir, name)
             if self._isdir(full_path):
@@ -152,6 +155,42 @@ class DirParser(object):
                 yield i
 
     # Utilities
+
+    def _RemoveExclude(self, abs_root, names, _excl_file=None):
+        """
+        Filters a list of file names and remove those that should be excluded.
+        
+        Parameters:
+        - abs_root: string, the current directory parsed
+        - names: list [ str ], the names found in the directory.
+        - _excl_file: A seam to allow unit test to inject a fake _EXCLUDE file.
+          If not none, must support .readlines() and .close() (cf StringIO)
+        
+        If the _EXCLUDE file is found in names, read it, then use it to filter
+        out files to exclude. The _EXCLUDE file is a list of regexp, one per
+        line.
+        
+        Returns the filtered list, or the same list if nothing was touched.
+        """
+        if not names or not _EXCLUDE in names:
+            return names
+        names.remove(_EXCLUDE)
+        try:
+            if not _excl_file:
+                _excl_file = file(os.path.join(abs_root, _EXCLUDE), "r")
+            for regexp in _excl_file.readlines():
+                r = re.compile(regexp)
+                n = len(names) - 1
+                if n < 0:
+                    break
+                while n >= 0:
+                    if r.match(names[n]):
+                        names.pop(n)
+                    n -= 1
+        finally:
+            if _excl_file:
+                _excl_file.close()
+        return names
 
     def __eq__(self, other):
         """
