@@ -175,7 +175,6 @@ class DirParser(object):
         if not names or not _EXCLUDE in names:
             return names
         names.remove(_EXCLUDE)
-        self._log.Debug("Process Exclude for: %s %s", abs_root, repr(names))
         try:
             if not _excl_file:
                 _excl_file = file(os.path.join(abs_root, _EXCLUDE), "r")
