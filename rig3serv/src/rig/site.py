@@ -142,7 +142,7 @@ class Site(object):
         categories = []
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Info("[%s] Process '%s' to '%s'", self._settings.public_name,
+            self._log.Debug("[%s] Process '%s' to '%s'", self._settings.public_name,
                            source_dir.rel_curr, dest_dir.rel_curr)
             if self._UpdateNeeded(source_dir, dest_dir, all_files):
                 files = [f.lower() for f in all_files]
@@ -266,8 +266,9 @@ class Site(object):
             html_file = os.path.join(source_dir.abs_dir, INDEX_HTML)
             sections["html"] = self._ReadFile(html_file)
             tags = self._izu_parser.ParseFirstLine(sections["html"])
+            self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
-            self._log.Error("No content for source %s", source_dir)
+            self._log.Info("No content for source %s", source_dir)
             return None
 
         cats = tags.get("cat", [])
