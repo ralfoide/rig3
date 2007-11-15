@@ -271,7 +271,7 @@ class SiteTest(RigTestCase):
 
         expected = (
             '<a title="2007-11-08 Album Title" '
-            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title">'
+            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg">'
             '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=400&q=75"/>'
             '</a>'
             )
@@ -284,7 +284,7 @@ class SiteTest(RigTestCase):
 
         expected = (
             '<a title="2007-11-08 Album Title" '
-            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title">'
+            'href="http://example.com/photos/index.php?album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg">'
             '<img title="Best of 2007" alt="Best of 2007" src="http://example.com/photos/index.php?th=&album=My%20Albums/Year_2007/2007-11-08%20Album%20Title&img=Best%20of%202007.jpg&sz=-1&q=75"/>'
             '</a>'
             )

@@ -362,7 +362,7 @@ class Site(object):
                 entry = images[key]
                 if entry["top_rating"] == _RATING_GOOD:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
-        elif num_normal > 0 and num_normal <= 6:
+        elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
             num_col = num_normal
             keys = images.keys()
             keys.sort()
@@ -390,7 +390,8 @@ class Site(object):
 
     def _GetRigLink(self, source_dir, leafname, size):
         """
-        Generates the URL to a rig image, with a caption, that links to the album.
+        Generates the URL to a rig image, with a caption, that links to the given image
+        (or the album if there's no image).
         Size: Max pixel size or -1 for a thumbnail.
         
         If leafname & size are None, creates an URL to the album.
@@ -403,6 +404,7 @@ class Site(object):
         if leafname:
             title = os.path.splitext(leafname)[0]
             img = urllib.quote(leafname)
+            link += '&img=' + img
             img = '%sindex.php?th=&album=%s&img=%s&sz=%s&q=75' % (
                   self._settings.rig_url, album, img, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {

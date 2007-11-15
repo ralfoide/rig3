@@ -15,6 +15,7 @@
 
 ---- Done Version 0.1 ----
 
+20071114 Template: Images link to corresponding RIG images (instead of album)
 20071114 Template: Display up to 6 "normal" images if nothing else to display
 20071114 Template: Format date/title for entry headers
 20071113 Engine: DirParser scan for .rig3-exclude w/ regexp of folders/files to exclude
