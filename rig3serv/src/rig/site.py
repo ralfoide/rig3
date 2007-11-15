@@ -326,6 +326,7 @@ class Site(object):
         num_excellent = 0
         num_good = 0
         num_images = 0 
+        num_normal = 0 
         for filename in all_files:
             m = _IMG_PATTERN.match(filename)
             if m:
@@ -333,6 +334,7 @@ class Site(object):
                 index = m.group("index")
                 entry = images[index] = images.get(index, { "top_rating": _RATING_BASE, "top_name": None, "files": [] })
                 rating = self._GetRating(m.group("rating"))
+                num_normal += (rating == _RATING_DEFAULT and 1 or 0)
                 num_good += (rating == _RATING_GOOD and 1 or 0)
                 num_excellent += (rating == _RATING_EXCELLENT and 1 or 0)
                 if rating > entry["top_rating"]:
@@ -359,6 +361,14 @@ class Site(object):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == _RATING_GOOD:
+                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
+        elif num_normal > 0 and num_normal <= 6:
+            num_col = num_normal
+            keys = images.keys()
+            keys.sort()
+            for key in keys:
+                entry = images[key]
+                if entry["top_rating"] == _RATING_DEFAULT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
             return self._GetRigLink(source_dir, None, None)
