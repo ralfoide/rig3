@@ -168,25 +168,29 @@ class SiteTest(RigTestCase):
                 """,
             html)
 
-    def testDateFromTitle(self):
+    def testDateAndTitleFromTitle(self):
         m = Site(self.Log(), False, self.s)
 
-        self.assertEquals(None, m._DateFromTitle("27"))
-        self.assertEquals(None, m._DateFromTitle("2007"))
-        self.assertEquals(None, m._DateFromTitle("2007-1"))
-        self.assertEquals(None, m._DateFromTitle("2007-10"))
-        self.assertEquals(None, m._DateFromTitle("2007-10-2"))
-        self.assertEquals(None, m._DateFromTitle("2007102"))
+        self.assertEquals((None, "27"),        m._DateAndTitleFromTitle("27"))
+        self.assertEquals((None, "2007"),      m._DateAndTitleFromTitle("2007"))
+        self.assertEquals((None, "2007-1"),    m._DateAndTitleFromTitle("2007-1"))
+        self.assertEquals((None, "2007-10"),   m._DateAndTitleFromTitle("2007-10"))
+        self.assertEquals((None, "2007-10-2"), m._DateAndTitleFromTitle("2007-10-2"))
+        self.assertEquals((None, "2007102"),   m._DateAndTitleFromTitle("2007102"))
         
-        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("20071027"))
-        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007-10-27"))
-        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007/10/27"))
-        self.assertEquals(datetime(2007, 10, 27), m._DateFromTitle("2007-10/27"))
-        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("20071027121314"))
-        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10-27-12-13-14"))
-        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10-27 12-13-14"))
-        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007/10/27 12:13:14"))
-        self.assertEquals(datetime(2007, 10, 27, 12, 13, 14), m._DateFromTitle("2007-10/27,12/13/14"))
+        self.assertEquals((datetime(2007, 10, 27), ""),
+                          m._DateAndTitleFromTitle("20071027"))
+        self.assertEquals((datetime(2007, 10, 27), "rest"),
+                          m._DateAndTitleFromTitle("2007-10-27 rest"))
+        self.assertEquals((datetime(2007, 10, 27), "rest of the line.."),
+                          m._DateAndTitleFromTitle("2007/10/27_rest of the line.."))
+        self.assertEquals((datetime(2007, 10, 27), "whitespace"),
+                          m._DateAndTitleFromTitle("2007-10/27    whitespace   "))
+        self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("20071027121314"))
+        self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10-27-12-13-14"))
+        self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10-27 12-13-14"))
+        self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007/10/27 12:13:14"))
+        self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10/27,12/13/14"))
 
     def testCopyMedia(self):
         m = MockSite(self, self.Log(), False, self.s)

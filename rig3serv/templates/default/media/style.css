@@ -45,6 +45,11 @@ body {
   padding-bottom: 0.3em;
 }
 
+.entry .title .date {
+	font-size: 1em;
+	font-weight: normal;
+}
+
 .content.image {
 	text-align: center;
 	width: 100%;

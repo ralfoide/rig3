@@ -29,7 +29,8 @@ _MEDIA_DIR = "media"
 _DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
 _VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 _DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
-                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
+                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
+                      r"(?P<rest>.*$)")
 _ITEMS_DIR = "items"
 _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
 _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
@@ -251,7 +252,9 @@ class Site(object):
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         """
         title = os.path.basename(source_dir.rel_curr)
-        date = self._DateFromTitle(title) or datetime.today()
+        date, title = self._DateAndTitleFromTitle(title)
+        if not date:
+            date = datetime.today()
         main_filename = ""
         sections = {}
         tags = {}
@@ -494,20 +497,23 @@ class Site(object):
         f = __file__
         return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
 
-    def _DateFromTitle(self, title):
+    def _DateAndTitleFromTitle(self, title):
         """
-        Parses the date out of a title.
-        Returns a datetime object or None.
+        Parses the a title and extract a date and the real title.
+        Returns:
+        - a tuple (datetime, title)
+        - or (None, original title)
         """
         m = _DATE_YMD.match(title)
         if m:
-            return datetime(int(m.group("year" ) or 0),
-                            int(m.group("month") or 0),
-                            int(m.group("day"  ) or 0),
-                            int(m.group("hour" ) or 0),
-                            int(m.group("min"  ) or 0),
-                            int(m.group("sec"  ) or 0))
-        return None
+            return (datetime(int(m.group("year" ) or 0),
+                             int(m.group("month") or 0),
+                             int(m.group("day"  ) or 0),
+                             int(m.group("hour" ) or 0),
+                             int(m.group("min"  ) or 0),
+                             int(m.group("sec"  ) or 0)),
+                    (m.group("rest") or "").strip().strip("_"))
+        return (None, title)
 
     def _MkDestDir(self, rel_dir):
         """
