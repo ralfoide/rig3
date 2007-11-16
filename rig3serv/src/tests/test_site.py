@@ -24,9 +24,12 @@ class MockSite(Site):
     """
     Behaves like a Site() but overrides the base template directory location
     to use testdata/templates instead.
+    
+    Also traps the last _Filltemplate parameters.
     """
     def __init__(self, test_case, log, dry_run, settings):
         self._test_case = test_case
+        self._fill_template_params = {}
         super(MockSite, self).__init__(log, dry_run, settings)
 
     def _TemplateDir(self):
@@ -34,6 +37,15 @@ class MockSite(Site):
         Uses testdata/templates/ instead of templates/
         """
         return os.path.join(self._test_case.getTestDataPath(), "templates")
+
+    def _FillTemplate(self, template, **keywords):
+        """
+        Keeps a copy of the _FillTemplate parameters and then call the original.
+        Trapped parameters are available in
+          self._fill_template_params[template] => keyuword dict.
+        """
+        self._fill_template_params[template] = dict(keywords)
+        return super(MockSite, self)._FillTemplate(template, **keywords)
 
 #------------------------
 class SiteTest(RigTestCase):
@@ -135,6 +147,8 @@ class SiteTest(RigTestCase):
 
         html = m._FillTemplate("index.html", **keywords)
         self.assertIsInstance(str, html)
+        self.assertTrue("index.html" in m._fill_template_params)
+        self.assertDictEquals(keywords, m._fill_template_params["index.html"])
         self.assertHtmlEquals(
             r"""<html lang="en-US">
                 <head>
@@ -157,6 +171,8 @@ class SiteTest(RigTestCase):
                                  "images": "<a href='page_url'><img href='image_url'/></a>" }
         html = m._FillTemplate("entry.html", **keywords)
         self.assertIsInstance(str, html)
+        self.assertTrue("entry.html" in m._fill_template_params)
+        self.assertDictEquals(keywords, m._fill_template_params["entry.html"])
         self.assertHtmlEquals(
             r"""<div class="entry">
                 <h2>MyTitle</h2>
@@ -211,27 +227,25 @@ class SiteTest(RigTestCase):
         self.assertSearch("public name is Test Album", style_css)
 
     def testGenerateItems_Izu(self):
-        m = MockSite(self, self.Log(), False, self.s)
-        m._MakeDestDirs()
+        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
         item = m._GenerateItem(RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
-        self.assertListEquals([], item.categories)
+        self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
         self.assertEquals(os.path.join("items", "2007-10-07_Folder-1-index_izu"),
                           item.rel_filename)
     
     def testGenerateItems_Html(self):
-        m = MockSite(self, self.Log(), False, self.s)
-        m._MakeDestDirs()
+        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
         item = m._GenerateItem(RelDir(source_dir, "2006-05_Movies"), [ "index.html" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
                                item.content)
-        self.assertListEquals([], item.categories)
+        self.assertListEquals([ "videos" ], item.categories, sort=True)
         self.assertEquals(os.path.join("items", "2006-05_Movies-index_html"),
                           item.rel_filename)
 
@@ -331,6 +345,12 @@ class SiteTest(RigTestCase):
         self.assertHtmlEquals(
             '<table class="image-table"><tr><td>\n' + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
+
+    def testGeneratePageByCategory(self):
+        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
+        
+        m._GeneratePageByCategory("", [], [], [])
+        self.assertDictEquals({}, m._fill_template_params)
 
 #------------------------
 # Local Variables:

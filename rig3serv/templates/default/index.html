@@ -9,6 +9,7 @@ Expected parameters:
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
 - rig3_version: string, a version number or SVN info for this rig3 build
+- all_categories: list(string), all categories names.
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.
@@ -26,7 +27,16 @@ Relevant links:
   <link rel="stylesheet" type="text/css" href="media/style.css" />
 </head>
 <body>
-<div class="header"><img src="[[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]]media/top_banner.jpg[[end]]"/></div>
+
+<div class="header"><img src="[[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]]media/top_banner.jpg[[end]]"/>
+<br>[[html public_name]]</div>
+
+<div class="categories">
+[[for cat in all_categories]]
+<a href="cat/[[url cat]]">[[html cat]]</a> [[if cat != all_categories[-1:] ]]&nbsp;||&nbsp;[[end]]
+[[end]]
+</div>
+
 [[for html_entry in entries]]
   [[raw html_entry]]
 [[end]]

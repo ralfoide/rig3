@@ -1,5 +1,6 @@
 ---- TODO ----
 
+20071115 Template: Generate pages for category (need UT, polish)
 20071112 Engine: Reduce verbosity in error mode to really just errors
 20071112 Engine: Reduce verbosity in normal mode to really summary
 

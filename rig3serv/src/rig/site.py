@@ -94,8 +94,11 @@ class Site(object):
     def _MakeDestDirs(self):
         """
         Creates the necessary directories in the destination.
+        
+        Returns self for chaining
         """
-        self._MkDestDir(_ITEMS_DIR)            
+        self._MkDestDir(_ITEMS_DIR)
+        return self
 
     def _CopyMedia(self):
         """
@@ -167,32 +170,56 @@ class Site(object):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        self._GeneratePageAll(categories, items)
-        # TODO: self.GeneratePageCategory(category, items)
+        self._GeneratePageByCategory("", categories, categories, items)
+        for c in categories:
+            self._GeneratePageByCategory([ "cat", c ], [ c ], categories, items)
         # TODO: self.GeneratePageMonth(month, items)
 
-    def _GeneratePageAll(self, categories, items):
+    def _GeneratePageByCategory(self, path, category_filter, all_categories, items):
         """
-        Generates pages will all items, from most recent to least recent.
+        Generates pages with items which have at least one category in the
+        category_filter list. Items are not re-ordered, it's up to the caller to
+        re-order the items list if necessary.
 
-        - categories: list of categories accumulated from each entry
-        - items: list of _Item
+        - path: A list of sub-directories/sub-path indicating where the files are
+            being created. If the list is empty, the files will be created in the root.
+            This is used also to generate the proper index.html urls.
+        - category_filter: list of categories to use for this page (acts as a filter)
+        - all_categories: list of all categories (used for template to create links)
+        - items: list of _Item. Only uses those which have at least one category
+            in the category_filter list.
         """
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
+        base_path = ""
+        if path:
+            base_path = os.path.join(*path)
+            self._MkDestDir(base_path)
+
+        # filter relevant items
+        relevant_items = []
+        for i in items:
+            for c in i.categories:
+                if c in category_filter:
+                    relevant_items.append(i)
+                    break
+
         prev_url = None
         next_url = None
-        n = len(items)
+        n = len(relevant_items)
         np = n / _ITEMS_PER_PAGE
         i = 0
         for p in xrange(0, np + 1):
-            url = "index%s.html" % (p > 0 and p or "")
+            filename = "index%s.html" % (p > 0 and p or "")
+            url = base_url + filename
             if p < np:
-                next_url = "index%s.html" % (p + 1)
+                next_url = base_url + "index%s.html" % (p + 1)
             else:
-                next_url = None
-            
+                next_url = None            
             entries = []
             older_date = None
-            for j in items[i:i + _ITEMS_PER_PAGE]:
+            for j in relevant_items[i:i + _ITEMS_PER_PAGE]:
                 entries.append(j.content)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += _ITEMS_PER_PAGE
@@ -206,12 +233,13 @@ class Site(object):
             keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
             keywords["last_content_ts"] = older_date
+            keywords["all_categories"] = all_categories
             version = Version()
             keywords["rig3_version"] = "%s.%s" % (version.VersionString(),
                                                   version.SvnRevision())
             
             content = self._FillTemplate("index.html", **keywords)
-            self._WriteFile(content, self._settings.dest_dir, url)
+            self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             prev_url = url
 
     def _UpdateNeeded(self, source_dir, dest_dir, all_files):
