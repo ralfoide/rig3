@@ -16,6 +16,7 @@
 
 ---- Done Version 0.1 ----
 
+20071119 Template: Support for stats site tracking code
 20071118 Template: Polish look (CSS)
 20071118 Template: Generate pages for category (need UT, polish)
 20071114 Template: Images link to corresponding RIG images (instead of album)

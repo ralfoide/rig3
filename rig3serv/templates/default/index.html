@@ -11,6 +11,7 @@ Expected parameters:
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
 - rig3_version: string, a version number or SVN info for this rig3 build
 - all_categories: list(string), all categories names.
+- tracking_code: Raw HTML for stats tracking (e.g. Google Analytics' tracking code) as defined per site-prefs.
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.
@@ -51,5 +52,6 @@ Page [[html curr_page]] / [[html max_page]]
 [[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
 Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
 <a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
+[[raw tracking_code]]
 </body>
 </html>

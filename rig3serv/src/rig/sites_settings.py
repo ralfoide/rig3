@@ -42,7 +42,8 @@ class SiteSettings(object):
                  theme=DEFAULT_THEME,
                  base_url="http://html.base.url/",
                  rig_url="http://rig.base.url/photos/",
-                 header_img_url=""):
+                 header_img_url="",
+                 tracking_code=""):
         self.public_name = public_name
         self.source_dir = source_dir
         self.dest_dir = dest_dir
@@ -50,6 +51,7 @@ class SiteSettings(object):
         self.base_url = base_url
         self.rig_url = rig_url
         self.header_img_url = header_img_url
+        self.tracking_code = tracking_code
 
     def AsDict(self):
         """

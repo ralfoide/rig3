@@ -53,15 +53,12 @@ class Rig3LiveTest(RigTestCase):
             self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
             self.assertTrue(os.path.exists(os.path.join(d, "items", "2006-08-05-20_00_38-Progress-index_html")))
 
-        if _TEMPLATE_NEED_ITEM_FILES:
-            f = file(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu"), "r")
-        else:
-            f = file(os.path.join(d, "index.html"), "r")
+        f = file(os.path.join(d, "index.html"), "r")
         index_izu = f.read()
         f.close()
         self.assertSearch("&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t",
                           index_izu)
-
+        self.assertSearch("<i>tracking code here</i>", index_izu)
 
 
 #------------------------
