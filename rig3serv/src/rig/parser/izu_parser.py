@@ -138,7 +138,8 @@ class IzuParser(object):
     def __init__(self, log):
         self._log = log
         # custom section handlers. Unlisted sections use the "default" formatter
-        self._formatters = { "images": self._ImagesSection }
+        self._formatters = { "images": self._ImagesSection,
+                             "html": self._HtmlSection }
         self._tag_handlers = { "cat": self._CatHandler,
                                "date": self._DateHandler }
 
@@ -448,14 +449,22 @@ class IzuParser(object):
                       r'\1<a href="\2">\2</a>\3', line)
         return line
 
-    def _ImagesSection(self, state, curr_section, line):
+    def _ImagesSection(self, state, line):
         """
         Specific formatter for images section.
         Currently TBD. Might be dropped altogether.
         """
+        curr_section = state.CurrSection()
         state.InitSection(curr_section, [])
         raise NotImplementedError("Izu [s:images] section not implemented yet")
 
+    def _HtmlSection(self, state, line):
+        """
+        Specific formatter for HTML section.
+        """
+        curr_section = state.CurrSection()
+        state.InitSection(curr_section, "")
+        state.Append(curr_section, line)
 
     # --- tag handlers
 

@@ -19,17 +19,17 @@ Parameters:
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
 </div>
 
-[[if "html" in sections]][[raw sections["html"] ]][[end]]
-
 [[if "en" in sections]]
-<table class="content en"><tr><td class="flag"><img src="media/flag_usa.gif" /></td>
+<table class="content en"><tr><td class="flag"><img src="[[url base_url]]media/flag_usa.gif" /></td>
 <td>[[raw sections["en"] ]]</td></tr></table>
 [[end]]
 
 [[if "fr" in sections]]
-<table class="content en"><tr><td class="flag"><img src="media/flag_fr.gif" /></td>
+<table class="content en"><tr><td class="flag"><img src="[[url base_url]]media/flag_fr.gif" /></td>
 <td>[[raw sections["fr"] ]]</td></tr></table>
 [[end]]
+
+[[if "html" in sections]][[raw sections["html"] ]][[end]]
 
 [[if "images" in sections]]
 <div class="content images">

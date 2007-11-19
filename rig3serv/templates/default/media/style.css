@@ -26,7 +26,8 @@ body {
 /* --- custom local style */
 
 .entry {
-  margin-left: 1em;
+	padding-bottom: 1em; 
+  /* margin-left: 1em; --TEST removed */
 }
 
 .izu {
@@ -43,6 +44,18 @@ body {
   padding-left: 1em;
   padding-top: 0.5em;
   padding-bottom: 0.3em;
+  border-top:    2px solid #ACA;
+  border-left:   2px solid #8C8;
+  border-bottom: 2px solid #050;
+  border-right:  2px solid #050;
+}
+
+.entry .title {
+  -moz-border-radius: 10px;
+}
+
+.entry .title {
+  border-radius: 10px;
 }
 
 .entry .title .date {
@@ -50,9 +63,19 @@ body {
 	font-weight: normal;
 }
 
+.content {
+	padding-bottom: 1em;
+}
+
 .content.image {
 	text-align: center;
 	width: 100%;
+}
+
+.content.intro {
+	font-size: smaller;
+	padding-left: 1em;
+	padding-bottom: 0.5em;
 }
 
 .image-table {

@@ -170,12 +170,12 @@ class Site(object):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        self._GeneratePageByCategory("", categories, categories, items)
+        self._GeneratePageByCategory("", "", categories, categories, items)
         for c in categories:
-            self._GeneratePageByCategory([ "cat", c ], [ c ], categories, items)
+            self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
         # TODO: self.GeneratePageMonth(month, items)
 
-    def _GeneratePageByCategory(self, path, category_filter, all_categories, items):
+    def _GeneratePageByCategory(self, path, rel_base, category_filter, all_categories, items):
         """
         Generates pages with items which have at least one category in the
         category_filter list. Items are not re-ordered, it's up to the caller to
@@ -227,6 +227,7 @@ class Site(object):
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
             keywords["entries"] = entries
+            keywords["rel_base_url"] = rel_base
             keywords["prev_url"] = prev_url
             keywords["next_url"] = next_url
             keywords["curr_page"] = p + 1

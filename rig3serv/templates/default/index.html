@@ -2,6 +2,7 @@
 Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
+- rel_base_url: string, Relative url to base of site. May be empty.
 - prev_url: None or string url
 - next_url: None or string url
 - curr_page: int, Current page number
@@ -24,16 +25,16 @@ Relevant links:
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>[[html public_name]] - [[html title]]</title>
-  <link rel="stylesheet" type="text/css" href="media/style.css" />
+  <link rel="stylesheet" type="text/css" href="[[url rel_base_url]]media/style.css" />
 </head>
 <body>
 
-<div class="header"><img src="[[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]]media/top_banner.jpg[[end]]"/>
+<div class="header"><img src="[[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]][[url rel_base_url]]media/top_banner.jpg[[end]]"/>
 <br>[[html public_name]]</div>
 
 <div class="categories">
 [[for cat in all_categories]]
-<a href="cat/[[url cat]]">[[html cat]]</a> [[if cat != all_categories[-1:] ]]&nbsp;||&nbsp;[[end]]
+<a href="[[url rel_base_url]]cat/[[url cat]]/">[[html cat]]</a> [[if cat != all_categories[-1:] ]]&nbsp;||&nbsp;[[end]]
 [[end]]
 </div>
 
@@ -41,9 +42,9 @@ Relevant links:
   [[raw html_entry]]
 [[end]]
 <hr width="80%"/>
-[[if prev_url]]<a href="[[url prev_url]]">Prev</a>[[end]]
+[[if prev_url]]<a href="[[url rel_base_url]][[url prev_url]]">Prev</a>[[end]]
 &nbsp;||&nbsp;
-[[if next_url]]<a href="[[url next_url]]">Next</a>[[end]]
+[[if next_url]]<a href="[[url rel_base_url]][[url next_url]]">Next</a>[[end]]
 <br/>
 Page [[html curr_page]] / [[html max_page]]
 <p>

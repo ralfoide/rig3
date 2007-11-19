@@ -16,6 +16,8 @@
 
 ---- Done Version 0.1 ----
 
+20071118 Template: Polish look (CSS)
+20071118 Template: Generate pages for category (need UT, polish)
 20071114 Template: Images link to corresponding RIG images (instead of album)
 20071114 Template: Display up to 6 "normal" images if nothing else to display
 20071114 Template: Format date/title for entry headers
