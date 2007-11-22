@@ -345,7 +345,7 @@ If any of the +/- ratings are movies (.mov/.wmv), show the .jpg thumbnail instea
   
 
 ----
-2007 Site vs template logic
+20071104 Site vs template logic
 
 Speaking of which, I should separate the generic code for parsing/generating
 a site from the code that actually generates the templates.
@@ -378,5 +378,41 @@ refactor the Site class: part of the logic is template dependent and should be
 handled as such. 
 
 ----
+20071121 Next Steps
 
+- Permalinks
+	- Ironically, requires to save each post as a separate HTML file
+	- links: prev/next/up. Up goes to the corresponding index with an anchor.
+- RSS generation
+	- discovery links
+- Site customization/refactor.
+	- Ability to have several sources. Each source generates a dated list of entries.
+		- DirParser is just one of them.
+		- Adapt DirParser to return single files w/ pattern <date><title>.izu
+		- Later I'll want a parser for old izu files that contain multiple entries.
+		- It can be all done by DirParser but we want to make it configurable in
+			site prefs.
+	- Move prefs to site prefs w/ defaults. Essentially regexps but also Rig sizes.
+	- Extract actual page/items/images generation.
+- IzuParser:
+	- add a raw HTML tag, to include HTML inline on the spot, e.g. [html:-- ... --].
+	- [img:] tag that work for current album (or simply [blah.jpg])
+- Documentation
+
+The long term goal is that it should be possible to switch templates *and* switch the
+actual page generation with the template. On the other hand, this may be too tighted-in
+to be practical. Still we can offset the page generation to an helper class and maybe
+have different ones depending on the template.
+
+Some more changes needed by MM:
+- List categories to be included and/or excluded from automatic generation
+- For some categories, mark them as "private" and remove links to main blog.
+- Generate a TOC on top or bottom of some pages.
  
+One way to do this is to specify site prefs:
+- Which indexes to generate: index, rss, public_cat, private_cat (cat=categories)
+- What are public categories: all, cat1, cat2... all is a special keyword here, it's the default.
+- What are private categories: cat1, cat2... default is empty.
+Private categories generate index pages without any reference on the main blog.
+We may want to have a special destination for them.
+
