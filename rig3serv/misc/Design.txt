@@ -416,3 +416,30 @@ One way to do this is to specify site prefs:
 Private categories generate index pages without any reference on the main blog.
 We may want to have a special destination for them.
 
+Another way to do this is to use different sites, that read from the same source but
+output to different destinations. In each site, we'll have list of categories to accept
+(default being to accept "all") and then a boolean flag indicating how to treat links.
+
+----
+20071123 Site Settings
+
+Existing site settings:
+- public_name="", public name of blog (for templates to display)
+- source_dir=string, path of source directory (absolute or relative)
+- dest_dir=None, path of output directory (absolute or relative)
+- theme=DEFAULT_THEME, string of theme directory
+- base_url="http://html.base.url/", for templates which want to use it
+- rig_url="http://rig.base.url/photos/", for generating rig links
+- header_img_url="", to replace the default header image in the default template
+- tracking_code="", a raw html piece for google analytics or similar
+
+New site settings:
+- rig_url: Obsoleted.
+- rig_img_url: string format with <album> and <img> parameters
+- rig_album_url: string format with <album> parameter
+- link_to_rig_album: False. Should images link to the rig album?
+- link_to_rig_img: True. Should images link to the corresponding rig image? 
+- category_filter: None or list of category names (strings, case-insensitive) to accept
+- permalinks: True. Boolean, true if should have permalinks
+- toc: False. Boolean, true if we want a TOC at the top of the index
+- rss: True. Boolean, generate an RSS feed.
