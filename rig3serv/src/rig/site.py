@@ -68,6 +68,12 @@ class _Item(object):
 
 
 #------------------------
+def CreateSite(log, dry_run, settings):
+    """
+    """
+    Continue Here
+
+#------------------------
 class Site(object):
     """
     Describes on site and what we can do with it.
