@@ -11,144 +11,66 @@ __author__ = "ralfoide@gmail.com"
 import re
 import os
 import cgi
-import sys
 import zlib
 import errno
 import urllib
 from datetime import datetime
 
 from rig.site_base import SiteBase
-from rig.parser.dir_parser import DirParser, RelDir
-from rig.parser.izu_parser import IzuParser
-from rig.template.template import Template
 from rig.version import Version
-
-DEFAULT_THEME = "default"
-INDEX_IZU = "index.izu"
-INDEX_HTML = "index.html"
-_MEDIA_DIR = "media"
-_DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
-_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
-_DATE_YMD= re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
-                      r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
-                      r"(?P<rest>.*$)")
-_ITEMS_DIR = "items"
-_ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
-_MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
-
-_TEMPLATE_NEED_ITEM_FILES = False # TODO make a site.rc pref
-
-_IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
-                          r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
-
-_RATING_BASE = -2
-_RATING_BAD = -1
-_RATING_DEFAULT = 0
-_RATING_GOOD = 1
-_RATING_EXCELLENT = 2
-_RATING = { ".": _RATING_BAD,
-            "_": _RATING_DEFAULT,
-            "-": _RATING_GOOD,
-            "+": _RATING_EXCELLENT }
 
 #------------------------
 class SiteDefault(SiteBase):
     """
     Describes on site and what we can do with it.
     """
+    INDEX_IZU = "index.izu"
+    INDEX_HTML = "index.html"
+    _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
+                          r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
+                          r"(?P<rest>.*$)")
+    _ITEMS_DIR = "items"
+    _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
+    _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
+    
+    _TEMPLATE_NEED_ITEM_FILES = False # TODO make a site.rc pref
+    
+    _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
+                              r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
+    
+    _RATING_BASE = -2
+    _RATING_BAD = -1
+    _RATING_DEFAULT = 0
+    _RATING_GOOD = 1
+    _RATING_EXCELLENT = 2
+    _RATING = { ".": _RATING_BAD,
+                "_": _RATING_DEFAULT,
+                "-": _RATING_GOOD,
+                "+": _RATING_EXCELLENT }
+
     def __init__(self, log, dry_run, settings):
-        self._log = log
-        self._dry_run = dry_run
-        self._settings = settings
-        self._izu_parser = IzuParser(self._log)
+        super(SiteDefault, self).__init__(log, dry_run, settings)
 
-    def Process(self):
-        """
-        Processes the site. Do whatever is needed to get the job done.
-        """
-        self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
-        self._MakeDestDirs()
-        self._CopyMedia()
-        tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
-        categories, items = self._GenerateItems(tree)
-        self.GeneratePages(categories, items)
-        # TODO: self.DeleteOldGeneratedItems()
-
-    def _MakeDestDirs(self):
+    def MakeDestDirs(self):
         """
         Creates the necessary directories in the destination.
+
+        Subclassing: Derived classes can override this if needed.
+        The base implementation is expected to be good enough.
         
         Returns self for chaining
+
+        Subclassing: Derived classes SHOULD override this. Parent does nothing.
         """
-        self._MkDestDir(_ITEMS_DIR)
+        self._MkDestDir(self._ITEMS_DIR)
         return self
-
-    def _CopyMedia(self):
-        """
-        Copy media directory from selected template to destination
-        """
-        _keywords = { "base_url": self._settings.base_url,
-                    "public_name": self._settings.public_name }
-        def _apply_template(source, dest):
-            # Use fill template to copy/transform the file
-            template = Template(self._log, file=source)
-            result = template.Generate(_keywords)
-            fdest = file(dest, "wb")
-            fdest.write(result)
-            fdest.close()
-
-        media = os.path.join(self._TemplateDir(), self._settings.theme, _MEDIA_DIR)
-        if os.path.isdir(media):
-            self._CopyDir(media, os.path.join(self._settings.dest_dir, _MEDIA_DIR),
-                          filter_ext={ ".css": _apply_template })
-
-    def _Parse(self, source_dir, dest_dir):
-        """
-        Calls the directory parser on the source vs dest directories
-        with the default dir/file patterns.
         
-        Returns the DirParser pointing on the root of the source tree.
-        
-        TODO: make dir/file patterns configurable in SitesSettings.
-        """
-        p = DirParser(self._log).Parse(os.path.realpath(source_dir),
-                                       os.path.realpath(dest_dir),
-                                       file_pattern=_VALID_FILES,
-                                       dir_pattern=_DIR_PATTERN)
-        return p
-    
-    def _GenerateItems(self, tree):
-        """
-        Traverses the source tree and generates new items as needed.
-        
-        An item in a RIG site is a directory that contains either an
-        index.izu and/or JPEG images.
-        
-        Returns a tuple (list: categories, list: _Item).
-        """
-        categories = []
-        items = []
-        for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Debug("[%s] Process '%s' to '%s'", self._settings.public_name,
-                           source_dir.rel_curr, dest_dir.rel_curr)
-            if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                files = [f.lower() for f in all_files]
-                item = self._GenerateItem(source_dir, all_files)
-                if item is None:
-                    continue
-                for c in item.categories:
-                    if not c in categories:
-                        categories.append(c)
-                items.append(item)
-        self._log.Info("[%s] Found %d items, %d categories", self._settings.public_name,
-                       len(items), len(categories))
-        return categories, items
-
     def GeneratePages(self, categories, items):
         """
         - categories: list of categories accumulated from each entry
         - items: list of _Item
+
+        Subclassing: Derived classes MUST override this and not call the parent.
         """
         categories.sort()
         # Sort by decreasing date (i.e. compares y to x, not x to y)
@@ -203,10 +125,10 @@ class SiteDefault(SiteBase):
                 next_url = None            
             entries = []
             older_date = None
-            for j in relevant_items[i:i + _ITEMS_PER_PAGE]:
+            for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
                 entries.append(j.content)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
-            i += _ITEMS_PER_PAGE
+            i += self._ITEMS_PER_PAGE
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
@@ -227,42 +149,15 @@ class SiteDefault(SiteBase):
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             prev_url = url
 
-    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
-        """
-        The item needs to be updated if the source directory or any of
-        its internal files are more recent than the destination directory.
-        And obviously it needs to be created if the destination does not
-        exist yet.
-        
-        Arguments:
-        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
-        - dest_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
-        """
-        if not os.path.exists(dest_dir.abs_dir):
-            return True
-        source_ts = None
-        dest_ts = None
-        try:
-            dest_ts = self._DirTimeStamp(dest_dir.abs_dir)
-        except OSError:
-            self._log.Info("[%s] Dest '%s' does not exist", self._settings.public_name,
-                           dest_dir.abs_dir)
-            return True
-        try:
-            source_ts = self._DirTimeStamp(source_dir.abs_dir)
-        except OSError:
-            self._log.Warn("[%s] Source '%s' does not exist", self._settings.public_name,
-                           source_dir.abs_dir)
-            return False
-        return source_ts > dest_ts
-
-    def _GenerateItem(self, source_dir, all_files):
+    def GenerateItem(self, source_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns an _Item or None
 
         Arguments:
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+
+        Subclassing: Derived classes MUST override this and not call the parent.
         """
         title = os.path.basename(source_dir.rel_curr)
         date, title = self._DateAndTitleFromTitle(title)
@@ -271,15 +166,15 @@ class SiteDefault(SiteBase):
         main_filename = ""
         sections = {}
         tags = {}
-        if INDEX_IZU in all_files:
-            main_filename = INDEX_IZU
-            izu_file = os.path.join(source_dir.abs_dir, INDEX_IZU)
+        if self.INDEX_IZU in all_files:
+            main_filename = self.INDEX_IZU
+            izu_file = os.path.join(source_dir.abs_dir, self.INDEX_IZU)
             self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
-        elif INDEX_HTML in all_files:
-            main_filename = INDEX_HTML
-            html_file = os.path.join(source_dir.abs_dir, INDEX_HTML)
+        elif self.INDEX_HTML in all_files:
+            main_filename = self.INDEX_HTML
+            html_file = os.path.join(source_dir.abs_dir, self.INDEX_HTML)
             sections["html"] = self._ReadFile(html_file)
             tags = self._izu_parser.ParseFirstLine(sections["html"])
             self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
@@ -306,9 +201,9 @@ class SiteDefault(SiteBase):
         filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
         if _TEMPLATE_NEED_ITEM_FILES:
             assert self._WriteFile(content,
-                                   os.path.join(self._settings.dest_dir, _ITEMS_DIR),
+                                   os.path.join(self._settings.dest_dir, self._ITEMS_DIR),
                                    filename)
-        dest = os.path.join(_ITEMS_DIR, filename)
+        dest = os.path.join(self._ITEMS_DIR, filename)
         return _Item(date, dest, content=content, categories=cats)
 
     def _GenerateImages(self, source_dir, all_files):
@@ -341,15 +236,15 @@ class SiteDefault(SiteBase):
         num_images = 0 
         num_normal = 0 
         for filename in all_files:
-            m = _IMG_PATTERN.match(filename)
+            m = self._IMG_PATTERN.match(filename)
             if m:
                 num_images += 1
                 index = m.group("index")
-                entry = images[index] = images.get(index, { "top_rating": _RATING_BASE, "top_name": None, "files": [] })
+                entry = images[index] = images.get(index, { "top_rating": self._RATING_BASE, "top_name": None, "files": [] })
                 rating = self._GetRating(m.group("rating"))
-                num_normal += (rating == _RATING_DEFAULT and 1 or 0)
-                num_good += (rating == _RATING_GOOD and 1 or 0)
-                num_excellent += (rating == _RATING_EXCELLENT and 1 or 0)
+                num_normal += (rating == self._RATING_DEFAULT and 1 or 0)
+                num_good += (rating == self._RATING_GOOD and 1 or 0)
+                num_excellent += (rating == self._RATING_EXCELLENT and 1 or 0)
                 if rating > entry["top_rating"]:
                     entry["top_rating"] = rating
                     entry["top_name"] = filename
@@ -365,7 +260,7 @@ class SiteDefault(SiteBase):
             keys.sort()
             for key in keys:
                 entry = images[key]
-                if entry["top_rating"] == _RATING_EXCELLENT:
+                if entry["top_rating"] == self._RATING_EXCELLENT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], size))
         elif num_good:
             num_col = min(num_good, 6)
@@ -373,7 +268,7 @@ class SiteDefault(SiteBase):
             keys.sort()
             for key in keys:
                 entry = images[key]
-                if entry["top_rating"] == _RATING_GOOD:
+                if entry["top_rating"] == self._RATING_GOOD:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
             num_col = num_normal
@@ -381,7 +276,7 @@ class SiteDefault(SiteBase):
             keys.sort()
             for key in keys:
                 entry = images[key]
-                if entry["top_rating"] == _RATING_DEFAULT:
+                if entry["top_rating"] == self._RATING_DEFAULT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
             return self._GetRigLink(source_dir, None, None)
@@ -434,19 +329,7 @@ class SiteDefault(SiteBase):
     # Utilities, overridable for unit tests
 
     def _GetRating(self, ascii):
-        return _RATING.get(ascii, _RATING_DEFAULT)
-
-    def _DirTimeStamp(self, dir):
-        """
-        Returns the most recent change or modification time stamp for the
-        given directory.
-        
-        Throws OSError with e.errno==errno.ENOENT (2) when the directory
-        does not exists.
-        """
-        c = os.path.getctime(dir)
-        m = os.path.getmtime(dir)
-        return max(c, m)
+        return _RATING.get(ascii, self._RATING_DEFAULT)
 
     def _ReadFile(self, full_path):
         """
