@@ -443,3 +443,30 @@ New site settings:
 - permalinks: True. Boolean, true if should have permalinks
 - toc: False. Boolean, true if we want a TOC at the top of the index
 - rss: True. Boolean, generate an RSS feed.
+
+----
+20071201 
+
+I need a way to split the rig.Site class in two parts, but so far I lack a clear
+terminology for it so let's try:
+- SiteBase: A base class for the Site, partially abstract. A couple methods need to be
+  implemented by the derived classes. As such it offers the "contract" needed to generate a
+  site, with a default to parse content, but it lacks the actual generation code, which is
+  template dependent (i.e. which template files to call, with which parameters)
+- SiteDefault: The "default" template implementation. It provides the GeneratePages and
+  GenerateItem implementation for the default template.
+
+This will work. The only limitation right now is that the template's specific Site
+class is in the rig namespace. We need a better location if we want the ability for
+end-users to add new templates. As long as I don't have dynamic loading of arbitrary
+python source classes outside of the default namespace, it's going to be a bit difficult.
+I've done that with rig2 and didn't like it, so I'll start with a low-tech approach
+which is to have a rig.site namespace (aka directory) and we'll evolve from there.
+
+So to resume:
+- before: rig/site.py => rig.site.Site
+- after:  rig/site_base.py => rig.site_base.SiteBase
+        + rig/site/site_default.py => rig.site.default.SiteDefault
+and there's a "factory" constructor in rig.site.CreateSite() that returns the correct
+Site-derived class depending on the template name.
+

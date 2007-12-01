@@ -1,6 +1,0 @@
-#
-# Description for Rig3's default template.
-#
-
-[template]
-class = site_default

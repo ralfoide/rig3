@@ -66,15 +66,8 @@ class _Item(object):
         self.categories = categories or []
         self.rel_filename = rel_filename
 
-
 #------------------------
-def CreateSite(log, dry_run, settings):
-    """
-    """
-    Continue Here
-
-#------------------------
-class Site(object):
+class SiteBase(object):
     """
     Describes on site and what we can do with it.
     """
@@ -94,7 +87,7 @@ class Site(object):
         self._CopyMedia()
         tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
         categories, items = self._GenerateItems(tree)
-        self._GeneratePages(categories, items)
+        self.GeneratePages(categories, items)
         # TODO: self.DeleteOldGeneratedItems()
 
     def _MakeDestDirs(self):
@@ -167,19 +160,12 @@ class Site(object):
                        len(items), len(categories))
         return categories, items
 
-    def _GeneratePages(self, categories, items):
+    def GeneratePages(self, categories, items):
         """
         - categories: list of categories accumulated from each entry
         - items: list of _Item
         """
-        categories.sort()
-        # Sort by decreasing date (i.e. compares y to x, not x to y)
-        items.sort(lambda x, y: cmp(y.date, x.date))
-
-        self._GeneratePageByCategory("", "", categories, categories, items)
-        for c in categories:
-            self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
-        # TODO: self.GeneratePageMonth(month, items)
+        raise NotImplementedError("Must be derived by subclasses")
 
     def _GeneratePageByCategory(self, path, rel_base, category_filter, all_categories, items):
         """
