@@ -445,7 +445,7 @@ New site settings:
 - rss: True. Boolean, generate an RSS feed.
 
 ----
-20071201 
+20071201 Site Refactor 
 
 I need a way to split the rig.Site class in two parts, but so far I lack a clear
 terminology for it so let's try:
@@ -470,3 +470,26 @@ So to resume:
 and there's a "factory" constructor in rig.site.CreateSite() that returns the correct
 Site-derived class depending on the template name.
 
+----
+20071202 Sources
+
+In the configuration .rc file, the "source_dir" argument should change.
+The new proposed syntax is:
+
+ sources = [ <type>: <path> | <name> ], *
+
+There can be more than one source, comma separated.
+Each entry is either:
+- a type followed by a path. Type is one of IzuBlog, DirItems, FileItems.
+  The path can't contain a comma in this case.
+- a name, in which case another entry which that name is looked for in the
+  input rc. That entry also has format "type: path" but in this case the
+  path can contain a comma (since it's not a separator)
+
+Internally, SiteSettings.source_dir becomes sources, which as type:
+ list [ SourceReader ]
+with:
+ class SourceReader() => SourceReader(path)
+ class IzuBlogReader(SourceReader)
+ class DirItemsReader(SourceReader)
+ class FileItemsReader(SourceReader)
