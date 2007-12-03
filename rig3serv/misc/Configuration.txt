@@ -1,0 +1,96 @@
+Rig3 Documentation: Configuration
+
+
+Pre-amble: Rig3 is not a server. It's a standalone application that parses text files to
+generate a blog. To work, it uses a configuration file that describe the source to process
+and the kind of site to generate. It then generate the corresponding HTML files.
+
+The purpose of this document is to explain the configuration file.
+
+1- Location
+
+By default, rig3 will look for a configuration file in the following locations:
+- /etc/rig3.rc
+- $HOME/.rig3rc (e.g. "/home/username/.rig3rc" under Linux or C:\Document and Settings\username\.rig3rc under Windows)
+
+However it is expected your configuration file probably resides elswhere, in which case you
+can use the "-c" command-line flag to specify it. The most common case is that the file is
+located in the current directory, so you'll do something like this:
+ $ /path/to/rig3.py -c myconfig.rc
+
+2- Format
+
+The configuration file has the following format:
+- it is separated in sections. Each section starts by a line with "[section-name]"
+- each section contains zero or more lines in the form "variable=value".
+The value ends at the end of the line. The length is arbitrary.
+
+The section name "DEFAULT" has a special meaning: all its variables are "inherited" by *all*
+sections (even if declared before.) This is convenient to avoid typing common values more
+than once, for example the theme to use.
+
+3- Expected Sections
+
+When rig3 parses a configuration file, it looks for a section called "serve".
+
+It is expected to define a variable "sites", which must be a comma-separated list of
+section names that defines the sites to process.
+
+Example:
+ [serve]
+ sites = mysite1, mysite2
+ [mysite1]
+ ... variables for site 1
+ [mysite2]
+ ... variables for site2
+
+This allows you to define multiple sites and not use them all (i.e. as a way to "comment out"
+a site and exclude it from processing.)
+
+Note that if the "serve" section is undefined or does not contain a "sites" variable, rig3
+will simply do nothing.
+
+4- Site Section Variables
+
+Here is the list of all variables expected in a site.
+
+The following variables are required:
+
+- source=string, path of source directory (absolute or relative)
+  types: all | dirItems | fileItems | izuBlog
+- dest_dir=None, path of output directory (absolute or relative)
+
+The following variables have default values:
+
+- public_name="", public name of blog (for templates to display)
+- theme=DEFAULT_THEME, string of theme directory
+- base_url="http://html.base.url/", for templates which want to use it
+- header_img_url="", to replace the default header image in the default template
+- tracking_code="", a raw html piece for google analytics or similar
+
+- rig_img_url: string format with <album> and <img> parameters
+- rig_album_url: string format with <album> parameter
+- link_to_rig_album: False. Should images link to the rig album?
+- link_to_rig_img: True. Should images link to the corresponding rig image? 
+- category_filter: None or list of category names (strings, case-insensitive) to accept
+- permalinks: True. Boolean, true if should have permalinks
+- toc: False. Boolean, true if we want a TOC at the top of the index
+- rss: True. Boolean, generate an RSS feed.
+
+
+5- Examples
+
+One of the nice effects you can achieve is to define several sites in your configuration
+file that use the same source, but with different category filters and different attributes.
+For example, you can define a site for public post and another one for all private posts:
+ [public-site]
+ source = /path/to/posts
+ dest_dir = public_html/blog/public
+ category_filter = public
+ [private-site]
+ source = /path/to/posts
+ dest_dir = public_html/blog/private
+ category_filter = !public
+
+Note that in this case you just need to specify a different destination directory and a
+different category filter.

@@ -1,5 +1,8 @@
 ---- TODO ----
 
+20071202 Engine: Refactor source input to accept multiple sources types + paths
+20071202 Engine: Site settings, source_dir to sources 
+
 20071123 Engine: Site settings, rig_url, rig_img_url, rig_album_url
 20071123 Engine: Site settings, link_to_rig_album, link_to_rig_img
 20071123 Engine: Site settings, category_filter
