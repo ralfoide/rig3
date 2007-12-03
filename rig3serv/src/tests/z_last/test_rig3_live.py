@@ -14,7 +14,8 @@ import os
 
 from tests.rig_test_case import RigTestCase
 from rig3 import Rig3
-from rig.site import _TEMPLATE_NEED_ITEM_FILES
+from rig.site.site_default import SiteDefault
+
 
 _DEST_DIR = "live_dest"  # in testdat dir
 
@@ -49,7 +50,7 @@ class Rig3LiveTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
 
-        if _TEMPLATE_NEED_ITEM_FILES:
+        if SiteDefault._TEMPLATE_NEED_ITEM_FILES:
             self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
             self.assertTrue(os.path.exists(os.path.join(d, "items", "2006-08-05-20_00_38-Progress-index_html")))
 

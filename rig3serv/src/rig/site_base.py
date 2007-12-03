@@ -20,7 +20,7 @@ from rig.version import Version
 DEFAULT_THEME = "default"
 
 #------------------------
-class _Item(object):
+class SiteItem(object):
     """
     Represents an item:
     - list of categories (list of string)
@@ -39,6 +39,8 @@ class _Item(object):
 class SiteBase(object):
     """
     Describes on site and what we can do with it.
+    
+    This class is "abstract". Some methds must be derived to define a proper behavior.
     """
     MEDIA_DIR = "media"
     DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
@@ -50,18 +52,7 @@ class SiteBase(object):
         self._settings = settings
         self._izu_parser = IzuParser(self._log)
 
-    def Process(self):
-        """
-        Processes the site. Do whatever is needed to get the job done.
-        """
-        self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
-        self.MakeDestDirs()
-        self._CopyMedia()
-        tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
-        categories, items = self.GenerateItems(tree)
-        self.GeneratePages(categories, items)
-        # TODO: self.DeleteOldGeneratedItems()
+    # Derived class must implement this to define the desired behavoior
 
     def MakeDestDirs(self):
         """
@@ -75,6 +66,42 @@ class SiteBase(object):
         Subclassing: Derived classes SHOULD override this. Parent does nothing.        
         """
         return self
+
+    def GeneratePages(self, categories, items):
+        """
+        - categories: list of categories accumulated from each entry
+        - items: list of SiteItem
+
+        Subclassing: Derived classes MUST override this and not call the parent.
+        """
+        raise NotImplementedError("Must be derived by subclasses")
+
+    def GenerateItem(self, source_dir, all_files):
+        """
+        Generates a new photoblog entry, which may have an index and/or may have an album.
+        Returns a SiteItem or None
+
+        Arguments:
+        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+
+        Subclassing: Derived classes MUST override this and not call the parent.
+        """
+        raise NotImplementedError("Must be derived by subclasses")
+
+    # Generic implementation that is not expected to be derived.
+
+    def Process(self):
+        """
+        Processes the site. Do whatever is needed to get the job done.
+        """
+        self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
+                       self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
+        self.MakeDestDirs()
+        self._CopyMedia()
+        tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
+        categories, items = self.GenerateItems(tree)
+        self.GeneratePages(categories, items)
+        # TODO: self.DeleteOldGeneratedItems()
 
     def _CopyMedia(self):
         """
@@ -126,7 +153,7 @@ class SiteBase(object):
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
         
-        Returns a tuple (list: categories, list: _Item).
+        Returns a tuple (list: categories, list: SiteItem).
         """
         categories = []
         items = []
@@ -146,14 +173,7 @@ class SiteBase(object):
                        len(items), len(categories))
         return categories, items
 
-    def GeneratePages(self, categories, items):
-        """
-        - categories: list of categories accumulated from each entry
-        - items: list of _Item
-
-        Subclassing: Derived classes MUST override this and not call the parent.
-        """
-        raise NotImplementedError("Must be derived by subclasses")
+    # Utilities, overridable for unit tests
 
     def _UpdateNeeded(self, source_dir, dest_dir, all_files):
         """
@@ -183,20 +203,6 @@ class SiteBase(object):
                            source_dir.abs_dir)
             return False
         return source_ts > dest_ts
-
-    def GenerateItem(self, source_dir, all_files):
-        """
-        Generates a new photoblog entry, which may have an index and/or may have an album.
-        Returns an _Item or None
-
-        Arguments:
-        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
-
-        Subclassing: Derived classes MUST override this and not call the parent.
-        """
-        raise NotImplementedError("Must be derived by subclasses")
-
-    # Utilities, overridable for unit tests
 
     def _DirTimeStamp(self, dir):
         """

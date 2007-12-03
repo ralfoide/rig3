@@ -13,16 +13,15 @@ from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
 
-import rig.site
-from rig.site import Site
-from rig.site import DEFAULT_THEME, _IMG_PATTERN
+from rig.site.site_default import SiteDefault
+from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 
 #------------------------
-class MockSite(Site):
+class MockSiteDefault(SiteDefault):
     """
-    Behaves like a Site() but overrides the base template directory location
+    Behaves like a SiteDefault() but overrides the base template directory location
     to use testdata/templates instead.
     
     Also traps the last _Filltemplate parameters.
@@ -30,7 +29,7 @@ class MockSite(Site):
     def __init__(self, test_case, log, dry_run, settings):
         self._test_case = test_case
         self._fill_template_params = {}
-        super(MockSite, self).__init__(log, dry_run, settings)
+        super(MockSiteDefault, self).__init__(log, dry_run, settings)
 
     def _TemplateDir(self):
         """"
@@ -38,17 +37,8 @@ class MockSite(Site):
         """
         return os.path.join(self._test_case.getTestDataPath(), "templates")
 
-    def _FillTemplate(self, template, **keywords):
-        """
-        Keeps a copy of the _FillTemplate parameters and then call the original.
-        Trapped parameters are available in
-          self._fill_template_params[template] => keyuword dict.
-        """
-        self._fill_template_params[template] = dict(keywords)
-        return super(MockSite, self)._FillTemplate(template, **keywords)
-
 #------------------------
-class SiteTest(RigTestCase):
+class SiteDefaultTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
@@ -62,58 +52,8 @@ class SiteTest(RigTestCase):
     def tearDown(self):
         self.RemoveDir(self._tempdir)
 
-    def testInit(self):
-        """
-        Test init of Site
-        """
-        s = SiteSettings(public_name="Site Name",
-                         source_dir="/tmp/source/data",
-                         dest_dir=self._tempdir,
-                         theme=DEFAULT_THEME)
-        m = Site(self.Log(), False, s)
-        self.assertNotEqual(None, m)
-        self.assertEquals("Site Name", m._settings.public_name)
-        self.assertEquals("/tmp/source/data", m._settings.source_dir)
-        self.assertEquals(self._tempdir, m._settings.dest_dir)
-        self.assertEquals(DEFAULT_THEME, m._settings.theme)
-
-    def testPatterns(self):
-        self.assertSearch(rig.site._DIR_PATTERN, "2007-10-07_Folder 1")
-        self.assertSearch(rig.site._DIR_PATTERN, "2006-08-05 20.00.38  Progress")
-        self.assertSearch(rig.site._VALID_FILES, "index.izu")
-        self.assertSearch(rig.site._VALID_FILES, "image.jpg")
-        self.assertSearch(rig.site._VALID_FILES, "image.jpeg")
-        self.assertSearch(rig.site._VALID_FILES, "T12896_tiny_jpeg.jpg")
-
-    def testAlbum(self):
-        m = Site(self.Log(), False, self.s)
-        m.Process()
-    
-    def testParse(self):
-        m = Site(self.Log(), False, self.s)
-        p = m._Parse(m._settings.source_dir, m._settings.dest_dir)
-        self.assertIsInstance(DirParser, p)
-        self.assertListEquals([], p.Files())
-        self.assertEquals(4, len(p.SubDirs()))
-        self.assertIsInstance(DirParser, p.SubDirs()[0])
-        self.assertIsInstance(DirParser, p.SubDirs()[1])
-        self.assertIsInstance(DirParser, p.SubDirs()[2])
-        self.assertIsInstance(DirParser, p.SubDirs()[3])
-        self.assertEquals("2006-05_Movies", p.SubDirs()[0].AbsSourceDir().rel_curr)
-        self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[1].AbsSourceDir().rel_curr)
-        self.assertEquals("2007-10-07 11.00_Folder 2", p.SubDirs()[2].AbsSourceDir().rel_curr)
-        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[3].AbsSourceDir().rel_curr)
-        self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
-        self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
-        self.assertListEquals([ "index.izu"], p.SubDirs()[2].Files())
-        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[3].Files())
-        self.assertListEquals([], p.SubDirs()[0].SubDirs())
-        self.assertListEquals([], p.SubDirs()[1].SubDirs())
-        self.assertListEquals([], p.SubDirs()[2].SubDirs())
-        self.assertListEquals([], p.SubDirs()[3].SubDirs())
-
     def testSimpleFileName(self):
-        m = Site(self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.s)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc///de\\\\f/g\\h"))
@@ -123,20 +63,8 @@ class SiteTest(RigTestCase):
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof", 50))
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof", 25))
 
-    def testTemplateDir(self):
-        m = Site(self.Log(), False, self.s)
-        td = m._TemplateDir()
-        self.assertNotEquals("", td)
-        self.assertTrue(os.path.exists(td))
-        self.assertTrue(os.path.isdir(td))
-        # the templates dir should contain at least the "default" sub-dir
-        # with at least the entry.xml and index.xml files
-        self.assertTrue(os.path.exists(os.path.join(td, "default")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "index.html")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.html")))
-
     def testFillTemplate(self):
-        m = MockSite(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.s)
 
         keywords = self.s.AsDict()
         keywords["title"] = "MyTitle"
@@ -185,7 +113,7 @@ class SiteTest(RigTestCase):
             html)
 
     def testDateAndTitleFromTitle(self):
-        m = Site(self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.s)
 
         self.assertEquals((None, "27"),        m._DateAndTitleFromTitle("27"))
         self.assertEquals((None, "2007"),      m._DateAndTitleFromTitle("2007"))
@@ -208,28 +136,10 @@ class SiteTest(RigTestCase):
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007/10/27 12:13:14"))
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10/27,12/13/14"))
 
-    def testCopyMedia(self):
-        m = MockSite(self, self.Log(), False, self.s)
-        m._CopyMedia()
-        
-        self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
-        
-        style_css_path = os.path.join(self._tempdir, "media", "style.css")
-        self.assertTrue(os.path.exists(style_css_path))
-        
-        # Check that the style.css has been transformed
-        f = file(style_css_path, "rb")
-        style_css = f.read()
-        f.close()
-        self.assertNotSearch("base_url", style_css)
-        self.assertNotSearch("public_name", style_css)
-        self.assertSearch("base url is http://www.example.com", style_css)
-        self.assertSearch("public name is Test Album", style_css)
-
     def testGenerateItems_Izu(self):
-        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
-        item = m._GenerateItem(RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
+        item = m.GenerateItem(RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
@@ -238,9 +148,9 @@ class SiteTest(RigTestCase):
                           item.rel_filename)
     
     def testGenerateItems_Html(self):
-        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
-        item = m._GenerateItem(RelDir(source_dir, "2006-05_Movies"), [ "index.html" ])
+        item = m.GenerateItem(RelDir(source_dir, "2006-05_Movies"), [ "index.html" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
@@ -250,38 +160,39 @@ class SiteTest(RigTestCase):
                           item.rel_filename)
 
     def testImgPattern(self):
-        self.assertEquals(None, _IMG_PATTERN.match("myimage.jpg"))
-        self.assertEquals(None, _IMG_PATTERN.match("PICT1200.jpg"))
-        self.assertEquals(None, _IMG_PATTERN.match("R12345-Some Name.bmp"))
-        self.assertEquals(None, _IMG_PATTERN.match("R12345-Some Name.gif"))
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.assertEquals(None, m._IMG_PATTERN.match("myimage.jpg"))
+        self.assertEquals(None, m._IMG_PATTERN.match("PICT1200.jpg"))
+        self.assertEquals(None, m._IMG_PATTERN.match("R12345-Some Name.bmp"))
+        self.assertEquals(None, m._IMG_PATTERN.match("R12345-Some Name.gif"))
         self.assertDictEquals({ "index": "1000",
                                 "rating": "_",
                                 "name": " Old Index ",
                                 "ext": ".jpg" }, 
-                              _IMG_PATTERN.match("1000_ Old Index .jpg").groupdict())
+                              m._IMG_PATTERN.match("1000_ Old Index .jpg").groupdict())
         self.assertDictEquals({ "index": "R12345",
                                 "rating": "_",
                                 "name": "Some Name",
                                 "ext": ".jpg" }, 
-                              _IMG_PATTERN.match("R12345_Some Name.jpg").groupdict())
+                              m._IMG_PATTERN.match("R12345_Some Name.jpg").groupdict())
         self.assertDictEquals({ "index": "X12345",
                                 "rating": "-",
                                 "name": "Some Movie",
                                 "ext": ".original.mov" }, 
-                              _IMG_PATTERN.match("X12345-Some Movie.original.mov").groupdict())
+                              m._IMG_PATTERN.match("X12345-Some Movie.original.mov").groupdict())
         self.assertDictEquals({ "index": "Y31415",
                                 "rating": "+",
                                 "name": "Web Version",
                                 "ext": ".web.mov" }, 
-                              _IMG_PATTERN.match("Y31415+Web Version.web.mov").groupdict())
+                              m._IMG_PATTERN.match("Y31415+Web Version.web.mov").groupdict())
         self.assertDictEquals({ "index": "Z31415",
                                 "rating": ".",
                                 "name": "Web Version",
                                 "ext": ".web.wmv" }, 
-                              _IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
+                              m._IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
 
     def testGetRigLink(self):
-        m = Site(self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.s)
 
         expected = (
             '<a title="2007-11-08 Album Title" '
@@ -322,7 +233,7 @@ class SiteTest(RigTestCase):
                           -1))
 
     def testGenerateImages(self):
-        m = Site(self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.s)
 
         self.assertEquals(
             None,
@@ -347,7 +258,7 @@ class SiteTest(RigTestCase):
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
 
     def testGeneratePageByCategory(self):
-        m = MockSite(self, self.Log(), False, self.s)._MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         
         m._GeneratePageByCategory("", "", [], [], [])
         if False:

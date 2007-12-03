@@ -18,7 +18,7 @@ __author__ = "ralfoide@gmail.com"
 import sys
 import ConfigParser
 from rig.settings_base import SettingsBase
-from rig.site import DEFAULT_THEME
+from rig.site_base import DEFAULT_THEME
 
 #------------------------
 class SiteSettings(object):

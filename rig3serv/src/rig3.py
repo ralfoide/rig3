@@ -11,7 +11,7 @@ import os
 import sys
 import getopt
 from rig.log import Log
-from rig.site import Site
+from rig.site import CreateSite
 from rig.sites_settings import SitesSettings
 
 #------------------------
@@ -78,7 +78,7 @@ Options:
     def ProcessSites(self):
         s = self._sites_settings
         for site_id in s.Sites():
-            site = Site(self._log, self._dry_run, s.GetSiteSettings(site_id))
+            site = CreateSite(self._log, self._dry_run, s.GetSiteSettings(site_id))
             site.Process()
 
     def Close(self):

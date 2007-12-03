@@ -16,7 +16,8 @@ import errno
 import urllib
 from datetime import datetime
 
-from rig.site_base import SiteBase
+from rig.site_base import SiteBase, SiteItem
+from rig.template.template import Template
 from rig.version import Version
 
 #------------------------
@@ -68,7 +69,7 @@ class SiteDefault(SiteBase):
     def GeneratePages(self, categories, items):
         """
         - categories: list of categories accumulated from each entry
-        - items: list of _Item
+        - items: list of SiteItem
 
         Subclassing: Derived classes MUST override this and not call the parent.
         """
@@ -84,7 +85,7 @@ class SiteDefault(SiteBase):
     def _GeneratePageByCategory(self, path, rel_base, category_filter, all_categories, items):
         """
         Generates pages with items which have at least one category in the
-        category_filter list. Items are not re-ordered, it's up to the caller to
+        category_filter list. SiteItems are not re-ordered, it's up to the caller to
         re-order the items list if necessary.
 
         - path: A list of sub-directories/sub-path indicating where the files are
@@ -92,7 +93,7 @@ class SiteDefault(SiteBase):
             This is used also to generate the proper index.html urls.
         - category_filter: list of categories to use for this page (acts as a filter)
         - all_categories: list of all categories (used for template to create links)
-        - items: list of _Item. Only uses those which have at least one category
+        - items: list of SiteItem. Only uses those which have at least one category
             in the category_filter list.
         """
         base_url = "/".join(path)
@@ -114,7 +115,7 @@ class SiteDefault(SiteBase):
         prev_url = None
         next_url = None
         n = len(relevant_items)
-        np = n / _ITEMS_PER_PAGE
+        np = n / self._ITEMS_PER_PAGE
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
@@ -152,7 +153,7 @@ class SiteDefault(SiteBase):
     def GenerateItem(self, source_dir, all_files):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
-        Returns an _Item or None
+        Returns an SiteItem or None
 
         Arguments:
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
@@ -199,12 +200,12 @@ class SiteDefault(SiteBase):
         keywords["categories"] = cats
         content = self._FillTemplate("entry.html", **keywords)
         filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
-        if _TEMPLATE_NEED_ITEM_FILES:
+        if self._TEMPLATE_NEED_ITEM_FILES:
             assert self._WriteFile(content,
                                    os.path.join(self._settings.dest_dir, self._ITEMS_DIR),
                                    filename)
         dest = os.path.join(self._ITEMS_DIR, filename)
-        return _Item(date, dest, content=content, categories=cats)
+        return SiteItem(date, dest, content=content, categories=cats)
 
     def _GenerateImages(self, source_dir, all_files):
         """
@@ -329,7 +330,7 @@ class SiteDefault(SiteBase):
     # Utilities, overridable for unit tests
 
     def _GetRating(self, ascii):
-        return _RATING.get(ascii, self._RATING_DEFAULT)
+        return self._RATING.get(ascii, self._RATING_DEFAULT)
 
     def _ReadFile(self, full_path):
         """
@@ -401,10 +402,6 @@ class SiteDefault(SiteBase):
         result = template.Generate(keywords)
         return result
 
-    def _TemplateDir(self):
-        f = __file__
-        return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
-
     def _DateAndTitleFromTitle(self, title):
         """
         Parses the a title and extract a date and the real title.
@@ -412,7 +409,7 @@ class SiteDefault(SiteBase):
         - a tuple (datetime, title)
         - or (None, original title)
         """
-        m = _DATE_YMD.match(title)
+        m = self._DATE_YMD.match(title)
         if m:
             return (datetime(int(m.group("year" ) or 0),
                              int(m.group("month") or 0),
@@ -422,64 +419,6 @@ class SiteDefault(SiteBase):
                              int(m.group("sec"  ) or 0)),
                     (m.group("rest") or "").strip().strip("_"))
         return (None, title)
-
-    def _MkDestDir(self, rel_dir):
-        """
-        Creates a directory in the site's dest_dir.
-        Doesn't generate an error if the directory already exists.
-        """
-        try:
-            os.makedirs(os.path.join(self._settings.dest_dir, rel_dir))
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
-
-    def _CopyDir(self, source_dir, dest_dir,
-                 skip=[ "CVS", ".svn" ],
-                 filter_ext={}):
-        """
-        Copies a directory (recursively, with all its content) into
-        a given destination. OVerwrites existing content. This doesn't
-        clean the output so it will merge with existing content, if any.
-        Also it will fail if:
-        - the destination is not a directory
-        - the destination is not writable/executable
-        
-        filter_ext is a dict { extension => filter_method }.
-        Methods should have a signature (source_name, dest_name) and should
-        copy the source to the dest, using whatever transformation desired.
-        Extensions must start with dot in them (i.e. ".css", not "css")
-        
-        This automatically skips CVS and .svn directories.
-        """
-        # create dest dir
-        try:
-            os.makedirs(dest_dir)
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
-
-        files = os.listdir(source_dir)
-        for name in files:
-            if name in skip:
-                continue
-            ps = os.path.join(source_dir, name)
-            ext = os.path.splitext(name)[1]
-            if os.path.isdir(ps):
-                self._CopyDir(ps, os.path.join(dest_dir, name), skip, filter_ext)
-            elif ext in filter_ext or ("." + ext) in filter_ext:
-                # use a filter to copy from source to dest
-                filter_ext[ext](ps, os.path.join(dest_dir, name))
-            else:
-                # regular file copy
-                dest = file(os.path.join(dest_dir, name), "wb")
-                source = file(ps, "rb")
-                s = source.read(4096)
-                while len(s):
-                    dest.write(s)
-                    s = source.read(4096)
-                source.close()
-                dest.close()
 
 #------------------------
 # Local Variables:
