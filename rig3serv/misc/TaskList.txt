@@ -18,8 +18,6 @@
 20071112 Engine: Reduce verbosity in error mode to really just errors
 20071112 Engine: Reduce verbosity in normal mode to really summary
 
-20071104 Engine: Refactor Site's generateItem into template
-
 20070830 Engine: check update vs dest dirs, UT
 20071006 Engine: Full Izumi-to-Html converter, UT
 20071006 Engine: Rig-Thumbnail-to-URL converter (w/ prefs), UT
@@ -30,6 +28,8 @@
 
 ---- Done Version 0.2 ----
 
+20071202 Engine: Refactor Site into SiteBase + site.SiteDefault, refactored UTs
+20071201 Engine: Refactor Site into SiteBase + site.SiteDefault, started
 
 ---- Done Version 0.1 ----
 

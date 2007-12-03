@@ -37,6 +37,15 @@ class MockSiteDefault(SiteDefault):
         """
         return os.path.join(self._test_case.getTestDataPath(), "templates")
 
+    def _FillTemplate(self, template, **keywords):
+        """
+        Keeps a copy of the _FillTemplate parameters and then call the original.
+        Trapped parameters are available in
+          self._fill_template_params[template] => keyuword dict.
+        """
+        self._fill_template_params[template] = dict(keywords)
+        return super(MockSiteDefault, self)._FillTemplate(template, **keywords)
+
 #------------------------
 class SiteDefaultTest(RigTestCase):
 
