@@ -16,7 +16,8 @@ import errno
 import urllib
 from datetime import datetime
 
-from rig.site_base import SiteBase, SiteItem
+from rig.site_base import SiteBase
+from rig.site_item import SiteItem
 from rig.template.template import Template
 from rig.version import Version
 
