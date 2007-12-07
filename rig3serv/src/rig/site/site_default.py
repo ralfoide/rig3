@@ -174,7 +174,9 @@ class SiteDefault(SiteBase):
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
-            keywords = { "rig_curr_album_link": source_dir.rel_curr }
+            album = urllib.quote(source_dir.rel_curr)
+            keywords = { "rig_curr_album_link":
+                            self._settings.rig_url + 'index.php?album=' + album }
             for s in sections.iterkeys():
                 template = Template(self._log, source=sections[s])
                 sections[s] = template.Generate(keywords)

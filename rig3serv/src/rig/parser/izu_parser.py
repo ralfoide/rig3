@@ -476,7 +476,7 @@ class IzuParser(object):
         if filename and image_glob:
             choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
-                result = '<a title="%(name)s" href="[[[url rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
+                result = '<a title="%(name)s" href="[[[raw rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
                 result %= { "name": title, "img": urllib.quote(choices[0], "/") }
         return first + result
 
