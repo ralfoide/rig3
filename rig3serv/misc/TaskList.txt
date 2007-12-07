@@ -1,5 +1,7 @@
 ---- TODO ----
 
+20071206 Izu:    [label|rig:image_glob] (with thumbnail)
+
 20071202 Engine: Refactor source input to accept multiple sources types + paths
 20071202 Engine: Site settings, source_dir to sources 
 
@@ -12,9 +14,9 @@
 
 20071123 Engine: Source accept single files <date><title>.izu
 20071123 Engine: Source izu-blog files
-20071123 Engine: Izu, Raw HTML tag
-20071123 Engine: Izu, List <ul>
-20071123 Engine: Izu, Blockquotes
+20071123 Izu:    Raw HTML tag
+20071123 Izu:    List <ul>
+20071123 Izu:    Blockquotes
 
 20071120 Engine: Permalinks
 20071115 Template: Generate pages for category (need UT, polish)

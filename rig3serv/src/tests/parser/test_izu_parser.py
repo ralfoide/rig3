@@ -20,7 +20,7 @@ class MockIzuParser(IzuParser):
         self._glob = glob or {}
         super(MockIzuParser, self).__init__(log)
 
-    def _GlogGlob(self, pattern):
+    def _GlobGlob(self, dir, pattern):
         return self._glob.get(pattern, [])
         
 

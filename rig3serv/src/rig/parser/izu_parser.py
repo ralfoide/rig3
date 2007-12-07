@@ -10,8 +10,9 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import re
+import os
 import sys
-import glob
+import fnmatch
 import urllib
 from datetime import datetime
 from StringIO import StringIO
@@ -461,13 +462,19 @@ class IzuParser(object):
         return line
 
     def _ReplRigLink(self, state, match):
+        """
+        Returns the replacement string for a [name|riglink:...] tag.
+        
+        The image_glob parameter must be a leaf name (no paths) and will be
+        located in the current Izu's file directory if possible.
+        """
         result = ""
         first = match.group(1)
         title = match.group(2)
         image_glob = match.group(3)
         filename = state.Filename()
         if filename and image_glob:
-            choices = self._GlogGlob(image_glob)
+            choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
                 result = '<a title="%(name)s" href="[[[url rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
                 result %= { "name": title, "img": urllib.quote(choices[0], "/") }
@@ -524,11 +531,19 @@ class IzuParser(object):
 
     # --- Utilites
 
-    def _GlogGlob(self, pattern):
+    def _GlobGlob(self, dir, pattern):
         """
-        Wraps a glob.glob call. Useful for unit tests.
+        Similar to a glob.glob but works by listing the given directory
+        and applying the pattern *only* to the basename (aka leaf name).
+        
+        This is used by _ReplRigLink.
         """
-        return glob.glob(pattern)
+        result = []
+        for d in os.listdir(dir):
+            leaf = os.path.basename(d)
+            if fnmatch.fnmatch(leaf, pattern):
+                result.append(leaf)
+        return result
 
 
 #------------------------

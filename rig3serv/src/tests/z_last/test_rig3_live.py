@@ -61,8 +61,7 @@ class Rig3LiveTest(RigTestCase):
                           index_izu)
         self.assertSearch("<i>tracking code here</i>", index_izu)
 
-        self.assertSearch(expected_regexp,
-                          "Rig link: [This is a rig link|riglink:T12896*.jpg]",
+        self.assertSearch('Rig link: <a title="This is a rig link" href="2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
 
 #------------------------

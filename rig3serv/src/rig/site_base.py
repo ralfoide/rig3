@@ -12,13 +12,29 @@ import re
 import os
 import errno
 
-from rig.site_item import SiteItem
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
 from rig.version import Version
 
 DEFAULT_THEME = "default"
+
+
+#------------------------
+class SiteItem(object):
+    """
+    Represents an item:
+    - list of categories (list of string)
+    - content: the data of the file
+    - date (datetime)
+    - rel_filename: filename of the generated file relative to the site's
+                    dest_dir.
+    """
+    def __init__(self, date, rel_filename, content, categories=None):
+        self.date = date
+        self.content = content
+        self.categories = categories or []
+        self.rel_filename = rel_filename
 
 
 #------------------------
