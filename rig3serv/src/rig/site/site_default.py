@@ -174,6 +174,12 @@ class SiteDefault(SiteBase):
             self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
+
+            keywords = { "rig_curr_album_link": source_dir.rel_curr }
+            for s in sections.iterkeys():
+                template = Template(self._log, source=sections[s])
+                sections[s] = template.Generate(keywords)
+
         elif self.INDEX_HTML in all_files:
             main_filename = self.INDEX_HTML
             html_file = os.path.join(source_dir.abs_dir, self.INDEX_HTML)
@@ -256,7 +262,7 @@ class SiteDefault(SiteBase):
         if num_excellent:
             size = 400
             if num_excellent > 2:
-                size = min(200, 800 / num_excellent)
+                size = min(300, 800 / num_excellent)
             num_col = min(num_excellent, 4)
             keys = images.keys()
             keys.sort()

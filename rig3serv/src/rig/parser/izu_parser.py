@@ -11,6 +11,8 @@ __author__ = "ralfoide@gmail.com"
 
 import re
 import sys
+import glob
+import urllib
 from datetime import datetime
 from StringIO import StringIO
 
@@ -56,13 +58,17 @@ _ACCENTS_TO_HTML = {
 
 #------------------------
 class _State(object):
-    def __init__(self, _file):
+    def __init__(self, _file, filename):
         self._file = _file
+        self._filename = filename
         self._tags = {}
         self._sections = {}
         self._section_needs_paragraph = {}
         self._curr_section = None
         self._curr_formatter = None
+
+    def Filename(self):
+        return self._filename
 
     def Tags(self):
         return self._tags
@@ -169,7 +175,7 @@ class IzuParser(object):
                 f = filestream
                 self._filename = "<unknown stream>"
             
-            state = _State(f)
+            state = _State(f, self._filename)
             self._ParseStream(state)
             result = state.Close()
             self._filename = None
@@ -321,7 +327,7 @@ class IzuParser(object):
 
         # --- formatting tags
         line = self._FormatBoldItalicHtmlEmpty(line)
-        line = self._FormatLinks(line)
+        line = self._FormatLinks(state, line)
 
         # --- remove escapes at the very end: double-[ which were used
         # to escape normal [ tags and same for double-underscore, double-quotes
@@ -397,7 +403,8 @@ class IzuParser(object):
         Strips html, formats bold, italics, code, empty paragraphs.
         Returns the formatted line.
         """
-        # disable HTML as early as possible: only < >, not &
+        # disable HTML as early as possible: only & < >
+        line = line.replace("&", "&amp;")
         line = line.replace(">", "&gt;")
         line = line.replace("<", "&lt;")
 
@@ -416,7 +423,7 @@ class IzuParser(object):
        
         return line
 
-    def _FormatLinks(self, line):
+    def _FormatLinks(self, state, line):
         """
         Formats straight URLs and tags for URLs & images
         Returns the formatted line.
@@ -439,6 +446,10 @@ class IzuParser(object):
         line = re.sub(r'(^|[^\[])\[((?:https?://|ftp://|#)[^"<>]+?)\]',
                       r'\1<a href="\2">\2</a>', line)
 
+        # rig link: [name|hriglink:image_glob]
+        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|riglink:([^"<>]+?)\]',
+                      lambda m: self._ReplRigLink(state, m), line)
+
         # unformated link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
         # and must not be surrounded by brackets
@@ -448,6 +459,19 @@ class IzuParser(object):
         line = re.sub(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])',
                       r'\1<a href="\2">\2</a>\3', line)
         return line
+
+    def _ReplRigLink(self, state, match):
+        result = ""
+        first = match.group(1)
+        title = match.group(2)
+        image_glob = match.group(3)
+        filename = state.Filename()
+        if filename and image_glob:
+            choices = self._GlogGlob(image_glob)
+            if choices:
+                result = '<a title="%(name)s" href="[[[url rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
+                result %= { "name": title, "img": urllib.quote(choices[0], "/") }
+        return first + result
 
     def _ImagesSection(self, state, line):
         """
@@ -497,6 +521,15 @@ class IzuParser(object):
         Handle izu:cat (categories) tags.
         """
         state.Tags()[tag] = [s.strip() for s in value.split(",") if s.strip()]
+
+    # --- Utilites
+
+    def _GlogGlob(self, pattern):
+        """
+        Wraps a glob.glob call. Useful for unit tests.
+        """
+        return glob.glob(pattern)
+
 
 #------------------------
 # Local Variables:

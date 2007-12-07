@@ -15,10 +15,20 @@ from tests.rig_test_case import RigTestCase
 from rig.parser.izu_parser import IzuParser
 
 #------------------------
+class MockIzuParser(IzuParser):
+    def __init__(self, log, glob=None):
+        self._glob = glob or {}
+        super(MockIzuParser, self).__init__(log)
+
+    def _GlogGlob(self, pattern):
+        return self._glob.get(pattern, [])
+        
+
+#------------------------
 class IzuParserTest(RigTestCase):
 
     def setUp(self):
-        self.m = IzuParser(self.Log())
+        self.m = MockIzuParser(self.Log())
 
     def tearDown(self):
         self.m = None
@@ -42,7 +52,7 @@ class IzuParserTest(RigTestCase):
 
     def testHtmlEscapes(self):
         self.assertEquals(
-            '<div class="izu">\nfoo&lt;bar&gt;zoo&luu</div>',
+            '<div class="izu">\nfoo&lt;bar&gt;zoo&amp;luu</div>',
             self._Render("foo<bar>zoo&luu"))
 
     def testLines(self):
@@ -200,6 +210,16 @@ class IzuParserTest(RigTestCase):
         self.assertEquals(
               "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
               self.m._ConvertAccents("ça, où est le pré près du prêt?"))
+
+    def testAutoLinkRig(self):
+        self.m = MockIzuParser(self.Log(),
+                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+        self.assertEquals(
+            '<div class="izu">\n<a title="This is &amp; comment" '
+            'href="[[url rig_curr_album_link]]&img=A01234%20My%20Image.jpg">'
+            'This is &amp; comment</a></div>',
+            self._Render("[This is & comment|riglink:A01234*.jpg]"))
+
 
 #------------------------
 # Local Variables:

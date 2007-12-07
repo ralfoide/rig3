@@ -46,7 +46,7 @@ class Rig3LiveTest(RigTestCase):
         self.m.ParseArgs(args)
         self.m.Run()
         self.m.Close()
-        
+
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
 
@@ -61,6 +61,9 @@ class Rig3LiveTest(RigTestCase):
                           index_izu)
         self.assertSearch("<i>tracking code here</i>", index_izu)
 
+        self.assertSearch(expected_regexp,
+                          "Rig link: [This is a rig link|riglink:T12896*.jpg]",
+                          index_izu)
 
 #------------------------
 # Local Variables:
