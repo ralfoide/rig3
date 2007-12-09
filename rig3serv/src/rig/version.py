@@ -29,7 +29,7 @@ class Version(object):
     SNV_HEAD_URL = "$HeadURL$"
     SVN_ID = "$Id$"
     
-    RIG3_VERSION = (0, 1, 1)
+    RIG3_VERSION = (0, 2, 0)
 
     def Version(self):
         """
