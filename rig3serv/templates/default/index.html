@@ -34,8 +34,8 @@ Relevant links:
 <br>[[html public_name]]</div>
 
 <div class="categories">
-[[for cat in all_categories]]
-<a href="[[url rel_base_url]]cat/[[url cat]]/">[[html cat]]</a> [[if cat != all_categories[-1:] ]]&nbsp;||&nbsp;[[end]]
+<a href="[[url rel_base_url]]">All</a>
+[[for cat in all_categories]] | <a href="[[url rel_base_url]]cat/[[url cat]]/">[[html cat.capitalize()]]</a>
 [[end]]
 </div>
 

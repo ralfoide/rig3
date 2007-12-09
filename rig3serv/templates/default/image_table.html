@@ -3,8 +3,9 @@
 Parameters:
 - lines: list { col: list { raw_html_img+a_tags } }
 ]]
-<table class="image-table">
-[[for line in lines]]<tr>
-  [[for col in line]]<td>[[raw col]]</td>[[end]]
-</tr>[[end]]
-</table>
+<div class="image-table">
+[[for line in lines]]
+  [[for col in line]] [[raw col]] [[end]]
+[[end]]
+</div>
+

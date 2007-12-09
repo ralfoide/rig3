@@ -33,6 +33,7 @@
 
 ---- Done Version 0.2 ----
 
+20071208 Fix:    Fixed UT for riglink, Fixed style for images and categories
 20071205 Izu:    Support for [name|riglink:...]
 20071202 Engine: Refactor Site into SiteBase + site.SiteDefault, refactored UTs
 20071201 Engine: Refactor Site into SiteBase + site.SiteDefault, started

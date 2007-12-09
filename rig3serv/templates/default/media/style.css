@@ -14,6 +14,7 @@ body {
 .header {
 	text-align: center;
 	width: 100%;
+	font-weight: bold;
 }
 
 .header img {
@@ -24,6 +25,10 @@ body {
 }
 
 /* --- custom local style */
+
+div.categories {
+  text-align: center;
+}
 
 .entry {
 	padding-bottom: 1em; 

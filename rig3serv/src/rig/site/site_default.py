@@ -263,7 +263,7 @@ class SiteDefault(SiteBase):
         if num_excellent:
             size = 400
             if num_excellent > 2:
-                size = min(300, 800 / num_excellent)
+                size = max(300, 800 / num_excellent)
             num_col = min(num_excellent, 4)
             keys = images.keys()
             keys.sort()
