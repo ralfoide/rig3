@@ -329,6 +329,7 @@ class IzuParser(object):
         # --- formatting tags
         line = self._FormatBoldItalicHtmlEmpty(line)
         line = self._FormatLinks(state, line)
+        line = self._FormatLists(state, line)
 
         # --- remove escapes at the very end: double-[ which were used
         # to escape normal [ tags and same for double-underscore, double-quotes
@@ -479,6 +480,16 @@ class IzuParser(object):
                 result = '<a title="%(name)s" href="[[[raw rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
                 result %= { "name": title, "img": urllib.quote(choices[0], "/") }
         return first + result
+
+    def _FormatLists(self, state, line):
+        """
+        Formats straight URLs and tags for URLs & images
+        Returns the formatted line.
+        """
+        # simple one-level list: "* blah"
+        line = re.sub(r'^\* (.*)$',
+                      r'<li>\1</li>', line)        
+        return line
 
     def _ImagesSection(self, state, line):
         """
