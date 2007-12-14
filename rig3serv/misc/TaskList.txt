@@ -33,10 +33,13 @@
 
 ---- Done Version 0.2 ----
 
-20071208 Fix:    Fixed UT for riglink, Fixed style for images and categories
-20071205 Izu:    Support for [name|riglink:...]
-20071202 Engine: Refactor Site into SiteBase + site.SiteDefault, refactored UTs
-20071201 Engine: Refactor Site into SiteBase + site.SiteDefault, started
+20071213 Template: Use CSS background for header img, which allows for smaller window size
+20071213 Engine:   Version number with only major.minor + svn-rev
+20071213 Izu:      Crude support for single-level list items (without nesting/blocks)
+20071208 Fix:      Fixed UT for riglink, Fixed style for images and categories
+20071205 Izu:      Support for [name|riglink:...]
+20071202 Engine:   Refactor Site into SiteBase + site.SiteDefault, refactored UTs
+20071201 Engine:   Refactor Site into SiteBase + site.SiteDefault, started
 
 ---- Done Version 0.1 ----
 

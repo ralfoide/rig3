@@ -143,7 +143,7 @@ class SiteDefault(SiteBase):
             keywords["last_content_ts"] = older_date
             keywords["all_categories"] = all_categories
             version = Version()
-            keywords["rig3_version"] = "%s.%s" % (version.VersionString(),
+            keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
             
             content = self._FillTemplate("index.html", **keywords)

@@ -20,11 +20,11 @@ class VersionTest(RigTestCase):
     def testVersion(self):
         v = self.m.Version()
         self.assertIsInstance(tuple, v)
-        self.assertEquals(3, len(v))
+        self.assertEquals(2, len(v))
 
     def testVersionString(self):
         v = self.m.VersionString()
-        self.assertEquals("%s.%s.%s" % Version.RIG3_VERSION, v)
+        self.assertEquals("%s.%s" % Version.RIG3_VERSION, v)
 
     def testSvnRevision_Fake(self):
         v = self.m.SvnRevision("$Revision: 42 $")

@@ -21,13 +21,26 @@ body {
 	background:#fff;
 	margin: 0 auto;
 	padding: 0;
-	border: #fc9 1px solid;
+	/* border: #fc9 1px solid; */
 }
 
-/* --- custom local style */
+.blog-name {
+	text-align: center;
+	width: 100%;
+	font-weight: bold;
+	margin-bottom: 0.5em;
+}
 
-div.categories {
-  text-align: center;
+.categories {
+	text-align: center;
+	margin-bottom: 0.5em;
+}
+
+
+.rig_version {
+	font-size: smaller;
+	text-align: center;
+	margin-bottom: 0.5em;
 }
 
 .entry {

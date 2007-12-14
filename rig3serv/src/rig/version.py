@@ -29,19 +29,19 @@ class Version(object):
     SNV_HEAD_URL = "$HeadURL$"
     SVN_ID = "$Id$"
     
-    RIG3_VERSION = (0, 2, 1)
+    RIG3_VERSION = (0, 2)
 
     def Version(self):
         """
-        Returns the rig3 version as a tuple (major, minor, build)
+        Returns the rig3 version as a tuple (major, minor)
         """
         return self.RIG3_VERSION
 
     def VersionString(self):
         """
-        Returns the version number as a string, e.g. "0.1.2"
+        Returns the version number as a string, e.g. "0.1"
         """
-        return "%s.%s.%s" % self.RIG3_VERSION
+        return "%s.%s" % self.RIG3_VERSION
 
     def SvnRevision(self, revision=SVN_REVISION):
         """
