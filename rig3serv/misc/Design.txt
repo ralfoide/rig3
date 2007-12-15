@@ -480,16 +480,47 @@ The new proposed syntax is:
 
 There can be more than one source, comma separated.
 Each entry is either:
-- a type followed by a path. Type is one of IzuBlog, DirItems, FileItems.
+- a type followed by a path.
+  Type is one of all | dirItems | fileItems | izuBlog.
   The path can't contain a comma in this case.
 - a name, in which case another entry which that name is looked for in the
   input rc. That entry also has format "type: path" but in this case the
   path can contain a comma (since it's not a separator)
 
-Internally, SiteSettings.source_dir becomes sources, which as type:
+Internally, SiteSettings.source_dir becomes sources, which has type:
  list [ SourceReader ]
 with:
  class SourceReader() => SourceReader(path)
  class IzuBlogReader(SourceReader)
  class DirItemsReader(SourceReader)
  class FileItemsReader(SourceReader)
+
+----
+20071215 Sources Variation
+
+Here's a variation on the way sources are to be specified in the config.rc file:
+
+To specify source(s), you need to add one or more "sources" variables.
+Each variable contains one or more 'type: path' entries, separated by commas.
+If you need to use a comma in the path, place the path in double-quotes.
+
+Type is one of all | dir | file | blog:
+ - "dir": Each entry is stored in a directory which name is "date title",
+          The directory must contain an "index.izu" to be valid.
+ - "file": Each entry is stored in a separate file which name is "date title.izu"
+ - "blog": Entries are grouped *.izu files with an [izu:blog] header. Each file
+           represents a blog category.
+
+The type "all" is an alias for "all the other source readers for this path".
+It is /really/ a shortcut to entering the same path 3 times with the different
+specific types. As a side effect, rig3 will read the path recursively *three*
+times. So unless you really mean that, use a specific type for a given path.
+
+Since duplicate variable names cannot be used, if you want multiple variables
+just add a suffix to "sources". It can be anything, e.g. "sources_1" or
+"sourcesABC" or "sourcesss", as long as it's a valid variable name. Sources
+variables are processed in lexicographical order.
+
+Example:
+
+ sources = all: /home/user/izu_files, dir: 
