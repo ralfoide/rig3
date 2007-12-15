@@ -1,5 +1,6 @@
 ---- TODO ----
 
+20071215 Engine: Investigate PIL support (for resizing, for header_img guess, etc.)
 20071206 Izu:    [label|rig:image_glob] (with thumbnail)
 
 20071202 Engine: Refactor source input to accept multiple sources types + paths
@@ -33,6 +34,7 @@
 
 ---- Done Version 0.2 ----
 
+20071215 Template: Added header_img_height to SitesSettings
 20071213 Template: Use CSS background for header img, which allows for smaller window size
 20071213 Engine:   Version number with only major.minor + svn-rev
 20071213 Izu:      Crude support for single-level list items (without nesting/blocks)

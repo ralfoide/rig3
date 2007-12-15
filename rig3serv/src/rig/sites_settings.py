@@ -34,6 +34,7 @@ class SiteSettings(object):
       appending index.php, so you really want to terminate it with a / separator.
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
+    - header_img_height (int): The height of the header_img. Default is 185.
     """
     def __init__(self,
                  public_name="",
@@ -43,6 +44,7 @@ class SiteSettings(object):
                  base_url="http://html.base.url/",
                  rig_url="http://rig.base.url/photos/",
                  header_img_url="",
+                 header_img_height=185,
                  tracking_code=""):
         self.public_name = public_name
         self.source_dir = source_dir
@@ -51,6 +53,7 @@ class SiteSettings(object):
         self.base_url = base_url
         self.rig_url = rig_url
         self.header_img_url = header_img_url
+        self.header_img_height = header_img_height
         self.tracking_code = tracking_code
 
     def AsDict(self):
