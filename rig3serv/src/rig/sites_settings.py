@@ -95,7 +95,7 @@ class SitesSettings(SettingsBase):
         """
         s = SiteSettings()
         vars = list(self.ConfigParser().items(site_name))
-        self._ProcessSources(s, vars)
+        self._ProcessSources(s, vars)  # TODO missing
         self._ProcessDefaults(s, vars)
         return s
 

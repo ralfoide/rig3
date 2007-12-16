@@ -1,5 +1,10 @@
 ---- TODO ----
 
+20071215 Engine: SiteSettings._ProcessSource
+20071215 Tests:  Update site settings UTs
+20071215 Tests:  UTs for all new SourceItem/Reader
+20071215 Tests:  Update testdata .rc + z_last/live test
+
 20071215 Engine: Investigate PIL support (for resizing, for header_img guess, etc.)
 20071206 Izu:    [label|rig:image_glob] (with thumbnail)
 
@@ -34,6 +39,7 @@
 
 ---- Done Version 0.2 ----
 
+20071215 Engine:   Refactor SourceDirReader + SourceDir, use in SiteBase/default
 20071215 Template: Added header_img_height to SitesSettings
 20071213 Template: Use CSS background for header img, which allows for smaller window size
 20071213 Engine:   Version number with only major.minor + svn-rev
