@@ -15,7 +15,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
-import sys
+import re
 import ConfigParser
 from rig.settings_base import SettingsBase
 from rig.site_base import DEFAULT_THEME
@@ -94,17 +94,46 @@ class SitesSettings(SettingsBase):
         Returns a SiteSetting for the given site.
         """
         s = SiteSettings()
-        vars = list(self.ConfigParser().items(site_name))
+        vars = self.ConfigParser().Items(site_name)
         self._ProcessSources(s, vars)  # TODO missing
         self._ProcessDefaults(s, vars)
         return s
 
     def _ProcessDefaults(self, settings, vars):
+        """
+        Process all variables from the vars.
+
+        Parameters:
+        - settings(SiteSettings), the settings to modify
+        - vars is a dict { var_name: value }, the new values to use
+        
+        If a variable is defined in the SiteSettings instance,
+        it's value is used. Otherwise the default is left intact.
+        
+        Variables not declared in SiteSettings are ignored: we do not inject
+        unknown variables.
+        
+        """
         for k in settings.__dict__.iterkeys():
             try:
                 settings.__dict__[k] = vars[k]
             except KeyError:
                 pass  # preserve defaults from SiteSettings.__init__
+
+    def _ProcessSources(self, settings, vars):
+        """
+        Process all "sources" variables from vars and builds the
+        sources_list in the SiteSettings.
+
+        Parameters:
+        - settings(SiteSettings), the settings to modify
+        - vars is a dict { var_name: value }, the new values to use.
+        """
+        re_def = re.compile("\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+|\"[^\"]+\")\s*,")
+        for k, v in vars.iteritems():
+            if k.startswith("sources"):
+                
+                    
 
 #------------------------
 # Local Variables:

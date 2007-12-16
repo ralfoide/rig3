@@ -25,12 +25,6 @@ class SettingsBase(object):
         self._log = log
         self._parser = ConfigParser.SafeConfigParser()
 
-    def ConfigParser(self):
-        """
-        Returns the underlying ConfigParser instance.
-        """
-        return self._parser
-
     def Load(self, config_paths):
         """
         Loads sites .rc files from the list of config_paths.
@@ -42,6 +36,22 @@ class SettingsBase(object):
         for s in self._parser.sections():
             self._log.Debug("Section[%s]: %s", s, self._parser.items(s))
         return self
+
+    def ConfigParser(self):
+        """
+        Returns the underlying ConfigParser instance.
+        """
+        return self._parser
+
+    def Items(self, site_name):
+        """
+        Returns all the variables defined for the given site name.
+        This returns them as a dictionar { var: value }.
+        
+        By contrast, the default ConfigParser.items() returns them as a
+        list of tuples.
+        """
+        return dict(self._parser.items(site_name))
 
 #------------------------
 # Local Variables:

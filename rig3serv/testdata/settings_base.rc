@@ -1,8 +1,14 @@
 # testdata/rig3.rc
 
 [section1]
-key1=value1
+key1 = value1
 
 [DEFAULT]
 global_default_key=global_value_default
+
+[site1]
+sources  	= /tmp/data/site1/first
+sources  	= /tmp/data/site1/000
+sources  	= /tmp/data/site1/zzz
+sources  	= /tmp/data/site1/last
 
