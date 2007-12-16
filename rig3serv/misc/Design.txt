@@ -504,11 +504,11 @@ To specify source(s), you need to add one or more "sources" variables.
 Each variable contains one or more 'type: path' entries, separated by commas.
 If you need to use a comma in the path, place the path in double-quotes.
 
-Type is one of all | dir | file | blog:
- - "dir": Each entry is stored in a directory which name is "date title",
-          The directory must contain an "index.izu" to be valid.
- - "file": Each entry is stored in a separate file which name is "date title.izu"
- - "blog": Entries are grouped *.izu files with an [izu:blog] header. Each file
+Type is one of all | dirs | files | blogs:
+ - "dirs": Each entry is stored in a directory which name is "date title",
+           The directory must contain an "index.izu" to be valid.
+ - "files": Each entry is stored in a separate file which name is "date title.izu"
+ - "blogs": Entries are grouped *.izu files with an [izu:blog] header. Each file
            represents a blog category.
 
 The type "all" is an alias for "all the other source readers for this path".
@@ -523,4 +523,7 @@ variables are processed in lexicographical order.
 
 Example:
 
- sources = all: /home/user/izu_files, dir: 
+ sources = all: /home/user/izu_files, dirs: /my/dir, files: "/my,files/", files: /my/files2
+ sources2 = all: /more/stuff
+ sources_001 = all: /even/more/stuff
+ sourcesStuff = all: /some/stuff

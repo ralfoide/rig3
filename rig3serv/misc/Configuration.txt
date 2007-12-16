@@ -56,8 +56,7 @@ Here is the list of all variables expected in a site.
 
 The following variables are required:
 
-- source=string, path of source directory (absolute or relative)
-  types: all | dirItems | fileItems | izuBlog
+- sources = string, path of source directory (absolute or relative, see section 4 below)
 - dest_dir=None, path of output directory (absolute or relative)
 
 The following variables have default values:
@@ -77,8 +76,37 @@ The following variables have default values:
 - toc: False. Boolean, true if we want a TOC at the top of the index
 - rss: True. Boolean, generate an RSS feed.
 
+5- Source Selection
 
-5- Examples
+To specify source(s), you need to add one or more "sources" variables.
+Each variable contains one or more 'type: path' entries, separated by commas.
+If you need to use a comma in the path, place the path in double-quotes.
+
+Type is one of all | dirs | files | blogs:
+ - "dirs": Each entry is stored in a directory which name is "date title",
+           The directory must contain an "index.izu" to be valid.
+ - "files": Each entry is stored in a separate file which name is "date title.izu"
+ - "blogs": Entries are grouped *.izu files with an [izu:blog] header. Each file
+           represents a blog category.
+
+The type "all" is an alias for "all the other source readers for this path".
+It is /really/ a shortcut to entering the same path 3 times with the different
+specific types. As a side effect, rig3 will read the path recursively *three*
+times. So unless you really mean that, use a specific type for a given path.
+
+Since duplicate variable names cannot be used, if you want multiple variables
+just add a suffix to "sources". It can be anything, e.g. "sources_1" or
+"sourcesABC" or "sourcesss", as long as it's a valid variable name. Sources
+variables are processed in lexicographical order.
+
+Example:
+
+ sources = all: /home/user/izu_files, dirs: /my/dir, files: "/my,files/", files: /my/files2
+ sources2 = all: /more/stuff
+ sources_001 = all: /even/more/stuff
+ sourcesStuff = all: /some/stuff
+
+6- Examples
 
 One of the nice effects you can achieve is to define several sites in your configuration
 file that use the same source, but with different category filters and different attributes.
