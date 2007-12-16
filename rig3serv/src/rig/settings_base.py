@@ -25,6 +25,12 @@ class SettingsBase(object):
         self._log = log
         self._parser = ConfigParser.SafeConfigParser()
 
+    def ConfigParser(self):
+        """
+        Returns the underlying ConfigParser instance.
+        """
+        return self._parser
+
     def Load(self, config_paths):
         """
         Loads sites .rc files from the list of config_paths.

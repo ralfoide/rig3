@@ -83,7 +83,7 @@ class SitesSettings(SettingsBase):
         Returns the list of internal site names available.
         """
         try:
-            sites = self._parser.get("serve", "sites")
+            sites = self.ConfigParser().get("serve", "sites")
             result = [s.strip() for s in sites.split(",")]
             return result
         except ConfigParser.NoSectionError:
@@ -94,12 +94,17 @@ class SitesSettings(SettingsBase):
         Returns a SiteSetting for the given site.
         """
         s = SiteSettings()
-        for k in s.__dict__.iterkeys():
-            try:
-                s.__dict__[k] = self._parser.get(site_name, k)
-            except ConfigParser.NoOptionError:
-                pass  # preserve defaults from SiteSettings.__init__
+        vars = list(self.ConfigParser().items(site_name))
+        self._ProcessSources(s, vars)
+        self._ProcessDefaults(s, vars)
         return s
+
+    def _ProcessDefaults(self, settings, vars):
+        for k in settings.__dict__.iterkeys():
+            try:
+                settings.__dict__[k] = vars[k]
+            except KeyError:
+                pass  # preserve defaults from SiteSettings.__init__
 
 #------------------------
 # Local Variables:
