@@ -25,7 +25,7 @@ class SiteSettings(object):
     """
     Settings for one site with defaults:
     - public_name (str): Site name, as published on the generated page. Free text.
-    - source_dir (str): Path of the source directories to parse. Can be relative or absolute.
+    - source_list (list SourceBase): List of SourceBase reeaders
     - dest_dir (str): Path of where to generate content. Can be relative or absolute.
     - theme (str): Name of the theme to use, must match a directory in templates.
     - base_url (str): URL where the site will be published, in case templates wants to use that.
@@ -38,7 +38,7 @@ class SiteSettings(object):
     """
     def __init__(self,
                  public_name="",
-                 source_dir=None,
+                 source_list=None,
                  dest_dir=None,
                  theme=DEFAULT_THEME,
                  base_url="http://html.base.url/",
@@ -47,7 +47,7 @@ class SiteSettings(object):
                  header_img_height=185,
                  tracking_code=""):
         self.public_name = public_name
-        self.source_dir = source_dir
+        self.source_list = source_list or []
         self.dest_dir = dest_dir
         self.theme = theme
         self.base_url = base_url
