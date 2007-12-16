@@ -18,6 +18,7 @@ from datetime import datetime
 
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
+from rig.source_item import SourceDir
 from rig.version import Version
 
 #------------------------
@@ -73,7 +74,6 @@ class SiteDefault(SiteBase):
 
         Subclassing: Derived classes MUST override this and not call the parent.
         """
-        categories.sort()
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
@@ -150,16 +150,22 @@ class SiteDefault(SiteBase):
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             prev_url = url
 
-    def GenerateItem(self, source_dir, all_files):
+    def GenerateItem(self, source_item):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
         Returns an SiteItem or None
 
         Arguments:
-        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+        - source_item: An instance of SourceItem.
 
         Subclassing: Derived classes MUST override this and not call the parent.
         """
+        if isinstance(source_item, SourceDir):
+            source_dir = source_item.source_dir
+            all_files = source_item.all_files
+        else:
+            raise NotImplementedError("TODO support %s" % repr(source_item))
+        
         title = os.path.basename(source_dir.rel_curr)
         date, title = self._DateAndTitleFromTitle(title)
         if not date:

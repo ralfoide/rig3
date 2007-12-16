@@ -36,6 +36,18 @@ class SiteItem(object):
         self.categories = categories or []
         self.rel_filename = rel_filename
 
+    def __eq__(self, rhs):
+        """
+        Two site items are equal if they have the same date, content,
+        categories and relative filename.
+        """
+        if isinstance(rhs, SiteItem):
+            return (self.date == rhs.date and
+                    self.content == rhs.content and
+                    self.categories == rhs.categories and
+                    self.rel_filename == rhs.rel_filename)
+        return super(SiteItem, self).__eq__(rhs)
+
 
 #------------------------
 class SiteBase(object):
@@ -78,13 +90,15 @@ class SiteBase(object):
         """
         raise NotImplementedError("Must be derived by subclasses")
 
-    def GenerateItem(self, source_dir, all_files):
+    def GenerateItem(self, source_item):
         """
-        Generates a new photoblog entry, which may have an index and/or may have an album.
-        Returns a SiteItem or None
+        Generates a new photoblog entry, which may have an index and/or may
+        have an album. Returns a SiteItem or None.
+        
+        This basically converts a SourceItem into a SiteItem.
 
         Arguments:
-        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+        - source_item: An instance of SourceItem.
 
         Subclassing: Derived classes MUST override this and not call the parent.
         """
@@ -100,9 +114,16 @@ class SiteBase(object):
                        self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
         self.MakeDestDirs()
         self._CopyMedia()
-        tree = self._Parse(self._settings.source_dir, self._settings.dest_dir)
-        categories, items = self.GenerateItems(tree)
-        self.GeneratePages(categories, items)
+        site_items = []
+        for source in self._settings.source_list:
+            self._ProcessSourceItems(source, site_items)
+        categories = self._GetCategories(site_items)
+
+        self._log.Info("[%s] Found %d site_items, %d categories",
+               self._settings.public_name,
+               len(site_items), len(categories))
+
+        self.GeneratePages(categories, site_items)
         # TODO: self.DeleteOldGeneratedItems()
 
     def _CopyMedia(self):
@@ -126,97 +147,40 @@ class SiteBase(object):
         if os.path.isdir(media):
             self._CopyDir(media, os.path.join(self._settings.dest_dir, self.MEDIA_DIR),
                           filter_ext={ ".css": _apply_template })
-
-    def _Parse(self, source_dir, dest_dir):
-        """
-        Calls the directory parser on the source vs dest directories
-        with the default dir/file patterns.
-
-        Subclassing: Derived classes can override this if needed.
-        The base implementation is expected to be good enough.
-        
-        Returns the DirParser pointing on the root of the source tree.
-        
-        TODO: make dir/file patterns configurable in SitesSettings.
-        """
-        p = DirParser(self._log).Parse(os.path.realpath(source_dir),
-                                       os.path.realpath(dest_dir),
-                                       file_pattern=self.VALID_FILES,
-                                       dir_pattern=self.DIR_PATTERN)
-        return p
     
-    def GenerateItems(self, tree):
+    def _ProcessSourceItems(self, source, in_out_items):
         """
-        Traverses the source tree and generates new items as needed.
-        
-        An item in a RIG site is a directory that contains either an
-        index.izu and/or JPEG images.
+        Process all items from a given source and queue them into the
+        in_out_items list.
+
+        This basically converts a list of SourceItem into a list of SiteItem.
         
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
-        
-        Returns a tuple (list: categories, list: SiteItem).
+
+        Returns in_out_items, which is a list of SiteItems.
         """
-        categories = []
-        items = []
-        for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Debug("[%s] Process '%s' to '%s'", self._settings.public_name,
-                           source_dir.rel_curr, dest_dir.rel_curr)
-            if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                files = [f.lower() for f in all_files]
-                item = self.GenerateItem(source_dir, all_files)
-                if item is None:
-                    continue
-                for c in item.categories:
-                    if not c in categories:
-                        categories.append(c)
-                items.append(item)
-        self._log.Info("[%s] Found %d items, %d categories", self._settings.public_name,
-                       len(items), len(categories))
-        return categories, items
+        for source_item in source.Parse(self._settings.dest_dir):
+            site_item = self.GenerateItem(source_item)
+            in_out_items.append(site_item)
+        return in_out_items
 
     # Utilities, overridable for unit tests
 
-    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
+    def _GetCategories(self, site_items):
         """
-        The item needs to be updated if the source directory or any of
-        its internal files are more recent than the destination directory.
-        And obviously it needs to be created if the destination does not
-        exist yet.
+        Get all categories used in all site items.
+        Returns a list of string, sorted.
         
-        Arguments:
-        - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
-        - dest_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+        Subclassing: There should be no need to override this.
         """
-        if not os.path.exists(dest_dir.abs_dir):
-            return True
-        source_ts = None
-        dest_ts = None
-        try:
-            dest_ts = self._DirTimeStamp(dest_dir.abs_dir)
-        except OSError:
-            self._log.Info("[%s] Dest '%s' does not exist", self._settings.public_name,
-                           dest_dir.abs_dir)
-            return True
-        try:
-            source_ts = self._DirTimeStamp(source_dir.abs_dir)
-        except OSError:
-            self._log.Warn("[%s] Source '%s' does not exist", self._settings.public_name,
-                           source_dir.abs_dir)
-            return False
-        return source_ts > dest_ts
-
-    def _DirTimeStamp(self, dir):
-        """
-        Returns the most recent change or modification time stamp for the
-        given directory.
-        
-        Throws OSError with e.errno==errno.ENOENT (2) when the directory
-        does not exists.
-        """
-        c = os.path.getctime(dir)
-        m = os.path.getmtime(dir)
-        return max(c, m)
+        categories = {}
+        for item in site_items:
+            for c in item.categories:
+                categories[c] = 1
+        categories = categories.keys()
+        categories.sort()
+        return categories
 
     def _TemplateDir(self):
         f = __file__
@@ -248,8 +212,6 @@ class SiteBase(object):
         Methods should have a signature (source_name, dest_name) and should
         copy the source to the dest, using whatever transformation desired.
         Extensions must start with dot in them (i.e. ".css", not "css")
-        
-        This automatically skips CVS and .svn directories.
         """
         # create dest dir
         try:
