@@ -18,6 +18,7 @@ __author__ = "ralfoide@gmail.com"
 import re
 import ConfigParser
 from rig.settings_base import SettingsBase
+from rig.source_reader import SourceDirReader
 from rig.site_base import DEFAULT_THEME
 
 #------------------------
@@ -94,9 +95,9 @@ class SitesSettings(SettingsBase):
         Returns a SiteSetting for the given site.
         """
         s = SiteSettings()
-        vars = self.ConfigParser().Items(site_name)
-        self._ProcessSources(s, vars)  # TODO missing
+        vars = self.Items(site_name)
         self._ProcessDefaults(s, vars)
+        self._ProcessSources(s, vars)
         return s
 
     def _ProcessDefaults(self, settings, vars):
@@ -129,13 +130,32 @@ class SitesSettings(SettingsBase):
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use.
         """
-        re_def = re.compile("^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*,?(P<rest>.*)$")
-        for k, v in vars.iteritems():
+        re_def = re.compile("^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*,?(?P<rest>.*)$")
+        type_class = { "dir": SourceDirReader, "dirs": SourceDirReader }
+        for k, value in vars.iteritems():
             if k.startswith("sources"):
-                m = re_def.match(v)
-                if m:
-                    
-
+                old = None
+                while value and old != value:
+                    old = value
+                    m = re_def.match(value)
+                    if not m:
+                        self._log.Error("Invalid source in '%s'", value)
+                        break
+                    value = m.group("rest")
+                    type = m.group("type")
+                    path = m.group("path")
+                    if type == "all":
+                        for t in ["dirs", "files", "items"]:
+                            settings.source_list.append(type_class[t](self._log, settings, path))
+                    elif type not in type_class:
+                        self._log.Error("Unknown source type '%s' in '%s'",
+                                        type,
+                                        m.group(0))
+                    else:
+                        settings.source_list.append(type_class[type](self._log, settings, path))
+        self._log.Info("[%s] Sources: %s",
+                       settings.public_name,
+                       ",".join([s for s in settings.source_list]))
 
 
 #------------------------

@@ -41,6 +41,11 @@ class SourceReaderBase(object):
         """
         raise NotImplementedError("Must be derived by subclasses")
 
+    
+    def __str__(self):
+        return "<%s '%s'>" % (self.__class__.__name, self._path)
+
+
 #------------------------
 class SourceDirReader(SourceReaderBase):
     """

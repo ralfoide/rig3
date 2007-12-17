@@ -111,7 +111,7 @@ class SiteBase(object):
         Processes the site. Do whatever is needed to get the job done.
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._settings.public_name, self._settings.source_dir, self._settings.dest_dir, self._settings.theme)
+                       self._settings.public_name, self._settings.source_list, self._settings.dest_dir, self._settings.theme)
         self.MakeDestDirs()
         self._CopyMedia()
         site_items = []
