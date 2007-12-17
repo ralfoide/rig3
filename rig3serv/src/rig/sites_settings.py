@@ -130,7 +130,7 @@ class SitesSettings(SettingsBase):
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use.
         """
-        re_def = re.compile("^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*,?(?P<rest>.*)$")
+        re_def = re.compile(r"^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
         type_class = { "dir": SourceDirReader, "dirs": SourceDirReader }
         for k, value in vars.iteritems():
             if k.startswith("sources"):
@@ -144,6 +144,9 @@ class SitesSettings(SettingsBase):
                     value = m.group("rest")
                     type = m.group("type")
                     path = m.group("path")
+                    if path.startswith('"'):
+                        assert path.endswith('"')
+                        path = path[1:-1]
                     if type == "all":
                         for t in ["dirs", "files", "items"]:
                             settings.source_list.append(type_class[t](self._log, settings, path))
@@ -155,7 +158,7 @@ class SitesSettings(SettingsBase):
                         settings.source_list.append(type_class[type](self._log, settings, path))
         self._log.Info("[%s] Sources: %s",
                        settings.public_name,
-                       ",".join([s for s in settings.source_list]))
+                       ",".join([repr(s) for s in settings.source_list]))
 
 
 #------------------------

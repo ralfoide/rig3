@@ -41,9 +41,17 @@ class SourceReaderBase(object):
         """
         raise NotImplementedError("Must be derived by subclasses")
 
+    def __eq__(self, rhs):
+        """
+        Two readers are equal if they have the same type, the same path
+        and the same settings.
+        """
+        return (type(self) == type(rhs) and
+                self._path == rhs._path and
+                self._settings == rhs._settings)
     
-    def __str__(self):
-        return "<%s '%s'>" % (self.__class__.__name, self._path)
+    def __repr__(self):
+        return "<%s '%s'>" % (self.__class__.__name__, self._path)
 
 
 #------------------------
