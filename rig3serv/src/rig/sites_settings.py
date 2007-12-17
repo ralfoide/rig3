@@ -129,11 +129,14 @@ class SitesSettings(SettingsBase):
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use.
         """
-        re_def = re.compile("\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+|\"[^\"]+\")\s*,")
+        re_def = re.compile("^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*,?(P<rest>.*)$")
         for k, v in vars.iteritems():
             if k.startswith("sources"):
-                
+                m = re_def.match(v)
+                if m:
                     
+
+
 
 #------------------------
 # Local Variables:
