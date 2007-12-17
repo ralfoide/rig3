@@ -17,6 +17,7 @@ from rig.site.site_default import SiteDefault
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
+from rig.source_reader import SourceDirReader
 
 #------------------------
 class MockSiteDefault(SiteDefault):
@@ -51,8 +52,10 @@ class SiteDefaultTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        source = SourceDirReader(self.Log(), None,
+                                 os.path.join(self.getTestDataPath(), "album"))
         self.s = SiteSettings(public_name="Test Album",
-                              source_dir=os.path.join(self.getTestDataPath(), "album"),
+                              source_list=[ source ],
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",

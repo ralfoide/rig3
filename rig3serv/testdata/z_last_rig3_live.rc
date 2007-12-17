@@ -10,7 +10,7 @@ theme = default
 
 [rig3_live]
 public_name = Rig3 Live
-source_dir  = album
+sources     = dir:album
 dest_dir    = live_dest
 base_url    =
 tracking_code = <i>tracking code here</i>

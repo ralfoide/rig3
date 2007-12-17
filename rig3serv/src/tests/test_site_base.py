@@ -17,6 +17,7 @@ from rig.site_base import SiteBase
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
+from rig.source_reader import SourceDirReader
 
 #------------------------
 class MockSiteBase(SiteBase):
@@ -48,8 +49,10 @@ class SiteBaseTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        source = SourceDirReader(self.Log(), None,
+                                 os.path.join(self.getTestDataPath(), "album"))
         self.s = SiteSettings(public_name="Test Album",
-                              source_dir=os.path.join(self.getTestDataPath(), "album"),
+                              source_list=[ source ],
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",
@@ -62,14 +65,17 @@ class SiteBaseTest(RigTestCase):
         """
         Test init of Site
         """
+        source = SourceDirReader(self.Log(), None, "/tmp/source/data")
         s = SiteSettings(public_name="Site Name",
-                         source_dir="/tmp/source/data",
+                         source_list=[ source ],
                          dest_dir=self._tempdir,
                          theme=DEFAULT_THEME)
         m = MockSiteBase(self, self.Log(), False, s)
         self.assertNotEqual(None, m)
         self.assertEquals("Site Name", m._settings.public_name)
-        self.assertEquals("/tmp/source/data", m._settings.source_dir)
+        self.assertEquals(
+            [ SourceDirReader(self.Log(), None, "/tmp/source/data") ],
+            m._settings.source_list)
         self.assertEquals(self._tempdir, m._settings.dest_dir)
         self.assertEquals(DEFAULT_THEME, m._settings.theme)
 

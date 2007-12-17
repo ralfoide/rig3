@@ -36,7 +36,9 @@ class SitesSettingsTest(RigTestCase):
         self.assertIsInstance(SiteSettings, s)
         self.assertEquals("blue_template", s.theme)
         self.assertEquals("Site 1", s.public_name)
-        self.assertEquals("/tmp/data/site1", s.source_list)
+        self.assertListEquals(
+            [ SourceDirReader(self.Log(), s, "/tmp/data/site1") ],
+            s.source_list)
         self.assertEquals("/tmp/generated/site1", s.dest_dir)
 
     def testProcessSources(self):

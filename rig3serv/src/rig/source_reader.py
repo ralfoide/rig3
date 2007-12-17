@@ -8,10 +8,12 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 import re
 from datetime import datetime
 
 from rig.source_item import SourceDir
+from rig.parser.dir_parser import DirParser
 
 #------------------------
 class SourceReaderBase(object):
@@ -91,10 +93,10 @@ class SourceDirReader(SourceReaderBase):
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Debug("[%s] Process '%s' to '%s'",
-                            self._settings.public_name,
+                            self._settings.public_name or "[Unnamed Site]",
                            source_dir.rel_curr, dest_dir.rel_curr)
             if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                date = datetime.fromstimestamp(self._DirTimeStamp(source_dir.abs_dir))
+                date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
                 item = SourceDir(date, source_dir, all_files)
                 items.append(item)
         return items
