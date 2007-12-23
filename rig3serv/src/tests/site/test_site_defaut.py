@@ -152,7 +152,9 @@ class SiteDefaultTest(RigTestCase):
     def testGenerateItems_Izu(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
-        item = m.GenerateItem(SourceDir(datetime. RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
+        item = m.GenerateItem(SourceDir(datetime.today(),
+                                        RelDir(source_dir, "2007-10-07_Folder 1"),
+                                        [ "index.izu" ]))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
@@ -163,7 +165,9 @@ class SiteDefaultTest(RigTestCase):
     def testGenerateItems_Html(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
-        item = m.GenerateItem(RelDir(source_dir, "2006-05_Movies"), [ "index.html" ])
+        item = m.GenerateItem(SourceDir(datetime.today(),
+                                        RelDir(source_dir, "2006-05_Movies"),
+                                        [ "index.html" ]))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',

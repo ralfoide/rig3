@@ -66,7 +66,7 @@ class SiteItem(object):
                     self.content == rhs.content and
                     self.categories == rhs.categories and
                     self.rel_filename == rhs.rel_filename)
-        return super(SiteItem, self).__eq__(rhs)
+        return False
 
 
 #------------------------

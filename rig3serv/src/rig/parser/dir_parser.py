@@ -29,7 +29,8 @@ class RelDir(object):
             return (self.abs_base == rhs.abs_base and
                     self.rel_curr == rhs.rel_curr and
                     self.abs_dir  == rhs.abs_dir)
-        return False
+        else:
+            return False
 
     def __str__(self):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)
@@ -194,16 +195,19 @@ class DirParser(object):
                 _excl_file.close()
         return names
 
-    def __eq__(self, other):
+    def __eq__(self, rhs):
         """
         Equality of two DirParser is defined as equality of all of its
         members, i.e. absolute directories, file list and sub dirs list.
         """
-        eq = (self.AbsSourceDir() == other.AbsSourceDir()
-              and self.AbsDestDir() == other.AbsDestDir()
-              and self.Files() == other.Files()
-              and self.SubDirs() == other.SubDirs())
-        return eq
+        if isinstance(rhs, DirParser):
+            eq = (self.AbsSourceDir() == rhs.AbsSourceDir()
+                  and self.AbsDestDir() == rhs.AbsDestDir()
+                  and self.Files() == rhs.Files()
+                  and self.SubDirs() == rhs.SubDirs())
+            return eq
+        else:
+            return False
 
     def __ne__(self, other):
         """

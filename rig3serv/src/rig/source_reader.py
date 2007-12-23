@@ -48,9 +48,12 @@ class SourceReaderBase(object):
         Two readers are equal if they have the same type, the same path
         and the same settings.
         """
-        return (type(self) == type(rhs) and
-                self._path == rhs._path and
-                self._settings == rhs._settings)
+        if isinstance(rhs, SourceReaderBase):
+            return (type(self) == type(rhs) and
+                    self._path == rhs._path and
+                    self._settings == rhs._settings)
+        else:
+            return False
     
     def __repr__(self):
         return "<%s '%s'>" % (self.__class__.__name__, self._path)
