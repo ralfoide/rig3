@@ -41,7 +41,7 @@ class MockSiteBase(SiteBase):
     def GeneratePages(self, categories, items):
         pass
 
-    def GenerateItem(self, source_dir, all_files):
+    def GenerateItem(self, source_item):
         return None
 
 #------------------------
@@ -90,7 +90,7 @@ class SiteBaseTest(RigTestCase):
     def testAlbum(self):
         m = MockSiteBase(self, self.Log(), False, self.s)
         m.Process()
-    
+
     def testParse(self):
         m = MockSiteBase(self, self.Log(), False, self.s)
         p = m._Parse(m._settings.source_dir, m._settings.dest_dir)
