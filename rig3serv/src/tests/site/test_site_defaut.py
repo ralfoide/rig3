@@ -18,6 +18,7 @@ from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
+from rig.source_item import SourceDir
 
 #------------------------
 class MockSiteDefault(SiteDefault):
@@ -151,7 +152,7 @@ class SiteDefaultTest(RigTestCase):
     def testGenerateItems_Izu(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
-        item = m.GenerateItem(RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
+        item = m.GenerateItem(SourceDir(datetime. RelDir(source_dir, "2007-10-07_Folder 1"), [ "index.izu" ])
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)

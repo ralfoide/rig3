@@ -5,6 +5,26 @@ Rig3 module: Site definition and actions
 
 Part of Rig3.
 License GPL.
+
+
+Workflow:
+- rig3 uses rig.site.CreateSite(SiteSettings)
+    - rig.site.CreateSite creates SiteDefault(SiteSettings)
+        - creates SiteBase(SiteSettings)
+- rig3 calls SiteBase.Process()                      (never overriden)
+    - Call self.MakeDestDirs()                       (always overriden)
+    - Call self._CopyMedia()                         (not overriden)
+    - For each source: Call self._ProcessSourceItems (never overriden)
+        - For each item: Calls self.GenerateItem     (always overriden)
+    - Calls self._GollectCategories                  (never overriden)
+    - Calls self.GeneratePages                       (always overriden)
+
+Derives classes MUST implement:
+- SiteBase.MakeDestDirs()
+- SiteBase.GenerateItem()
+- SiteBase.GeneratePages()
+
+
 """
 __author__ = "ralfoide@gmail.com"
 
@@ -117,7 +137,7 @@ class SiteBase(object):
         site_items = []
         for source in self._settings.source_list:
             self._ProcessSourceItems(source, site_items)
-        categories = self._GetCategories(site_items)
+        categories = self._GollectCategories(site_items)
 
         self._log.Info("[%s] Found %d site_items, %d categories",
                self._settings.public_name,
@@ -167,7 +187,7 @@ class SiteBase(object):
 
     # Utilities, overridable for unit tests
 
-    def _GetCategories(self, site_items):
+    def _GollectCategories(self, site_items):
         """
         Get all categories used in all site items.
         Returns a list of string, sorted.

@@ -29,6 +29,14 @@ class SourceItem(object):
 class SourceDir(SourceItem):
     """
     Represents a directory item from a SourceDirReader.
+    
+    Such a directory generally contains an index.izu or index.html
+    and a bunch of image files.
+
+    Paremeters:
+    - date (datetime): Date of the directory (i.e. most recent item)
+    - source_dir (RelDir): absolute+relative source directory
+    - all_files (list [string]): All interesting files in this directory
     """
     def __init__(self, date, source_dir, all_files):
         super(SourceItem, self).__init__(date)
