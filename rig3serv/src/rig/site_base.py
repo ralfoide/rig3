@@ -196,8 +196,9 @@ class SiteBase(object):
         """
         categories = {}
         for item in site_items:
-            for c in item.categories:
-                categories[c] = 1
+            if item:
+                for c in item.categories:
+                    categories[c] = 1
         categories = categories.keys()
         categories.sort()
         return categories

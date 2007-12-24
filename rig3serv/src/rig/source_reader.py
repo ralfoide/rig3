@@ -35,8 +35,12 @@ class SourceReaderBase(object):
 
     def Parse(self, dest_dir):
         """
-        Returns a list of SourceItem.
-        The source directory is always the internal path.
+        Parses the source and returns a list of SourceItem.
+        The source directory is always the internal path given to the
+        constructor of the source reader.
+        
+        Parameter:
+        - dest_dir (string): Destination directory.
         
         This method is abstract and must always be implemented by derived
         classes. Derived classes should not call their super.
@@ -85,6 +89,9 @@ class SourceDirReader(SourceReaderBase):
         
         An item in a RIG site is a directory that contains either an
         index.izu and/or JPEG images.
+        
+        Parameter:
+        - dest_dir (string): Destination directory.
         
         Returns a list of SourceItem.
         """
