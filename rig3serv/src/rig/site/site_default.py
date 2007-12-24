@@ -153,7 +153,11 @@ class SiteDefault(SiteBase):
     def GenerateItem(self, source_item):
         """
         Generates a new photoblog entry, which may have an index and/or may have an album.
-        Returns an SiteItem or None
+
+        Returns a SiteItem that describes an entry for the site's pages.
+        
+        If the source item is not suitable (i.e. generates no data),
+        the method must return None and the caller must be prepared to ignore it.
 
         Arguments:
         - source_item: An instance of SourceItem.

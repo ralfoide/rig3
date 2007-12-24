@@ -113,8 +113,13 @@ class SiteBase(object):
     def GenerateItem(self, source_item):
         """
         Generates a new photoblog entry, which may have an index and/or may
-        have an album. Returns a SiteItem or None.
+        have an album.
         
+        Returns a SiteItem that describes an entry for the site's pages.
+        
+        If the source item is not suitable (i.e. generates no data),
+        the method must return None and the caller must be prepared to ignore it.
+
         This basically converts a SourceItem into a SiteItem.
 
         Arguments:
@@ -182,7 +187,8 @@ class SiteBase(object):
         """
         for source_item in source.Parse(self._settings.dest_dir):
             site_item = self.GenerateItem(source_item)
-            in_out_items.append(site_item)
+            if site_item:
+                in_out_items.append(site_item)
         return in_out_items
 
     # Utilities, overridable for unit tests
