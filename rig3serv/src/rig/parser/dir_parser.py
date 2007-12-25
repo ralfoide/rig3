@@ -36,9 +36,9 @@ class RelDir(object):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)
 
     def __repr__(self):
-        return "%s[%s => %s]" % (super(RelDir, self).__repr__(),
-                                 self.abs_base,
-                                 self.rel_curr)
+        return "[%s %s => %s]" % (self.__class__.__name__,
+                                  self.abs_base,
+                                  self.rel_curr)
 
 #------------------------
 class DirParser(object):
@@ -104,16 +104,23 @@ class DirParser(object):
         self._files = []
         self._sub_dirs = []
         self._rel_curr_dir = rel_curr_dir
+
         if isinstance(dir_pattern, str):
             dir_pattern = re.compile(dir_pattern)
+        
         if isinstance(file_pattern, str):
             file_pattern = re.compile(file_pattern)
+        
         abs_source_curr_dir = self._abs_source_dir
+        
         if rel_curr_dir:
             abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
+        
         self._log.Debug("Parse dir: %s", abs_source_curr_dir)
+        
         names = self._listdir(abs_source_curr_dir)
         names = self._RemoveExclude(abs_source_curr_dir, names)
+        
         for name in names:
             full_path = os.path.join(abs_source_curr_dir, name)
             if self._isdir(full_path):
@@ -145,7 +152,11 @@ class DirParser(object):
         Generator that traverses the directories in the directory structure.
         For each directory, returns a tuple (source_dir, dest_dir, all_files).
         Processes directories deep-first in sorted order.
+        
         The all_files list is not sorted in any particular order.
+        The all_files list can be empty if there are no interesting files in this
+        directory. It's up to the caller to decide how to handle this.
+        
         Callers should treat the tuples as immutable and not change the values.
         """
         yield (self.AbsSourceDir(), self.AbsDestDir(), self._files)

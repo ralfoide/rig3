@@ -1,13 +1,8 @@
 ---- TODO ----
 
 20071216 Tests:  UTs for SiteSettings._ProcessSources
-20071215 Tests:  Update testdata .rc + z_last/live test
 
-20071215 Engine: Investigate PIL support (for resizing, for header_img guess, etc.)
 20071206 Izu:    [label|rig:image_glob] (with thumbnail)
-
-20071202 Engine: Refactor source input to accept multiple sources types + paths
-20071202 Engine: Site settings, source_dir to sources 
 
 20071123 Engine: Site settings, rig_url, rig_img_url, rig_album_url
 20071123 Engine: Site settings, link_to_rig_album, link_to_rig_img
@@ -34,11 +29,14 @@
 20071006 Engine: Generate index page, UT
 20071006 Engine: Generate categories pages, UT
 
+20071215 Engine: Investigate PIL support (for resizing, for header_img guess, etc.)
+
 
 ---- Done Version 0.2 ----
 
 20071223 Tests:    UTs for all new SourceItem/Reader
 20071223 Tests:    Update site settings UTs
+20071220 Tests:    Update testdata .rc + z_last/live test
 20071216 Engine:   SiteSettings._ProcessSources, need UT
 20071215 Engine:   Refactor SourceDirReader + SourceDir, use in SiteBase/default
 20071215 Template: Added header_img_height to SitesSettings

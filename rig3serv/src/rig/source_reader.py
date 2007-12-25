@@ -102,13 +102,15 @@ class SourceDirReader(SourceReaderBase):
  
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            self._log.Debug("[%s] Process '%s' to '%s'",
-                            self._settings and self._settings.public_name or "[Unnamed Site]",
-                           source_dir.rel_curr, dest_dir.rel_curr)
-            if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
-                item = SourceDir(date, source_dir, all_files)
-                items.append(item)
+            if all_files:
+                # Only process directories that have at least one file of interest
+                self._log.Debug("[%s] Process '%s' to '%s'",
+                                self._settings and self._settings.public_name or "[Unnamed Site]",
+                               source_dir.rel_curr, dest_dir.rel_curr)
+                if self._UpdateNeeded(source_dir, dest_dir, all_files):
+                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
+                    item = SourceDir(date, source_dir, all_files)
+                    items.append(item)
         return items
 
 

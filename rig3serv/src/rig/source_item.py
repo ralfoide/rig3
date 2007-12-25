@@ -25,6 +25,11 @@ class SourceItem(object):
         self.date = date
         self.categories = categories or []
 
+    def __eq__(self, rhs):
+        return (isinstance(rhs, SourceItem) and
+                self.date == rhs.date and
+                self.categories == rhs.categories)
+
 #------------------------
 class SourceDir(SourceItem):
     """
@@ -39,9 +44,23 @@ class SourceDir(SourceItem):
     - all_files (list [string]): All interesting files in this directory
     """
     def __init__(self, date, source_dir, all_files):
-        super(SourceItem, self).__init__(date)
+        super(SourceDir, self).__init__(date)
         self.source_dir = source_dir
         self.all_files = all_files
+
+    def __eq__(self, rhs):
+        if not super(SourceDir, self).__eq__(rhs):
+            return False
+        return (isinstance(rhs, SourceDir) and
+                self.source_dir == rhs.source_dir and
+                self.all_files == rhs.all_files)
+
+    def __repr__(self):
+        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
+                                          self.date,
+                                          self.source_dir,
+                                          self.all_files,
+                                          self.categories)
 
 # TODO: SourceFile, SourceBlog
 #    - content: the data of the file

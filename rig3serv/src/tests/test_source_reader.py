@@ -9,12 +9,14 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 import os
+from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
 from rig.parser.dir_parser import RelDir
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.source_reader import SourceReaderBase, SourceDirReader
+from rig.source_item import SourceDir
 
 #------------------------
 class SourceReaderBaseTest(RigTestCase):
@@ -67,10 +69,7 @@ class SourceDirReaderTest(RigTestCase):
         p = self.m.Parse(self._tempdir)
         
         self.assertListEquals(
-            [ ( RelDir(self.path, ""),
-                RelDir(self._tempdir, ""),
-                [] ),
-              ( RelDir(self.path, "2006-05_Movies"),
+            [ ( RelDir(self.path, "2006-05_Movies"),
                 RelDir(self._tempdir, "2006-05_Movies"),
                 [ "index.html" ] ),
               ( RelDir(self.path, "2006-08-05 20.00.38  Progress"),
@@ -78,34 +77,27 @@ class SourceDirReaderTest(RigTestCase):
                 [ "index.html" ] ),
               ( RelDir(self.path, "2007-10-07 11.00_Folder 2"),
                 RelDir(self._tempdir, "2007-10-07 11.00_Folder 2"),
-                [ "index.izu"]),
+                [ "index.izu"] ),
               ( RelDir(self.path, "2007-10-07_Folder 1"),
                 RelDir(self._tempdir, "2007-10-07_Folder 1"),
                 [ "T12896_tiny_jpeg.jpg", "index.izu" ] ),
              ],
             self.m.update_needed_requests)
 
-#===============================================================================
-#        self.assertIsInstance(DirParser, p)
-#        self.assertListEquals([], p.Files())
-#        self.assertEquals(4, len(p.SubDirs()))
-#        self.assertIsInstance(DirParser, p.SubDirs()[0])
-#        self.assertIsInstance(DirParser, p.SubDirs()[1])
-#        self.assertIsInstance(DirParser, p.SubDirs()[2])
-#        self.assertIsInstance(DirParser, p.SubDirs()[3])
-#        self.assertEquals("2006-05_Movies", p.SubDirs()[0].AbsSourceDir().rel_curr)
-#        self.assertEquals("2006-08-05 20.00.38  Progress", p.SubDirs()[1].AbsSourceDir().rel_curr)
-#        self.assertEquals("2007-10-07 11.00_Folder 2", p.SubDirs()[2].AbsSourceDir().rel_curr)
-#        self.assertEquals("2007-10-07_Folder 1", p.SubDirs()[3].AbsSourceDir().rel_curr)
-#        self.assertListEquals([ "index.html"], p.SubDirs()[0].Files())
-#        self.assertListEquals([ "index.html"], p.SubDirs()[1].Files())
-#        self.assertListEquals([ "index.izu"], p.SubDirs()[2].Files())
-#        self.assertListEquals([ "T12896_tiny_jpeg.jpg", "index.izu"], p.SubDirs()[3].Files())
-#        self.assertListEquals([], p.SubDirs()[0].SubDirs())
-#        self.assertListEquals([], p.SubDirs()[1].SubDirs())
-#        self.assertListEquals([], p.SubDirs()[2].SubDirs())
-#        self.assertListEquals([], p.SubDirs()[3].SubDirs())
-#===============================================================================
+        self.assertListEquals(
+            [ SourceDir(datetime.fromtimestamp(2),
+                        RelDir(self.path, "2006-05_Movies"),
+                        [ "index.html" ] ), 
+              SourceDir(datetime.fromtimestamp(3),
+                        RelDir(self.path, "2006-08-05 20.00.38  Progress"),
+                        [ "index.html" ] ), 
+              SourceDir(datetime.fromtimestamp(4),
+                        RelDir(self.path, "2007-10-07 11.00_Folder 2"),
+                        [ "index.izu"] ), 
+              SourceDir(datetime.fromtimestamp(5),
+                        RelDir(self.path, "2007-10-07_Folder 1"),
+                        [ "T12896_tiny_jpeg.jpg", "index.izu" ] ) ], 
+            p)
 
 #------------------------
 # Local Variables:
