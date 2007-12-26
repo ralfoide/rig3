@@ -27,13 +27,11 @@ class CreateSiteTest(RigTestCase):
 
     def testCreateSite_Ralf(self):
         self.m.theme = "ralf"
-        self.assertRaises(ImportError, CreateSite, self.Log(), False, self.m)
-        #self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
+        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
 
     def testCreateSite_Magic(self):
         self.m.theme = "magic"
-        self.assertRaises(ImportError, CreateSite, self.Log(), False, self.m)
-        #self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
+        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
 
     def testCreateSite_Other(self):
         self.m.theme = "bogus theme name"

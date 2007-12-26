@@ -1,7 +1,9 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Rig3 module: Site definition and actions
+Rig3 module: Site generator for "default" theme 
+
+Site generators are instantiated by rig.site.__init__.py.CreateSite()
 
 Part of Rig3.
 License GPL.
@@ -24,7 +26,10 @@ from rig.version import Version
 #------------------------
 class SiteDefault(SiteBase):
     """
-    Describes on site and what we can do with it.
+    Describes and how to generate the content of a site using the "default" theme.
+    
+    Right now the "magic" theme is identicaly to the "default" theme
+    so the implementation is empty. This is expected to change later.
     """
     INDEX_IZU = "index.izu"
     INDEX_HTML = "index.html"
@@ -415,7 +420,7 @@ class SiteDefault(SiteBase):
         Returns the generated HTML as a string.
         """
         assert "theme" in keywords
-        template_file = os.path.join(self._TemplateDir(), keywords["theme"], template)
+        template_file = self._TemplatePath(path=template, **keywords)
         template = Template(self._log, file=template_file)
         result = template.Generate(keywords)
         return result

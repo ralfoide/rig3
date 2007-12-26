@@ -168,7 +168,7 @@ class SiteBase(object):
             fdest.write(result)
             fdest.close()
 
-        media = os.path.join(self._TemplateDir(), self._settings.theme, self.MEDIA_DIR)
+        media = self._TemplatePath(self.MEDIA_DIR)
         if os.path.isdir(media):
             self._CopyDir(media, os.path.join(self._settings.dest_dir, self.MEDIA_DIR),
                           filter_ext={ ".css": _apply_template })
@@ -190,6 +190,26 @@ class SiteBase(object):
             if site_item:
                 in_out_items.append(site_item)
         return in_out_items
+
+    def _TemplatePath(self, path, **keywords):
+        """
+        Returns the relative path to "path" under the theme's template directory.
+        
+        The default is to extract the theme given as a keyword parameter,
+        or to get the theme from the site settings.
+        
+        Returns an os.path.join of _TemplateDir, theme and path.
+        
+        Subclassing: some site generators may want to override the theme
+        name used for the template directory (for example to always return
+        stuff from the default directory.) Mock objects might want to change
+        the _TemplateDir method instead.
+        """
+        if keywords and "theme" in keywords:
+            theme = keywords["theme"]
+        else:
+            theme = self._settings.theme
+        return os.path.join(self._TemplateDir(), theme, path)
 
     # Utilities, overridable for unit tests
 

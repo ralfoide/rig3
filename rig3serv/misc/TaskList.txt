@@ -1,7 +1,6 @@
 ---- TODO ----
 
 20071123 Engine:   FileItemsReader for single files <date><title>.izu/html
-20071225 Template: Separate theme for MM (deriving from default)
 20071225 Template: Placeholder ralf theme (deriving from default)
 20071123 Engine:   Site settings, category_filter
 20071225 Engine:   Site settings, Disable auto-image insertion
@@ -13,6 +12,8 @@
 20071123 Engine:   Site settings, permalinks
 20071123 Engine:   Site settings, toc
 20071123 Engine:   Site settings, link_to_rig=album|img(image)
+
+20071226 Tests:    UTs for SiteRalf / SiteMagic
 
 20071123 Engine:   Source izu-blog files
 20071123 Izu:      Raw HTML tag
@@ -32,6 +33,11 @@
 
 20071123 Engine:   Site settings, rss
 20071215 Engine:   Investigate PIL support (for resizing, for header_img guess, etc.)
+
+
+---- Done Version 0.3 ----
+
+20071225 Template: Separate theme for MM (deriving from default) (=> magic+ralf)
 
 
 ---- Done Version 0.2 ----
