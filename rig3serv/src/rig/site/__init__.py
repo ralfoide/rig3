@@ -11,6 +11,14 @@ def CreateSite(log, dry_run, settings):
     """
     """
     theme = settings.theme
-    assert theme == "default"
-    from rig.site.site_default import SiteDefault
-    return SiteDefault(log, dry_run, settings)
+    if theme == "default":
+        from rig.site.site_default import SiteDefault
+        return SiteDefault(log, dry_run, settings)
+    elif theme == "ralf":
+        from rig.site.site_ralf import SiteRalf
+        return SiteRalf(log, dry_run, settings)
+    elif theme == "magic":
+        from rig.site.site_magic import SiteMagic
+        return SiteMagic(log, dry_run, settings)
+    else:
+        raise NotImplementedError("Theme %s is not implemented" % theme)
