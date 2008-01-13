@@ -165,7 +165,7 @@ class SourceFileReader(SourceReaderBase):
     """
     Source reader for file-based entries.
     
-    Only files  which name match the specified FILE_PATTERN regexp are considered valid.
+    Only files which name match the specified FILE_PATTERN regexp are considered valid.
     """
 
     FILE_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
@@ -189,24 +189,14 @@ class SourceFileReader(SourceReaderBase):
         
         Returns a list of SourceItem.
         """
-        # TODO *NOT FINISHED*
-        raise NotImplementedError("not finished")
-        tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
-                                          os.path.realpath(dest_dir),
-                                          file_pattern=self.VALID_FILES,
-                                          dir_pattern=self.DIR_PATTERN)
- 
-        items = []
-        for source_dir, dest_dir, all_files in tree.TraverseDirs():
-            if all_files:
-                # Only process directories that have at least one file of interest
-                self._log.Debug("[%s] Process '%s' to '%s'",
-                                self._settings and self._settings.public_name or "[Unnamed Site]",
-                               source_dir.rel_curr, dest_dir.rel_curr)
-                if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
-                    item = SourceDir(date, source_dir, all_files)
-                    items.append(item)
+        items = []        
+        if FILE_PATTERN.search(self.path):
+            self._log.Debug("[%s] Process '%s' to '%s'",
+                            self._settings and self._settings.public_name or "[Unnamed Site]",
+                           source_dir.rel_curr, dest_dir.rel_curr)
+            date = datetime.fromtimestamp(self._FileTimeStamp(source_dir.abs_dir))
+            item = SourceDir(date, source_dir, all_files)
+            items.append(item)
         return items
 
 
