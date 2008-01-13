@@ -18,7 +18,7 @@ __author__ = "ralfoide@gmail.com"
 import re
 import ConfigParser
 from rig.settings_base import SettingsBase
-from rig.source_reader import SourceDirReader
+from rig.source_reader import SourceDirReader, SourceFileReader
 from rig.site_base import DEFAULT_THEME
 
 #------------------------
@@ -131,7 +131,8 @@ class SitesSettings(SettingsBase):
         - vars is a dict { var_name: value }, the new values to use.
         """
         re_def = re.compile(r"^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
-        type_class = { "dir": SourceDirReader, "dirs": SourceDirReader }
+        type_class = { "dir": SourceDirReader, "dirs": SourceDirReader,
+                       "file": SourceFileReader, "files": SourceFileReader }
         for k, value in vars.iteritems():
             if k.startswith("sources"):
                 old = None

@@ -3,6 +3,8 @@
 """
 Rig3 module: One-line module description
 
+Note: SourceReaderBase derived classes defined here are created in SitesSettings._ProcessSources()
+
 Part of Rig3.
 License GPL.
 """
@@ -156,6 +158,56 @@ class SourceDirReader(SourceReaderBase):
         c = os.path.getctime(dir)
         m = os.path.getmtime(dir)
         return max(c, m)
+
+
+#------------------------
+class SourceFileReader(SourceReaderBase):
+    """
+    Source reader for file-based entries.
+    
+    Only files  which name match the specified FILE_PATTERN regexp are considered valid.
+    """
+
+    FILE_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
+
+    def __init__(self, log, settings, path):
+        # TODO: the patterns must be overridable via site settings
+        super(SourceDirReader, self).__init__(log, settings, path)
+
+    def Parse(self, dest_dir):
+        """
+        Calls the directory parser on the source vs dest directories
+        with the default dir/file patterns.
+
+        Then traverses the source tree and generates new items as needed.
+        
+        An item in a RIG site is a directory that contains either an
+        index.izu and/or JPEG images.
+        
+        Parameter:
+        - dest_dir (string): Destination directory.
+        
+        Returns a list of SourceItem.
+        """
+        # TODO *NOT FINISHED*
+        raise NotImplementedError("not finished")
+        tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
+                                          os.path.realpath(dest_dir),
+                                          file_pattern=self.VALID_FILES,
+                                          dir_pattern=self.DIR_PATTERN)
+ 
+        items = []
+        for source_dir, dest_dir, all_files in tree.TraverseDirs():
+            if all_files:
+                # Only process directories that have at least one file of interest
+                self._log.Debug("[%s] Process '%s' to '%s'",
+                                self._settings and self._settings.public_name or "[Unnamed Site]",
+                               source_dir.rel_curr, dest_dir.rel_curr)
+                if self._UpdateNeeded(source_dir, dest_dir, all_files):
+                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
+                    item = SourceDir(date, source_dir, all_files)
+                    items.append(item)
+        return items
 
 
 #------------------------

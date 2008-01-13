@@ -99,6 +99,10 @@ class SourceDirReaderTest(RigTestCase):
                         [ "T12896_tiny_jpeg.jpg", "index.izu" ] ) ], 
             p)
 
+
+# TODO: SourceFileReader
+raise NotImplementedError("SourceFileReader")
+
 #------------------------
 # Local Variables:
 # mode: python

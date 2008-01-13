@@ -59,6 +59,9 @@ class SitesSettingsTest(RigTestCase):
         self.assertListEquals(
             [ SourceDirReader(log, s, "/my/path1,path2") ],
             s.source_list)
+        
+        # TODO: SourceFileReader
+        raise NotImplementedError("SourceFileReader")
 
 #------------------------
 # Local Variables:
