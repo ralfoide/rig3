@@ -3,13 +3,6 @@
 """
 Rig3 module: Settings for top-level sites definitions.
 
-Each site has the following definitions (all are strings):
-- internal_name: A compact identifier, ideally short and without spaces
-- public_name: The public name for the site.
-- source_dir: The absolute path where sources are located
-- dest_dir: The absolute path where files are generated
-- theme: The identifier for the generated files' theme.
-
 Part of Rig3.
 License GPL.
 """

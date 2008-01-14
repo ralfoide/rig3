@@ -215,10 +215,10 @@ class SourceFileReader(SourceReaderBase):
                            source_dir.rel_curr, dest_dir.rel_curr)
             for file in all_files:
                 if FILE_PATTERN.search(file):
-                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
-                    source_file = RelFile(source_dir.abs_dir,
-                                          os.path.join(source_dir.rel_curr, file))
-                    item = SourceFile(date, source_file)
+                    rel_file = RelFile(source_dir.abs_dir,
+                                       os.path.join(source_dir.rel_curr, file))
+                    date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_dir))
+                    item = SourceFile(date, rel_file)
                     items.append(item)
         return items
 

@@ -176,27 +176,27 @@ class SiteDefault(SiteBase):
         html_file = None
 
         if isinstance(source_item, SourceDir):
-            source_dir = source_item.source_dir
+            rel_dir = source_item.rel_dir
             all_files = source_item.all_files
             may_have_images = True
-            title = os.path.basename(source_dir.rel_curr)
+            title = os.path.basename(rel_dir.rel_curr)
             if self.INDEX_IZU in all_files:
-                izu_file = os.path.join(source_dir.abs_dir, self.INDEX_IZU)
-                main_filename = RelFile(source_dir.abs_dir,
-                                        os.path.join(source_dir.rel_curr, self.INDEX_IZU))
+                izu_file = os.path.join(rel_dir.abs_dir, self.INDEX_IZU)
+                main_filename = RelFile(rel_dir.abs_dir,
+                                        os.path.join(rel_dir.rel_curr, self.INDEX_IZU))
             elif self.INDEX_HTML in all_files:
-                html_file = os.path.join(source_dir.abs_dir, self.INDEX_HTML)
-                main_filename = RelFile(source_dir.abs_dir,
-                                        os.path.join(source_dir.rel_curr, self.INDEX_HTML))
+                html_file = os.path.join(rel_dir.abs_dir, self.INDEX_HTML)
+                main_filename = RelFile(rel_dir.abs_dir,
+                                        os.path.join(rel_dir.rel_curr, self.INDEX_HTML))
 
         elif isinstance(source_item, SourceFile):
-            source_file = source_item.source_file
-            title = os.path.basename(source_file.rel_curr)
-            main_filename = source_file
-            if source_file.rel_curr.endswith(self.EXT_IZU):
-                izu_file = source_file.abs_dir
-            elif source_file.rel_curr.endswith(self.EXT_HTML):
-                html_file = source_file.abs_dir
+            rel_file = source_item.rel_file
+            title = os.path.basename(rel_file.rel_curr)
+            main_filename = rel_file
+            if rel_file.rel_curr.endswith(self.EXT_IZU):
+                izu_file = rel_file.abs_dir
+            elif rel_file.rel_curr.endswith(self.EXT_HTML):
+                html_file = rel_file.abs_dir
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
@@ -211,9 +211,13 @@ class SiteDefault(SiteBase):
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
-            album = urllib.quote(source_dir.rel_curr)
-            keywords = { "rig_curr_album_link":
-                            self._settings.rig_url + 'index.php?album=' + album }
+            if may_have_images:
+                album = urllib.quote(rel_dir.rel_curr)
+                keywords = { "rig_curr_album_link":
+                                self._settings.rig_url + 'index.php?album=' + album }
+            else:
+                keywords = {}
+
             for s in sections.iterkeys():
                 template = Template(self._log, source=sections[s])
                 sections[s] = template.Generate(keywords)
@@ -232,7 +236,7 @@ class SiteDefault(SiteBase):
 
         if may_have_images and not "images" in sections:
             # only a SourceDir can have images in the same folder...
-            html_img = self._GenerateImages(source_dir, all_files)
+            html_img = self._GenerateImages(rel_dir, all_files)
             if html_img:
                 sections["images"] = html_img
 

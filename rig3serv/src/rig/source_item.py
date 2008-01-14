@@ -41,25 +41,25 @@ class SourceDir(SourceItem):
 
     Paremeters:
     - date (datetime): Date of the directory (i.e. most recent item)
-    - source_dir (RelDir): absolute+relative source directory
+    - rel_dir (RelDir): absolute+relative source directory
     - all_files (list [string]): All interesting files in this directory
     """
-    def __init__(self, date, source_dir, all_files):
+    def __init__(self, date, rel_dir, all_files):
         super(SourceDir, self).__init__(date)
-        self.source_dir = source_dir
+        self.rel_dir = rel_dir
         self.all_files = all_files
 
     def __eq__(self, rhs):
         if not super(SourceDir, self).__eq__(rhs):
             return False
         return (isinstance(rhs, SourceDir) and
-                self.source_dir == rhs.source_dir and
+                self.rel_dir == rhs.rel_dir and
                 self.all_files == rhs.all_files)
 
     def __repr__(self):
         return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
                                           self.date,
-                                          self.source_dir,
+                                          self.rel_dir,
                                           self.all_files,
                                           self.categories)
 
@@ -70,22 +70,22 @@ class SourceFile(SourceItem):
     
     Paremeters:
     - date (datetime): Date of the file
-    - source_file (RelFile): absolute+relative source file
+    - rel_file (RelFile): absolute+relative source file
     """
-    def __init__(self, date, source_file):
+    def __init__(self, date, rel_file):
         super(SourceFile, self).__init__(date)
-        self.source_file = source_file
+        self.rel_file = rel_file
 
     def __eq__(self, rhs):
         if not super(SourceFile, self).__eq__(rhs):
             return False
         return (isinstance(rhs, SourceFile) and
-                self.source_file == rhs.source_file)
+                self.rel_file == rhs.rel_file)
 
     def __repr__(self):
         return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
                                           self.date,
-                                          self.source_file,
+                                          self.rel_file,
                                           self.categories)
 
 

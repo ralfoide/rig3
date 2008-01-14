@@ -19,12 +19,12 @@ class SourceDirTest(RigTestCase):
 
     def testSourceDir(self):
         date = datetime.today()
-        source_dir = RelDir("/tmp", "foo")
+        rel_dir = RelDir("/tmp", "foo")
         all_files = [ "index.txt", "image.jpg" ]
-        s = SourceDir(date, source_dir, all_files)
+        s = SourceDir(date, rel_dir, all_files)
         self.assertNotEqual(None, s)
         self.assertSame(date, s.date)
-        self.assertSame(source_dir, s.source_dir)
+        self.assertSame(rel_dir, s.rel_dir)
         self.assertSame(all_files, s.all_files)
 
 #------------------------
@@ -32,11 +32,11 @@ class SourceFileTest(RigTestCase):
 
     def testSourceFile(self):
         date = datetime.today()
-        source_file = RelFile("/tmp", "foo.txt")
-        s = SourceFile(date, source_file)
+        rel_file = RelFile("/tmp", "foo.txt")
+        s = SourceFile(date, rel_file)
         self.assertNotEqual(None, s)
         self.assertSame(date, s.date)
-        self.assertSame(source_file, s.source_file)
+        self.assertSame(rel_file, s.rel_file)
 
 
 #------------------------
