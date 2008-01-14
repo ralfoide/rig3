@@ -530,3 +530,108 @@ Example:
  sources2 = all: /more/stuff
  sources_001 = all: /even/more/stuff
  sourcesStuff = all: /some/stuff
+
+----
+20080113 Partial Updates
+
+One of the initial design goals was to perform "partial" updates, i.e.
+make sure the minimum is updated each time rig3 runs. Originally I even
+thought it should be "incremental" updates.
+
+There's currently no support for this at all. There's a vague attempt at
+deciding if source directories need to be updated, but the reality is that
+the current implementation can't do it: this is done when the source
+directories are parsed, and there is no knowledge of what will be generated
+at that point, so no comparison can be made.
+
+So let's revisit the issue.
+
+First, what content is generated and how?
+Currently we can read "source items" from 3 kind of sources: an item can
+originate from a directory (composed of an index and images), or a single
+file, or it can be a multi-item file (aka izumi blogs). There's a parser
+that visit the sources and generates an internal list of items. These items
+''will'' correspond to one generated "blog item", yet that logic is isolated
+in the site generation.
+
+So the notion of "partial" update does not matter at the source-reading level.
+Whatever needs to be generated, we need to know what source items we have first.
+For directory and single-file-based items, this is not really an issue since
+the intermediate item doesn't contain any content, just a file name.
+For multi-item files like izumi blogs, that's more of a concern since we do
+need to actually parse the file to generate the multiple intermediate items.
+
+Now, the default site generator takes all these intermediate items and maps
+them to a single final "site item" (aka a blog item). However that's a two
+steps process. The first one is to render the templates into HTML and the
+second one is to generate the composed index pages (i.e. blog pages with N
+items per page, per categories).
+
+In this case, if a given source item has not changed, we can avoid re-generating
+the templates. In the case of a multi-item file, if we knew it had not changed
+we could also avoid parsing the file in the first place to get the items.
+In this case, we would need to store the generated items on disk between runs
+and then we could compare the timestamp between the source and the generated
+item. We would still need to read the generated item, simply because the default
+site logic creates inlined indexes.
+
+However currently we do not store the intermediate generated items, so there's
+no logic to compare them with the source's timestamp. Moreover, eventually
+the default site will generate single HTML pages for items (for permalinks),
+yet these will be full permalinks pages, with headers and co -- that is the
+intermediate generated content will be inlined in the permalink template. This
+will of course be on-disk, yet it's not suitable to be re-read.
+
+That means we have the current dilema: on one hand, we can store the intermediate
+content on disk just for the sake of being able to check its timestamp and re-read
+it; on the other hand we just generate that content in-memory and we still need
+to rewrite all the permalink pages every time.
+
+The scenario where the write the intermediary content to disk becomes actually
+more expensive: for each item that we do not regenerate, the still have to read
+store the intermediary content, plus later we'll store also the permalink page,
+so essentially it's stored N+1 times compared to the other scheme. And although
+we don't recompute the template, we do need to read back, so the memory cost
+is similar. Moreover, for the kind of data that I process, generating the template
+is mostly trivial and may be even cheaper than performing one more disk access.
+
+In the second scenario where we only store the generated permalinks, we can
+make a minimal optimization but not regenerating the permalink if the source
+timestamp is older than the permalink and the permalink template hasn't changed
+either. 
+
+So that means that globally, partial updates are not very interesting.
+
+There's still a case that should really be optimized: detect if the source
+content has changed at all since the next generation and short circuit the
+generation has much as we can. Ideally parsing an unchanged source should be
+as cheap as possible, so that we can run it often.
+On the destination part, this is easy, we can get the timestamp of the main
+index.html, since it's guaranted to be generated every time.
+However on the source part, this is a bit more tricky: we still need to
+visit all the source directories and stat their files. 
+
+On a Linux system a file or directory has an access time (irrelevant for us),
+a modification time (file written or a file created/deleted in a directory)
+and status change timestamp (mostly irrelevant for us). The modification timestamp
+of a directory will not change when an existing file is modified, only if files
+are added or removed (this is logic if you think of a directory as a simple list
+of inner files.)
+
+So to know if a set of source directories have changed, we need the last generation
+timestamp, and then we need to recursively parse the source directories till we
+find at least one file that is newer than the last generation timestamp. We can
+stop parsing at that point.
+
+In the current structure, this can easily be done at the same time we build the
+source item list -- at that point we do not actually read any content yet.
+However that means for multi-item files, we'll just want to keep the reference to
+the file but not parse it yet, we'll want to defer parsing later, possibly just
+before we do the site generation (or even better, let the site generator start
+the parsing so that it can optimize the case if needed.) 
+
+Note that we should still defer the "last generation timestamp" to the actual
+site generators. For most of them, they can simply get the main index.html timestamp
+and return it. The whole skip-if-untouched should be done on a site-per-site basis.
+ 
+----

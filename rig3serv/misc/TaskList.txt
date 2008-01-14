@@ -1,5 +1,7 @@
 ---- TODO ----
 
+20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
+
 20071123 Engine:   FileItemsReader for single files <date><title>.izu/html
 20071225 Template: Placeholder ralf theme (deriving from default)
 20071123 Engine:   Site settings, category_filter
