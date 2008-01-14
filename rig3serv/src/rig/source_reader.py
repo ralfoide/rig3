@@ -222,6 +222,12 @@ class SourceFileReader(SourceReaderBase):
                     items.append(item)
         return items
 
+    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
+        raise NotImplementedError()
+
+    def _FileTimeStamp(self, file):
+        raise NotImplementedError()
+
 
 #------------------------
 # Local Variables:
