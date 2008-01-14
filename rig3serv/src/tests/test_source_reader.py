@@ -107,17 +107,17 @@ class MockSourceFileReader(SourceFileReader):
         self.update_needed_requests = []
         self._file_time_stamp = 1
 
-    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
-        self.update_needed_requests.append( ( source_dir, dest_dir, all_files ) )
+    def _UpdateNeeded(self, source_file, dest_dir):
+        self.update_needed_requests.append( ( source_file, dest_dir ) )
         return True
 
-    def _FileTimeStamp(self, dir):
+    def _FileTimeStamp(self, file):
         self._file_time_stamp += 1
         return self._file_time_stamp
 
 
 class SourceFileReaderTest(RigTestCase):
-    
+
     def setUp(self):
         self._tempdir = self.MakeTempDir()
         self.path = os.path.join(self.getTestDataPath(), "album")
@@ -134,15 +134,22 @@ class SourceFileReaderTest(RigTestCase):
         p = self.m.Parse(self._tempdir)
 
         self.assertListEquals(
-            [ ( RelDir(self.path, "2006-05_Movies"),
-                RelDir(self._tempdir, "2006-05_Movies"),
-                [ "index.html" ] ),
+            [ ( RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File.izu")),
+                RelDir (self._tempdir, "file_items") ),
+              ( RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html")),
+                RelDir (self._tempdir, "file_items") ),
+              ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Another Entry.izu")),
+                RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
              ],
             self.m.update_needed_requests)
 
         self.assertListEquals(
             [ SourceFile(datetime.fromtimestamp(2),
-                        RelFile(self.path, "2006-05_Movies") )
+                         RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File.izu"))),
+              SourceFile(datetime.fromtimestamp(3),
+                         RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html"))),
+              SourceFile(datetime.fromtimestamp(4),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Another Entry.izu")))
             ],
             p)
 

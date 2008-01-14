@@ -58,10 +58,10 @@ class SourceDir(SourceItem):
 
     def __repr__(self):
         return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
-                                          self.date,
-                                          self.rel_dir,
-                                          self.all_files,
-                                          self.categories)
+                                         self.date,
+                                         self.rel_dir,
+                                         self.all_files,
+                                         self.categories)
 
 #------------------------
 class SourceFile(SourceItem):
@@ -83,10 +83,10 @@ class SourceFile(SourceItem):
                 self.rel_file == rhs.rel_file)
 
     def __repr__(self):
-        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
-                                          self.date,
-                                          self.rel_file,
-                                          self.categories)
+        return "<%s (%s) %s, %s>" % (self.__class__.__name__,
+                                         self.date,
+                                         self.rel_file,
+                                         self.categories)
 
 
 # TODO:  SourceBlog
