@@ -12,11 +12,11 @@ import os
 from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
-from rig.parser.dir_parser import RelDir
+from rig.parser.dir_parser import RelDir, RelFile
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
-from rig.source_reader import SourceReaderBase, SourceDirReader
-from rig.source_item import SourceDir
+from rig.source_reader import SourceReaderBase, SourceDirReader, SourceFileReader
+from rig.source_item import SourceDir, SourceFile
 
 #------------------------
 class SourceReaderBaseTest(RigTestCase):
@@ -49,7 +49,7 @@ class MockSourceDirReader(SourceDirReader):
     
 
 class SourceDirReaderTest(RigTestCase):
-    
+
     def setUp(self):
         self._tempdir = self.MakeTempDir()
         self.path = os.path.join(self.getTestDataPath(), "album")
@@ -101,11 +101,51 @@ class SourceDirReaderTest(RigTestCase):
 
 
 #------------------------
+class MockSourceFileReader(SourceFileReader):
+    def __init__(self, log, settings, path):
+        super(MockSourceFileReader, self).__init__(log, settings, path)
+        self.update_needed_requests = []
+        self._file_time_stamp = 1
+
+    def _UpdateNeeded(self, source_dir, dest_dir, all_files):
+        self.update_needed_requests.append( ( source_dir, dest_dir, all_files ) )
+        return True
+
+    def _FileTimeStamp(self, dir):
+        self._file_time_stamp += 1
+        return self._file_time_stamp
+
+
 class SourceFileReaderTest(RigTestCase):
     
+    def setUp(self):
+        self._tempdir = self.MakeTempDir()
+        self.path = os.path.join(self.getTestDataPath(), "album")
+        source = SourceFileReader(self.Log(), None, self.path)
+        self.s = SiteSettings(public_name="Test Album",
+                              source_list=[ source ],
+                              dest_dir=self._tempdir,
+                              theme=DEFAULT_THEME,
+                              base_url="http://www.example.com",
+                              rig_url="http://example.com/photos/")
+        self.m = MockSourceFileReader(self.Log(), self.s, self.path)
+
     def testParse(self):
-        # TODO: SourceFileReader
-        raise NotImplementedError("SourceFileReader")
+        p = self.m.Parse(self._tempdir)
+
+        self.assertListEquals(
+            [ ( RelDir(self.path, "2006-05_Movies"),
+                RelDir(self._tempdir, "2006-05_Movies"),
+                [ "index.html" ] ),
+             ],
+            self.m.update_needed_requests)
+
+        self.assertListEquals(
+            [ SourceFile(datetime.fromtimestamp(2),
+                        RelFile(self.path, "2006-05_Movies") )
+            ],
+            p)
+
 
 #------------------------
 # Local Variables:

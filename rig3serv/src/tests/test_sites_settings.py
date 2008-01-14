@@ -13,7 +13,7 @@ import os
 from tests.rig_test_case import RigTestCase
 
 import rig3
-from rig.source_reader import SourceDirReader
+from rig.source_reader import SourceDirReader, SourceFileReader
 from rig.sites_settings import SitesSettings, SiteSettings
 
 #------------------------
@@ -46,9 +46,12 @@ class SitesSettingsTest(RigTestCase):
         s = SiteSettings()
         self.assertListEquals([], s.source_list)
 
+        # Invalid sources (no qualifier)
         self.m._ProcessSources(s, { "var1": "path1", "var2": "path2" })
         self.assertListEquals([], s.source_list)
 
+        # SourceDirReader
+        s.source_list = []
         self.m._ProcessSources(s, { "sources": "dir:/my/path1" })
         self.assertListEquals(
             [ SourceDirReader(log, s, "/my/path1") ],
@@ -60,8 +63,35 @@ class SitesSettingsTest(RigTestCase):
             [ SourceDirReader(log, s, "/my/path1,path2") ],
             s.source_list)
         
-        # TODO: SourceFileReader
-        raise NotImplementedError("SourceFileReader")
+        # SourceFileReader
+        s.source_list = []
+        self.m._ProcessSources(s, { "sources": "file:/my/path1" })
+        self.assertListEquals(
+            [ SourceFileReader(log, s, "/my/path1") ],
+            s.source_list)
+
+        s.source_list = []
+        self.m._ProcessSources(s, { "sources": '  file :  "/my/path1,path2"  ' })
+        self.assertListEquals(
+            [ SourceFileReader(log, s, "/my/path1,path2") ],
+            s.source_list)
+
+        # Combined
+        s.source_list = []
+        self.m._ProcessSources(s, { "sources": "dir:/my/path1,file:/my/path2" })
+        self.assertListEquals(
+            [ SourceDirReader (log, s, "/my/path1"),
+              SourceFileReader(log, s, "/my/path2") ],
+            s.source_list)
+
+        # All
+        s.source_list = []
+        self.m._ProcessSources(s, { "sources": "all:/my/path1" })
+        self.assertListEquals(
+            [ SourceDirReader (log, s, "/my/path1"),
+              SourceFileReader(log, s, "/my/path1") ],
+            s.source_list,
+            sort=True)
 
 #------------------------
 # Local Variables:

@@ -142,7 +142,7 @@ class SitesSettings(SettingsBase):
                         assert path.endswith('"')
                         path = path[1:-1]
                     if type == "all":
-                        for t in ["dirs", "files", "items"]:
+                        for t in ["dirs", "files"]:  # TODO: add support for , "items"]:
                             settings.source_list.append(type_class[t](self._log, settings, path))
                     elif type not in type_class:
                         self._log.Error("Unknown source type '%s' in '%s'",
