@@ -134,22 +134,22 @@ class SourceFileReaderTest(RigTestCase):
         p = self.m.Parse(self._tempdir)
 
         self.assertListEquals(
-            [ ( RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File.izu")),
+            [ ( RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File Item.izu")),
                 RelDir (self._tempdir, "file_items") ),
               ( RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html")),
                 RelDir (self._tempdir, "file_items") ),
-              ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Another Entry.izu")),
+              ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")),
                 RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
              ],
             self.m.update_needed_requests)
 
         self.assertListEquals(
             [ SourceFile(datetime.fromtimestamp(2),
-                         RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File.izu"))),
+                         RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File Item.izu"))),
               SourceFile(datetime.fromtimestamp(3),
                          RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html"))),
               SourceFile(datetime.fromtimestamp(4),
-                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Another Entry.izu")))
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")))
             ],
             p)
 

@@ -228,6 +228,7 @@ class RigTestCase(unittest.TestCase):
         self.assertTrue(actual          != None, msg)
         actual = self.NormalizeHtml(actual)
         expected_regexp = self.NormalizeHtml(expected_regexp)
+        msg += "\n" + self.HtmlToList(actual)
         self.assertMatches(expected_regexp, actual, msg)
 
     # Internal Utilities

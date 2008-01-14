@@ -1,9 +1,0 @@
-[izu:cat:bar,foo,other]
-[s:en]
-Some content in English.
-
-Rig link: [This is a rig link|riglink:T12896*.jpg]
-
-[s:fr]
-Un mot ou deux en francais, avec des accents en ISO 8859-1:
-      ça, où est le pré près du prêt?

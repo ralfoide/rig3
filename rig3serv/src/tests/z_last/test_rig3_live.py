@@ -57,12 +57,22 @@ class Rig3LiveTest(RigTestCase):
         f = file(os.path.join(d, "index.html"), "r")
         index_izu = f.read()
         f.close()
+        # check accent conversion to html
         self.assertSearch("&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t",
                           index_izu)
+        # check tracking inclusion
         self.assertSearch("<i>tracking code here</i>", index_izu)
-
+        # check that riglinks are properly expanded
         self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
+        # file items which use the file name as title should loose their extension
+        self.assertHtmlMatches('.*<td class="title"><span class="date">2007/09/09</span> Izu File Item</td></tr>',
+                               index_izu)
+        # sub-directories are parsed for file items too
+        self.assertHtmlMatches('.*<td class="title"><span class="date">2007/09/09</span> Sub File Item</td></tr>',
+                               index_izu)
+
+
 
 #------------------------
 # Local Variables:

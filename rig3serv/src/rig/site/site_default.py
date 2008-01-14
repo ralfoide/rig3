@@ -32,8 +32,10 @@ class SiteDefault(SiteBase):
     Right now the "magic" theme is identicaly to the "default" theme
     so the implementation is empty. This is expected to change later.
     """
-    INDEX_IZU = "index.izu"
-    INDEX_HTML = "index.html"
+    EXT_IZU = ".izu"
+    EXT_HTML = ".html"
+    INDEX_IZU = "index" + EXT_IZU
+    INDEX_HTML = "index" + EXT_HTML
     _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
@@ -179,7 +181,7 @@ class SiteDefault(SiteBase):
             rel_dir = source_item.rel_dir
             all_files = source_item.all_files
             may_have_images = True
-            title = os.path.basename(rel_dir.rel_curr)
+            title = os.path.splitext(os.path.basename(rel_dir.rel_curr))[0]
             if self.INDEX_IZU in all_files:
                 izu_file = os.path.join(rel_dir.abs_path, self.INDEX_IZU)
                 main_filename = RelFile(rel_dir.abs_path,
