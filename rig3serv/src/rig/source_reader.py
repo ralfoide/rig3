@@ -118,7 +118,7 @@ class SourceDirReader(SourceReaderBase):
                                 self._settings and self._settings.public_name or "[Unnamed Site]",
                                source_dir.rel_curr, dest_dir.rel_curr)
                 if self._UpdateNeeded(source_dir, dest_dir, all_files):
-                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
+                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_path))
                     item = SourceDir(date, source_dir, all_files)
                     items.append(item)
         return items
@@ -137,21 +137,21 @@ class SourceDirReader(SourceReaderBase):
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         - dest_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         """
-        if not os.path.exists(dest_dir.abs_dir):
+        if not os.path.exists(dest_dir.abs_path):
             return True
         source_ts = None
         dest_ts = None
         try:
-            dest_ts = self._DirTimeStamp(dest_dir.abs_dir)
+            dest_ts = self._DirTimeStamp(dest_dir.abs_path)
         except OSError:
             self._log.Info("[%s] Dest '%s' does not exist", self._settings.public_name,
-                           dest_dir.abs_dir)
+                           dest_dir.abs_path)
             return True
         try:
-            source_ts = self._DirTimeStamp(source_dir.abs_dir)
+            source_ts = self._DirTimeStamp(source_dir.abs_path)
         except OSError:
             self._log.Warn("[%s] Source '%s' does not exist", self._settings.public_name,
-                           source_dir.abs_dir)
+                           source_dir.abs_path)
             return False
         return source_ts > dest_ts
 
@@ -215,9 +215,9 @@ class SourceFileReader(SourceReaderBase):
                            source_dir.rel_curr, dest_dir.rel_curr)
             for file in all_files:
                 if FILE_PATTERN.search(file):
-                    rel_file = RelFile(source_dir.abs_dir,
+                    rel_file = RelFile(source_dir.abs_path,
                                        os.path.join(source_dir.rel_curr, file))
-                    date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_dir))
+                    date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
                     item = SourceFile(date, rel_file)
                     items.append(item)
         return items

@@ -181,12 +181,12 @@ class SiteDefault(SiteBase):
             may_have_images = True
             title = os.path.basename(rel_dir.rel_curr)
             if self.INDEX_IZU in all_files:
-                izu_file = os.path.join(rel_dir.abs_dir, self.INDEX_IZU)
-                main_filename = RelFile(rel_dir.abs_dir,
+                izu_file = os.path.join(rel_dir.abs_path, self.INDEX_IZU)
+                main_filename = RelFile(rel_dir.abs_path,
                                         os.path.join(rel_dir.rel_curr, self.INDEX_IZU))
             elif self.INDEX_HTML in all_files:
-                html_file = os.path.join(rel_dir.abs_dir, self.INDEX_HTML)
-                main_filename = RelFile(rel_dir.abs_dir,
+                html_file = os.path.join(rel_dir.abs_path, self.INDEX_HTML)
+                main_filename = RelFile(rel_dir.abs_path,
                                         os.path.join(rel_dir.rel_curr, self.INDEX_HTML))
 
         elif isinstance(source_item, SourceFile):
@@ -194,9 +194,9 @@ class SiteDefault(SiteBase):
             title = os.path.basename(rel_file.rel_curr)
             main_filename = rel_file
             if rel_file.rel_curr.endswith(self.EXT_IZU):
-                izu_file = rel_file.abs_dir
+                izu_file = rel_file.abs_path
             elif rel_file.rel_curr.endswith(self.EXT_HTML):
-                html_file = rel_file.abs_dir
+                html_file = rel_file.abs_path
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))

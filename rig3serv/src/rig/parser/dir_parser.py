@@ -22,13 +22,13 @@ class RelPath(object):
     def __init__(self, abs_base, rel_curr):
         self.abs_base = abs_base
         self.rel_curr = rel_curr
-        self.abs_dir = os.path.join(abs_base, rel_curr)
+        self.abs_path = os.path.join(abs_base, rel_curr)
 
     def __eq__(self, rhs):
         if isinstance(rhs, RelDir):
             return (self.abs_base == rhs.abs_base and
                     self.rel_curr == rhs.rel_curr and
-                    self.abs_dir  == rhs.abs_dir)
+                    self.abs_path  == rhs.abs_path)
         else:
             return False
 
