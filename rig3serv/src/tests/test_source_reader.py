@@ -100,8 +100,12 @@ class SourceDirReaderTest(RigTestCase):
             p)
 
 
-# TODO: SourceFileReader
-raise NotImplementedError("SourceFileReader")
+#------------------------
+class SourceFileReaderTest(RigTestCase):
+    
+    def testParse(self):
+        # TODO: SourceFileReader
+        raise NotImplementedError("SourceFileReader")
 
 #------------------------
 # Local Variables:

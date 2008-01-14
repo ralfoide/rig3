@@ -14,10 +14,10 @@ import re
 _EXCLUDE = ".rig3-exclude"
 
 #------------------------
-class RelDir(object):
+class RelPath(object):
     """
-    Represents a 'relative' directory, with a base and a relative sub directory.
-    The full absolute dir path is available too. 
+    Represents a 'relative' path, with a base and a relative sub path.
+    The full absolute path is available too. 
     """
     def __init__(self, abs_base, rel_curr):
         self.abs_base = abs_base
@@ -39,6 +39,24 @@ class RelDir(object):
         return "[%s %s => %s]" % (self.__class__.__name__,
                                   self.abs_base,
                                   self.rel_curr)
+
+# RelDir and RelFile are strictly equivalent to RelPath. The difference
+# is purely semantic.
+class RelDir(RelPath):
+    """
+    Represents a 'relative' directory, with a base and a relative sub directory.
+    The full absolute dir path is available too. 
+    """
+    def __init__(self, abs_base, rel_curr):
+        super(RelDir, self).__init__(abs_base, rel_curr)
+
+class RelFile(RelPath):
+    """
+    Represents a 'relative' file, with a base and a relative sub file.
+    The full absolute file path is available too. 
+    """
+    def __init__(self, abs_base, rel_curr):
+        super(RelFile, self).__init__(abs_base, rel_curr)
 
 #------------------------
 class DirParser(object):

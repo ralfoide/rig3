@@ -14,8 +14,8 @@ import os
 import re
 from datetime import datetime
 
-from rig.source_item import SourceDir
-from rig.parser.dir_parser import DirParser
+from rig.source_item import SourceDir, SourceFile
+from rig.parser.dir_parser import DirParser, RelFile
 
 #------------------------
 class SourceReaderBase(object):
@@ -79,6 +79,14 @@ class SourceDirReader(SourceReaderBase):
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
     def __init__(self, log, settings, path):
+        """
+        Constructs a new SourceDirReader.
+        
+        Arguments:
+        - log (Log)
+        - settings (SiteSettings)
+        - path (String): The base directory to read recursively 
+        """
         # TODO: the patterns must be overridable via site settings
         super(SourceDirReader, self).__init__(log, settings, path)
 
@@ -171,8 +179,16 @@ class SourceFileReader(SourceReaderBase):
     FILE_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
     def __init__(self, log, settings, path):
+        """
+        Constructs a new SourceDirReader.
+        
+        Arguments:
+        - log (Log)
+        - settings (SiteSettings)
+        - path (String): The base directory to read recursively 
+        """
         # TODO: the patterns must be overridable via site settings
-        super(SourceDirReader, self).__init__(log, settings, path)
+        super(SourceFileReader, self).__init__(log, settings, path)
 
     def Parse(self, dest_dir):
         """
@@ -181,22 +197,29 @@ class SourceFileReader(SourceReaderBase):
 
         Then traverses the source tree and generates new items as needed.
         
-        An item in a RIG site is a directory that contains either an
-        index.izu and/or JPEG images.
+        An item in a RIG site is a file if it matches the given file pattern.
         
         Parameter:
         - dest_dir (string): Destination directory.
         
         Returns a list of SourceItem.
         """
-        items = []        
-        if FILE_PATTERN.search(self.path):
+        tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
+                                          os.path.realpath(dest_dir),
+                                          file_pattern=self.FILE_PATTERN)
+ 
+        items = []
+        for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Debug("[%s] Process '%s' to '%s'",
                             self._settings and self._settings.public_name or "[Unnamed Site]",
                            source_dir.rel_curr, dest_dir.rel_curr)
-            date = datetime.fromtimestamp(self._FileTimeStamp(source_dir.abs_dir))
-            item = SourceDir(date, source_dir, all_files)
-            items.append(item)
+            for file in all_files:
+                if FILE_PATTERN.search(file):
+                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_dir))
+                    source_file = RelFile(source_dir.abs_dir,
+                                          os.path.join(source_dir.rel_curr, file))
+                    item = SourceFile(date, source_file)
+                    items.append(item)
         return items
 
 

@@ -9,6 +9,7 @@ License GPL.
 __author__ = "ralfoide@gmail.com"
 
 from datetime import datetime
+from rig.parser.dir_parser import RelDir, RelFile
 
 #------------------------
 class SourceItem(object):
@@ -62,7 +63,33 @@ class SourceDir(SourceItem):
                                           self.all_files,
                                           self.categories)
 
-# TODO: SourceFile, SourceBlog
+#------------------------
+class SourceFile(SourceItem):
+    """
+    Represents a file item from a SourceFileReader.
+    
+    Paremeters:
+    - date (datetime): Date of the file
+    - source_file (RelFile): absolute+relative source file
+    """
+    def __init__(self, date, source_file):
+        super(SourceFile, self).__init__(date)
+        self.source_file = source_file
+
+    def __eq__(self, rhs):
+        if not super(SourceFile, self).__eq__(rhs):
+            return False
+        return (isinstance(rhs, SourceFile) and
+                self.source_file == rhs.source_file)
+
+    def __repr__(self):
+        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
+                                          self.date,
+                                          self.source_file,
+                                          self.categories)
+
+
+# TODO:  SourceBlog
 #    - content: the data of the file
 #    - rel_filename: filename of the generated file relative to the site's
 #                    dest_dir.

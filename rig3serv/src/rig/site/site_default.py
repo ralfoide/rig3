@@ -20,7 +20,8 @@ from datetime import datetime
 
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
-from rig.source_item import SourceDir
+from rig.source_item import SourceDir, SourceFile
+from rig.parser.dir_parser import RelFile
 from rig.version import Version
 
 #------------------------
@@ -169,22 +170,43 @@ class SiteDefault(SiteBase):
 
         Subclassing: Derived classes MUST override this and not call the parent.
         """
+        may_have_images = False
+        all_files = None
+        izu_file = None
+        html_file = None
+
         if isinstance(source_item, SourceDir):
             source_dir = source_item.source_dir
             all_files = source_item.all_files
+            may_have_images = True
+            title = os.path.basename(source_dir.rel_curr)
+            if self.INDEX_IZU in all_files:
+                izu_file = os.path.join(source_dir.abs_dir, self.INDEX_IZU)
+                main_filename = RelFile(source_dir.abs_dir,
+                                        os.path.join(source_dir.rel_curr, self.INDEX_IZU))
+            elif self.INDEX_HTML in all_files:
+                html_file = os.path.join(source_dir.abs_dir, self.INDEX_HTML)
+                main_filename = RelFile(source_dir.abs_dir,
+                                        os.path.join(source_dir.rel_curr, self.INDEX_HTML))
+
+        elif isinstance(source_item, SourceFile):
+            source_file = source_item.source_file
+            title = os.path.basename(source_file.rel_curr)
+            main_filename = source_file
+            if source_file.rel_curr.endswith(self.EXT_IZU):
+                izu_file = source_file.abs_dir
+            elif source_file.rel_curr.endswith(self.EXT_HTML):
+                html_file = source_file.abs_dir
+
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
         
-        title = os.path.basename(source_dir.rel_curr)
         date, title = self._DateAndTitleFromTitle(title)
         if not date:
             date = datetime.today()
-        main_filename = ""
         sections = {}
         tags = {}
-        if self.INDEX_IZU in all_files:
-            main_filename = self.INDEX_IZU
-            izu_file = os.path.join(source_dir.abs_dir, self.INDEX_IZU)
+        if izu_file:
             self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
@@ -196,21 +218,20 @@ class SiteDefault(SiteBase):
                 template = Template(self._log, source=sections[s])
                 sections[s] = template.Generate(keywords)
 
-        elif self.INDEX_HTML in all_files:
-            main_filename = self.INDEX_HTML
-            html_file = os.path.join(source_dir.abs_dir, self.INDEX_HTML)
+        elif html_file:
             sections["html"] = self._ReadFile(html_file)
             tags = self._izu_parser.ParseFirstLine(sections["html"])
             self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
-            self._log.Debug("No content for source %s", source_dir)
+            self._log.Debug("No content for source %s", source_item)
             return None
 
         cats = tags.get("cat", [])
         date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
 
-        if not "images" in sections:
+        if may_have_images and not "images" in sections:
+            # only a SourceDir can have images in the same folder...
             html_img = self._GenerateImages(source_dir, all_files)
             if html_img:
                 sections["images"] = html_img
@@ -222,7 +243,7 @@ class SiteDefault(SiteBase):
         keywords["tags"] = tags
         keywords["categories"] = cats
         content = self._FillTemplate("entry.html", **keywords)
-        filename = self._SimpleFileName(os.path.join(source_dir.rel_curr, main_filename))
+        filename = self._SimpleFileName(os.path.join(main_filename.rel_curr))
         if self._TEMPLATE_NEED_ITEM_FILES:
             assert self._WriteFile(content,
                                    os.path.join(self._settings.dest_dir, self._ITEMS_DIR),
