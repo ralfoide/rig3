@@ -66,10 +66,10 @@ class Rig3LiveTest(RigTestCase):
         self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
-        self.assertHtmlMatches('.*<td class="title"><span class="date">2007/09/09</span> Izu File Item</td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<span class="date">2007/09/09</span>Izu File Item</td></tr>',
                                index_izu)
         # sub-directories are parsed for file items too
-        self.assertHtmlMatches('.*<td class="title"><span class="date">2007/09/09</span> Sub File Item</td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<span class="date">2008/01/02</span>Sub File Item</td></tr>',
                                index_izu)
 
 

@@ -181,7 +181,7 @@ class SiteDefault(SiteBase):
             rel_dir = source_item.rel_dir
             all_files = source_item.all_files
             may_have_images = True
-            title = os.path.splitext(os.path.basename(rel_dir.rel_curr))[0]
+            title = os.path.basename(rel_dir.rel_curr)
             if self.INDEX_IZU in all_files:
                 izu_file = os.path.join(rel_dir.abs_path, self.INDEX_IZU)
                 main_filename = RelFile(rel_dir.abs_path,
@@ -197,8 +197,10 @@ class SiteDefault(SiteBase):
             main_filename = rel_file
             if rel_file.rel_curr.endswith(self.EXT_IZU):
                 izu_file = rel_file.abs_path
+                title = title[:-1 * len(self.EXT_IZU)]  # remove ext from title
             elif rel_file.rel_curr.endswith(self.EXT_HTML):
                 html_file = rel_file.abs_path
+                title = title[:-1 * len(self.EXT_HTML)]  # remove ext from title
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
