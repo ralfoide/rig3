@@ -85,6 +85,15 @@ class RigTestCaseTest(RigTestCase):
     def testAssertHtmlMatches(self):
         self.assertHtmlMatches("""<div CLASS="[^"]+">blah foo bar</div><span attr='[^']+' />""",
                                """  <DIV   CLASS=\"entry\">\n\r  blah\nfoo   bar </DIV>  <span attr='foo'   /> """)
+        # Using the expression from testAssertHtmlSearch, we check that assertHtmlMatches
+        # matches at the beginning and thus fails if there's no match at ^
+        self.assertRaises(AssertionError, self.assertHtmlMatches,
+                """blah foo bar</div>""",
+                """  <DIV   CLASS=\"entry\">\n\r  blah\nfoo   bar </DIV>  <span attr='foo'   /> """)
+
+    def testAssertHtmlSearch(self):
+        self.assertHtmlSearch("""blah foo bar</div>""",
+                               """  <DIV   CLASS=\"entry\">\n\r  blah\nfoo   bar </DIV>  <span attr='foo'   /> """)
 
     def testNormalizeHtml(self):
         self.assertEquals("<html>blah foo? bar</html>(?: .*| .+)<span />",

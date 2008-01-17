@@ -231,6 +231,24 @@ class RigTestCase(unittest.TestCase):
         msg += "\n" + "\n".join(self.HtmlToList(actual))
         self.assertMatches(expected_regexp, actual, msg)
 
+    def assertHtmlSearch(self, expected_regexp, actual, msg=None):
+        """
+        Similar to assertHtmlMatches, compares to HTML normalized strings.
+        However the expected_regexp string is considered as a regexp and a
+        search is performed with the actual string -- that is it needs
+        not match the *beginning* of actual. When used with a ^ anchor, this
+        behaves likes assertHtmlMatches. Use a $ anchor to also force matching
+        the end. 
+        """
+        msg = "%s\nExpected: %s\nActual : %s" % \
+                (msg or "assertHtmlSearch failed", repr(expected_regexp), repr(actual))
+        self.assertTrue(expected_regexp != None, msg)
+        self.assertTrue(actual          != None, msg)
+        actual = self.NormalizeHtml(actual)
+        expected_regexp = self.NormalizeHtml(expected_regexp)
+        msg += "\n" + "\n".join(self.HtmlToList(actual))
+        self.assertSearch(expected_regexp, actual, msg)
+
     # Internal Utilities
     
     def NormalizeHtml(self, str):
