@@ -51,33 +51,33 @@ class SitesSettingsTest(RigTestCase):
         self.assertListEquals([], s.source_list)
 
         # SourceDirReader
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": "dir:/my/path1" })
         self.assertListEquals(
             [ SourceDirReader(log, s, "/my/path1") ],
             s.source_list)
 
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": '  dir :  "/my/path1,path2"  ' })
         self.assertListEquals(
             [ SourceDirReader(log, s, "/my/path1,path2") ],
             s.source_list)
         
         # SourceFileReader
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": "file:/my/path1" })
         self.assertListEquals(
             [ SourceFileReader(log, s, "/my/path1") ],
             s.source_list)
 
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": '  file :  "/my/path1,path2"  ' })
         self.assertListEquals(
             [ SourceFileReader(log, s, "/my/path1,path2") ],
             s.source_list)
 
         # Combined
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": "dir:/my/path1,file:/my/path2" })
         self.assertListEquals(
             [ SourceDirReader (log, s, "/my/path1"),
@@ -85,13 +85,64 @@ class SitesSettingsTest(RigTestCase):
             s.source_list)
 
         # All
-        s.source_list = []
+        s = SiteSettings()
         self.m._ProcessSources(s, { "sources": "all:/my/path1" })
         self.assertListEquals(
             [ SourceDirReader (log, s, "/my/path1"),
               SourceFileReader(log, s, "/my/path1") ],
             s.source_list,
             sort=True)
+
+    def testProcessCatFilter(self):
+        log = self.Log()
+        s = SiteSettings()
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "inc" })
+        self.assertListEquals([ "inc" ], s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "*" })
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "$" })
+        self.assertListEquals([ SiteSettings.CAT_NOTAG ], s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!exc" })
+        self.assertEquals(None, s.cat_include)
+        self.assertListEquals([ "exc" ], s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!*" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!$" })
+        self.assertEquals(None, s.cat_include)
+        self.assertListEquals([ SiteSettings.CAT_NOTAG ], s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "abc !def $ foo !$ !bfg !foo" })
+        self.assertEquals([ "abc", SiteSettings.CAT_NOTAG, "foo" ], s.cat_include)
+        self.assertEquals([ "def", SiteSettings.CAT_NOTAG, "bfg", "foo" ], s.cat_exclude)
+
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_include)
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
 
 #------------------------
 # Local Variables:

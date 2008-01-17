@@ -38,6 +38,7 @@
 
 ---- Done Version 0.3 ----
 
+20080117 Engine:   Parsing for Site settings, category_filter (+UT, not used yet)
 20080116 Engine:   FileItemsReader for single files <date><title>.izu/html + UT
 20071225 Template: Separate theme for MM (deriving from default) (=> magic+ralf)
 

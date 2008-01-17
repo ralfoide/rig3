@@ -29,8 +29,15 @@ class SiteSettings(object):
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
     - header_img_height (int): The height of the header_img. Default is 185.
-    - cat_filter: Category filter, space separated category list, *=all, $=empty, !=exclude
+    - cat_exclude: A list of category words to exclude. Empty or None to exclude nothing,
+                   CAT_ALL to exclude everything, CAT_NOTAG to exclude all non-tagged.
+    - cat_include: A list of category words to include. Empty or None or CAT_ALL to include all,
+                   CAT_NOTAG to include all non-tagged.
     """
+    CAT_ALL = "*"
+    CAT_NOTAG = "$"
+    CAT_EXCLUDE = "!"
+
     def __init__(self,
                  public_name="",
                  source_list=None,
@@ -41,7 +48,8 @@ class SiteSettings(object):
                  header_img_url="",
                  header_img_height=185,
                  tracking_code="",
-                 cat_filter=None):
+                 cat_exclude=None,
+                 cat_include=None):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -51,7 +59,8 @@ class SiteSettings(object):
         self.header_img_url = header_img_url
         self.header_img_height = header_img_height
         self.tracking_code = tracking_code
-        self.cat_filter = cat_filter
+        self.cat_exclude = cat_exclude
+        self.cat_include = cat_include
 
     def AsDict(self):
         """
@@ -159,7 +168,39 @@ class SitesSettings(SettingsBase):
                        ",".join([repr(s) for s in settings.source_list]))
 
     def _ProcessCatFilter(self, s, vars):
-        raise NotImplementedError("_ProcessCatFilter")
+        """
+        Processes a "cat_filter" variable on the settings and builds the
+        corresponding cat_exclude and cat_include lists in the site's defaults.
+        """
+        _ALL = SiteSettings.CAT_ALL
+        _NOTAG = SiteSettings.CAT_NOTAG
+        _EXCLUDE = SiteSettings.CAT_EXCLUDE
+        words = vars.get("cat_filter", None)
+        if words:
+            words = words.split()  # split on any nwhitespace
+        if not words:
+            return
+        for word in words:
+            if word.startswith(_EXCLUDE) and s.cat_exclude != _ALL:
+                exc = word[1:]
+                if not exc or exc == _EXCLUDE:
+                    self._log.Error("Invalid 'cat_filter' word '%s'. Valid exclude "
+                                    "patterns are !* (exclude all), !$ (exclude non-tagged) "
+                                    "or !word (exclude 'word')", word)
+                    continue
+                if exc == _ALL:
+                    s.cat_exclude = exc
+                else:
+                    if s.cat_exclude is None:
+                        s.cat_exclude = []
+                    s.cat_exclude.append(exc)
+            elif s.cat_include != _ALL:
+                if word == _ALL:
+                    s.cat_include = word
+                else:
+                    if s.cat_include is None:
+                        s.cat_include = []
+                    s.cat_include.append(word)
 
 
 #------------------------
