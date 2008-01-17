@@ -635,3 +635,23 @@ site generators. For most of them, they can simply get the main index.html times
 and return it. The whole skip-if-untouched should be done on a site-per-site basis.
  
 ----
+20080116 Details for category_filter 
+
+category_filter is a space-separated list of categories to include in given
+site. The special symbol "*" matches all categories. The special symbol "$"
+matches empty categories lists (i.e. post with no categories). A category
+name can be prefixed by ! to be excluded. The order is NOT relevant.
+The exclusion has precedence on the inclusion.
+The default category filter (i.e. its absence) is "*", so that it matches everything.
+
+Example: category_filter=public cats !dogs !parrots $ funny
+will match all posts that have categories public or cats or funny or not category
+and will exclude those which have dogs and parrots. 
+
+Note that:
+  category_filter=!dogs
+and
+  category_filter=* !dogs
+mean the same thing: match every category, except those posts that use "dogs".
+
+----

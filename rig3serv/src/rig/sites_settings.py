@@ -29,6 +29,7 @@ class SiteSettings(object):
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
     - header_img_height (int): The height of the header_img. Default is 185.
+    - cat_filter: Category filter, space separated category list, *=all, $=empty, !=exclude
     """
     def __init__(self,
                  public_name="",
@@ -39,7 +40,8 @@ class SiteSettings(object):
                  rig_url="http://rig.base.url/photos/",
                  header_img_url="",
                  header_img_height=185,
-                 tracking_code=""):
+                 tracking_code="",
+                 cat_filter=None):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -49,6 +51,7 @@ class SiteSettings(object):
         self.header_img_url = header_img_url
         self.header_img_height = header_img_height
         self.tracking_code = tracking_code
+        self.cat_filter = cat_filter
 
     def AsDict(self):
         """
@@ -91,6 +94,7 @@ class SitesSettings(SettingsBase):
         vars = self.Items(site_name)
         self._ProcessDefaults(s, vars)
         self._ProcessSources(s, vars)
+        self._ProcessCatFilter(s, vars)
         return s
 
     def _ProcessDefaults(self, settings, vars):
@@ -153,6 +157,9 @@ class SitesSettings(SettingsBase):
         self._log.Info("[%s] Sources: %s",
                        settings.public_name,
                        ",".join([repr(s) for s in settings.source_list]))
+
+    def _ProcessCatFilter(self, s, vars):
+        raise NotImplementedError("_ProcessCatFilter")
 
 
 #------------------------
