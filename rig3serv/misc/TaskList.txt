@@ -1,13 +1,17 @@
 ---- TODO ----
 
+20080118 Template: Bug, posts with no categories should not be rejected
+20080118 Template: SiteSetting base_url must be optional
+20080118 Template: Disable s:en flags (Add SiteSettings to enable)
+20071225 Engine:   Site settings, Disable auto-image insertion
+20071206 Izu:      [label|rig:image_glob] (with thumbnail)
+20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url
+20071225 Engine:   Site settings, Hidden categories
+
 20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
 
 20071225 Template: Placeholder ralf theme (deriving from default)
-20071225 Engine:   Site settings, Disable auto-image insertion
-20071206 Izu:      [label|rig:image_glob] (with thumbnail)
 20071225 Engine:   Site settings, Override integrated dir/file regexp filters
-20071225 Engine:   Site settings, Hidden categories
-20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
 20071123 Engine:   Site settings, permalinks
 20071123 Engine:   Site settings, toc
@@ -19,7 +23,6 @@
 20071123 Izu:      Raw HTML tag
 20071123 Izu:      Multi-level List <ul>
 20071123 Izu:      Multi-level blockquotes
-
 
 20071115 Template: Generate pages for category (need UT, polish)
 20071112 Engine:   Reduce verbosity in error mode to really just errors
