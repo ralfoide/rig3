@@ -1,0 +1,81 @@
+Rig3 Documentation: Installation
+
+Pre-amble: Rig3 is not a server. It's a standalone application that parses text
+files to generate a blog. Given a configuration file that describes the source
+to process and the kind of site to generate. It then generates the corresponding
+HTML files.
+
+The purpose of this document is to explain how to get and install Rig3.
+
+
+----------------------
+0- Supported Platforms
+----------------------
+
+The only requirement is a working Python installation.
+Python 2.4 or 2.5 are known to work under both Linux and Cygwin.
+
+
+----------------------
+1- Grab the source and run the test suite
+----------------------
+
+The project lives at http://code.google.com/p/rig3/
+
+As of right now, the best way to grab the source is by using an anonymous
+SVN checkout:
+ $ svn checkout http://rig3.googlecode.com/svn/trunk/rig3serv rig3serv
+
+This will create a directory "rig3serv" with all the code.
+
+Make sure the two main files are executable:
+ $ chmod +x rig3serv/src/rig3.py
+ $ chmod +x rig3serv/src/test_rig3.py
+
+The first thing you might want to do is check the unit tests pass:
+ $ rig3serv/src/test_rig3.py
+
+You should see something like this:
+ UT Main ['rig3serv/src/test_rig3.py']
+ Rig Tests: rig_test_case [...bunch of stuff here...]
+ .
+ ----------------------------------------------------------------------
+ Ran 99 tests in 0.491s
+ OK
+
+If you don't see "OK" at the end, contact me ;-)
+
+OK seriously, you *really* those tests to pass.
+The thing is that when I'm in a development cycle, I may purposedly
+make the unit tests fail while I'm working on something which isn't
+completly finished. At home I use a simple shell script that will
+periodically checkout a version of Rig3 in a temp folder and run the
+unit tests. If the unit test succeed, my main version of Rig3 is updated
+and run. This script is provided in /misc/update_rig3.sh; it is to be
+considered experimental and needs to be customized if you want to use it.
+
+
+----------------------
+2- Create a configuration file
+----------------------
+
+To run Rig3 you need to provide a configuration file.
+Please read /misc/Configuration.txt for more details.
+
+Once you have your configuration file, run Rig3 like this:
+
+ $ rig3serv/src/rig3.py
+or
+ $ rig3serv/src/rig3.py -c my_sites.rc
+
+
+To get some command-line help, try this:
+
+ $ rig3serv/src/rig3.py --help
+
+
+I'm sure I could expand this document. Feel free to let me know what you
+would like to see here.
+ 
+
+--end--

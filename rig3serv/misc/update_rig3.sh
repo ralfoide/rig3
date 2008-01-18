@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd my_site
+cd my_sites
 
 mkdir -p rig3serv-temp-update
 cd rig3serv-temp-update
@@ -20,6 +20,6 @@ else
 	echo "*** Update and Test failed"
 	echo
 fi
-python ./rig3serv-trunk/src/rig3.py -c my_site.rc $@
+python ./rig3serv-trunk/src/rig3.py -c my_sites.rc $@
 echo Done
 
