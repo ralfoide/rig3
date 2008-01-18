@@ -235,9 +235,8 @@ class SiteDefault(SiteBase):
             self._log.Debug("No content for source %s", source_item)
             return None
 
-        cats = tags.get("cat", [])
-        
         # Are item categories accepted on this site?
+        cats = tags.get("cat", [])
         if not self._AcceptCategories(cats, self._settings):
             return None
         
@@ -484,7 +483,7 @@ class SiteDefault(SiteBase):
         to the given list of categories of a given post.
         
         Parameters:
-        - cats(list): A list of tag. List can be empty.
+        - cats(list): A list of tag. List can be empty but not None.
         - settings(SiteSettings): A site's settings. Only cat_include and cat_exclude matter.
 
         Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
@@ -497,7 +496,7 @@ class SiteDefault(SiteBase):
         if exc == SiteSettings.CAT_ALL:
             return False  # everything is excluded
         elif exc:
-            if not cats and SiteSetting.CAT_NOTAG in exc:
+            if not cats and SiteSettings.CAT_NOTAG in exc:
                 return False  # exclude posts with no tags
             for cat in cats:
                 if cat in exc:
@@ -507,7 +506,7 @@ class SiteDefault(SiteBase):
         inc = _settings.cat_include
         if not inc:
             return True  # default is to match everything
-        if not cats and SiteSetting.CAT_NOTAG in inc:
+        if not cats and SiteSettings.CAT_NOTAG in inc:
             return True  # include posts with no tags
         for cat in cats:
             if cat in inc:

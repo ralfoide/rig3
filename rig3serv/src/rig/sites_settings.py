@@ -171,7 +171,7 @@ class SitesSettings(SettingsBase):
 
     def _ProcessCatFilter(self, s, vars):
         """
-        Processes a "cat_filter" variable on the settings and builds the
+        Processes a "cat_filter" variable from the settings and builds the
         corresponding cat_exclude and cat_include lists in the site's defaults.
         
         Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.

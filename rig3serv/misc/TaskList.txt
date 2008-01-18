@@ -3,7 +3,6 @@
 20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
 
 20071225 Template: Placeholder ralf theme (deriving from default)
-20071123 Engine:   Site settings, category_filter
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071206 Izu:      [label|rig:image_glob] (with thumbnail)
 20071225 Engine:   Site settings, Override integrated dir/file regexp filters
@@ -38,6 +37,7 @@
 
 ---- Done Version 0.3 ----
 
+20080117 Engine:   Site settings, category_filter
 20080117 Engine:   Parsing for Site settings, category_filter (+UT, not used yet)
 20080116 Engine:   FileItemsReader for single files <date><title>.izu/html + UT
 20071225 Template: Separate theme for MM (deriving from default) (=> magic+ralf)

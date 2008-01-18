@@ -94,7 +94,6 @@ class SitesSettingsTest(RigTestCase):
             sort=True)
 
     def testProcessCatFilter(self):
-        log = self.Log()
         s = SiteSettings()
         self.assertEquals(None, s.cat_include)
         self.assertEquals(None, s.cat_exclude)
