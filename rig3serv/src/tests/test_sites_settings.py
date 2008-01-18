@@ -110,7 +110,7 @@ class SitesSettingsTest(RigTestCase):
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "*" })
-        self.assertEquals(SiteSettings.CAT_ALL, s.cat_include)
+        self.assertEquals(None, s.cat_include)
         self.assertEquals(None, s.cat_exclude)
 
         s = SiteSettings()
