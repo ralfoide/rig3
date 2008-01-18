@@ -8,6 +8,13 @@ HTML files.
 The purpose of this document is to explain how to get and install Rig3.
 
 
+Summary of install steps for the impatient:
+* SVN checkout (cf below)
+* Pass test suite (mandatory)
+* Create a configuration file (cf /misc/Configuration.txt)
+* Run rig3 to generate content
+
+
 ----------------------
 0- Supported Platforms
 ----------------------
@@ -73,6 +80,9 @@ To get some command-line help, try this:
 
  $ rig3serv/src/rig3.py --help
 
+Remember that Rig3 is not a "server" nor a daemon. It's a one-shot run.
+I simply run the script periodically in a cron job.
+ 
 
 I'm sure I could expand this document. Feel free to let me know what you
 would like to see here.
