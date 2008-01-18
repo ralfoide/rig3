@@ -69,7 +69,7 @@ class RigTestCase(unittest.TestCase):
         Really, just a wrapper around tempfile.mkdtemp. Beause the directory is
         new, we are pretty much guaranteed it will be empty.
         """
-        return tempfile.mkdtemp()
+        return os.path.realpath(tempfile.mkdtemp())
     
     def RemoveDir(self, dir_path):
         """
