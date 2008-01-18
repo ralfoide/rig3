@@ -82,29 +82,43 @@ The following variables have default values:
 - rig_album_url: string format with <album> parameter
 - link_to_rig_album: False. Should images link to the rig album?
 - link_to_rig_img: True. Should images link to the corresponding rig image? 
-- category_filter: None or list of category names (strings, case-insensitive) to accept
+- cat_filter: None or list of category names (strings, case-insensitive) to accept
 - permalinks: True. Boolean, true if should have permalinks
 - toc: False. Boolean, true if we want a TOC at the top of the index
 - rss: True. Boolean, generate an RSS feed.
 
 Details:
-- category_filter is a space-separated list of categories to include in given
+- cat_filter is a space-separated list of categories to include in given
   site. The special symbol "*" matches all categories. The special symbol "$"
   matches empty categories lists (i.e. post with no categories). A category
   name can be prefixed by ! to be excluded. The order is NOT relevant.
   The exclusion has precedence on the inclusion.
   The default category filter (i.e. its absence) is "*", so that it matches everything.
 
-Example: category_filter=public cats !dogs !parrots $ funny
-will match all posts that have categories public or cats or funny or not category
-and will exclude those which have dogs and parrots. 
+Examples:
+  cat_filter=public cats !dogs !parrots $ funny
+	=> matches all posts that have categories public or cats or funny or no
+	category and will exclude those which have dogs and parrots.
 
-Note that:
-  category_filter=!dogs
+  cat_filter=!*
+  	=> excludes ALL posts. Can be used to block a site in case of hurry.
+  
+  cat_filter=!$
+  	=> excludes all posts that have no tags
+
+  cat_filter=!dogs
 and
-  category_filter=* !dogs
-mean the same thing: match every category, except those posts that use "dogs".
+  cat_filter=* !dogs
+	=> means the same thing: match every category, except those posts that use "dogs".
 
+  cat_filter=*
+and
+  cat_filter=
+  	=> means the same thing, i.e. accept everything (even posts with no categories)
+
+  cat_filter=* !$
+  	=> accepts all posts except those with no categories, i.e. accepts posts must
+  	   have at least one category set.
 
 ----------------------
 5- Source Selection

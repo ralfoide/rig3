@@ -210,7 +210,7 @@ class SitesSettings(SettingsBase):
                     s.cat_include = word
                 else:
                     s.cat_include[word] = True
-        if not s.cat_include:
+        if not s.cat_include or s.cat_include == _ALL:
             s.cat_include = None
         if not s.cat_exclude:
             s.cat_exclude = None

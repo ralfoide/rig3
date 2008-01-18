@@ -69,6 +69,11 @@ considered experimental and needs to be customized if you want to use it.
 To run Rig3 you need to provide a configuration file.
 Please read /misc/Configuration.txt for more details.
 
+Also look at /testdata/album, a simple album used by the unit test suite
+(do not modify it or the tests might fail!). It should give you an idea of
+the content structure expected.
+
+
 Once you have your configuration file, run Rig3 like this:
 
  $ rig3serv/src/rig3.py
