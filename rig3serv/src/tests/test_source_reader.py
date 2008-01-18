@@ -138,6 +138,8 @@ class SourceFileReaderTest(RigTestCase):
                 RelDir (self._tempdir, "file_items") ),
               ( RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html")),
                 RelDir (self._tempdir, "file_items") ),
+              ( RelFile(self.path, os.path.join("file_items", "2008-01-17 U Haz Been eZcluded.izu")),
+                RelDir (self._tempdir, "file_items") ),
               ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")),
                 RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
              ],
@@ -149,6 +151,8 @@ class SourceFileReaderTest(RigTestCase):
               SourceFile(datetime.fromtimestamp(3),
                          RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html"))),
               SourceFile(datetime.fromtimestamp(4),
+                         RelFile(self.path, os.path.join("file_items", "2008-01-17 U Haz Been eZcluded.izu"))),
+              SourceFile(datetime.fromtimestamp(5),
                          RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")))
             ],
             p)
