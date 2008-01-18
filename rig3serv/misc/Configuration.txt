@@ -3,11 +3,13 @@ Rig3 Documentation: Configuration
 
 Pre-amble: Rig3 is not a server. It's a standalone application that parses text files to
 generate a blog. To work, it uses a configuration file that describe the source to process
-and the kind of site to generate. It then generate the corresponding HTML files.
+and the kind of site to generate. It then generates the corresponding HTML files.
 
 The purpose of this document is to explain the configuration file.
 
+----------------------
 1- Location
+----------------------
 
 By default, rig3 will look for a configuration file in the following locations:
 - /etc/rig3.rc
@@ -18,7 +20,10 @@ can use the "-c" command-line flag to specify it. The most common case is that t
 located in the current directory, so you'll do something like this:
  $ /path/to/rig3.py -c myconfig.rc
 
+
+----------------------
 2- Format
+----------------------
 
 The configuration file has the following format:
 - it is separated in sections. Each section starts by a line with "[section-name]"
@@ -29,7 +34,10 @@ The section name "DEFAULT" has a special meaning: all its variables are "inherit
 sections (even if declared before.) This is convenient to avoid typing common values more
 than once, for example the theme to use.
 
+
+----------------------
 3- Expected Sections
+----------------------
 
 When rig3 parses a configuration file, it looks for a section called "serve".
 
@@ -50,7 +58,10 @@ a site and exclude it from processing.)
 Note that if the "serve" section is undefined or does not contain a "sites" variable, rig3
 will simply do nothing.
 
+
+----------------------
 4- Site Section Variables
+----------------------
 
 Here is the list of all variables expected in a site.
 
@@ -95,7 +106,9 @@ and
 mean the same thing: match every category, except those posts that use "dogs".
 
 
+----------------------
 5- Source Selection
+----------------------
 
 To specify source(s), you need to add one or more "sources" variables.
 Each variable contains one or more 'type: path' entries, separated by commas.
@@ -125,7 +138,10 @@ Example:
  sources_001 = all: /even/more/stuff
  sourcesStuff = all: /some/stuff
 
+
+----------------------
 6- Examples
+----------------------
 
 One of the nice effects you can achieve is to define several sites in your configuration
 file that use the same source, but with different category filters and different attributes.
