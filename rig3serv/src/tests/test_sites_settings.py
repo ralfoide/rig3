@@ -106,7 +106,7 @@ class SitesSettingsTest(RigTestCase):
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "inc" })
-        self.assertListEquals([ "inc" ], s.cat_include)
+        self.assertDictEquals({ "inc": True }, s.cat_include)
         self.assertEquals(None, s.cat_exclude)
 
         s = SiteSettings()
@@ -116,13 +116,13 @@ class SitesSettingsTest(RigTestCase):
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "$" })
-        self.assertListEquals([ SiteSettings.CAT_NOTAG ], s.cat_include)
+        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_include)
         self.assertEquals(None, s.cat_exclude)
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "!exc" })
         self.assertEquals(None, s.cat_include)
-        self.assertListEquals([ "exc" ], s.cat_exclude)
+        self.assertDictEquals({ "exc": True }, s.cat_exclude)
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "!*" })
@@ -132,16 +132,16 @@ class SitesSettingsTest(RigTestCase):
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "!$" })
         self.assertEquals(None, s.cat_include)
-        self.assertListEquals([ SiteSettings.CAT_NOTAG ], s.cat_exclude)
+        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_exclude)
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "abc !def $ foo !$ !bfg !foo" })
-        self.assertEquals([ "abc", SiteSettings.CAT_NOTAG, "foo" ], s.cat_include)
-        self.assertEquals([ "def", SiteSettings.CAT_NOTAG, "bfg", "foo" ], s.cat_exclude)
+        self.assertEquals({ "abc": True, SiteSettings.CAT_NOTAG: True, "foo": True }, s.cat_include)
+        self.assertEquals({ "def": True, SiteSettings.CAT_NOTAG: True, "bfg": True, "foo": True }, s.cat_exclude)
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
-        self.assertEquals(SiteSettings.CAT_ALL, s.cat_include)
+        self.assertEquals(None, s.cat_include)
         self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
 
 #------------------------

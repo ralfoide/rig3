@@ -23,6 +23,7 @@ from rig.template.template import Template
 from rig.source_item import SourceDir, SourceFile
 from rig.parser.dir_parser import RelFile
 from rig.version import Version
+from rig.sites_settings import SiteSettings
 
 #------------------------
 class SiteDefault(SiteBase):
@@ -235,6 +236,11 @@ class SiteDefault(SiteBase):
             return None
 
         cats = tags.get("cat", [])
+        
+        # Are item categories accepted on this site?
+        if not self._AcceptCategories(cats, self._settings):
+            return None
+        
         date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
 
@@ -471,6 +477,42 @@ class SiteDefault(SiteBase):
                              int(m.group("sec"  ) or 0)),
                     (m.group("rest") or "").strip().strip("_"))
         return (None, title)
+
+    def _AcceptCategories(self, cats, _settings):
+        """
+        This applies the category filters (includes & excludes) from the site's settings
+        to the given list of categories of a given post.
+        
+        Parameters:
+        - cats(list): A list of tag. List can be empty.
+        - settings(SiteSettings): A site's settings. Only cat_include and cat_exclude matter.
+
+        Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
+        
+        Returns true if the post should be accepted, and false if the post should
+        be filtered out.
+        """
+        # First apply exclusions... the first match makes the test fail
+        exc = _settings.cat_exclude
+        if exc == SiteSettings.CAT_ALL:
+            return False  # everything is excluded
+        elif exc:
+            if not cats and SiteSetting.CAT_NOTAG in exc:
+                return False  # exclude posts with no tags
+            for cat in cats:
+                if cat in exc:
+                    return False  # some word is excluded
+
+        # Then process inclusions... one of them must be there.
+        inc = _settings.cat_include
+        if not inc:
+            return True  # default is to match everything
+        if not cats and SiteSetting.CAT_NOTAG in inc:
+            return True  # include posts with no tags
+        for cat in cats:
+            if cat in inc:
+                return True  # some word is included
+        return False  # no inclusion worked
 
 #------------------------
 # Local Variables:

@@ -301,6 +301,9 @@ class SiteDefaultTest(RigTestCase):
                        'last_gen_ts': datetime.datetime(2007, 11, 18, 21, 53, 32) } },
                   m._fill_template_params)
 
+    def testAcceptCategories(self):
+        raise NotImplementedError("UT here")
+
 #------------------------
 # Local Variables:
 # mode: python

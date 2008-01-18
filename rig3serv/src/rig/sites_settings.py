@@ -29,10 +29,12 @@ class SiteSettings(object):
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
     - header_img_height (int): The height of the header_img. Default is 185.
-    - cat_exclude: A list of category words to exclude. Empty or None to exclude nothing,
+    - cat_exclude: A dict of category words to exclude. Empty or None to exclude nothing,
                    CAT_ALL to exclude everything, CAT_NOTAG to exclude all non-tagged.
-    - cat_include: A list of category words to include. Empty or None or CAT_ALL to include all,
+                   Note that the values in the dictionnary are irrelevant, only keys matter.
+    - cat_include: A dict of category words to include. Empty or None or CAT_ALL to include all,
                    CAT_NOTAG to include all non-tagged.
+                   Note that the values in the dictionnary are irrelevant, only keys matter.
     """
     CAT_ALL = "*"
     CAT_NOTAG = "$"
@@ -171,14 +173,22 @@ class SitesSettings(SettingsBase):
         """
         Processes a "cat_filter" variable on the settings and builds the
         corresponding cat_exclude and cat_include lists in the site's defaults.
+        
+        Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
+        The "all" exclusion trumps everything else.
+        The "all" inclusion trumps all other inclusions.
         """
         _ALL = SiteSettings.CAT_ALL
         _NOTAG = SiteSettings.CAT_NOTAG
         _EXCLUDE = SiteSettings.CAT_EXCLUDE
+        s.cat_exclude = {}
+        s.cat_include = {}
         words = vars.get("cat_filter", None)
         if words:
             words = words.split()  # split on any nwhitespace
         if not words:
+            s.cat_include = None
+            s.cat_exclude = None
             return
         for word in words:
             if word.startswith(_EXCLUDE) and s.cat_exclude != _ALL:
@@ -189,19 +199,21 @@ class SitesSettings(SettingsBase):
                                     "or !word (exclude 'word')", word)
                     continue
                 if exc == _ALL:
+                    # Shortcut for a site that excludes everything... we're done!
                     s.cat_exclude = exc
+                    s.cat_include = None
+                    return
                 else:
-                    if s.cat_exclude is None:
-                        s.cat_exclude = []
-                    s.cat_exclude.append(exc)
+                    s.cat_exclude[exc] = True
             elif s.cat_include != _ALL:
                 if word == _ALL:
                     s.cat_include = word
                 else:
-                    if s.cat_include is None:
-                        s.cat_include = []
-                    s.cat_include.append(word)
-
+                    s.cat_include[word] = True
+        if not s.cat_include:
+            s.cat_include = None
+        if not s.cat_exclude:
+            s.cat_exclude = None
 
 #------------------------
 # Local Variables:
