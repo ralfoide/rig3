@@ -86,7 +86,7 @@ class SiteDefault(SiteBase):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        self._GeneratePageByCategory("", "", categories, categories, items)
+        self._GeneratePageByCategory("", "", None, categories, items)
         for c in categories:
             self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
         # TODO: self.GeneratePageMonth(month, items)
@@ -101,6 +101,7 @@ class SiteDefault(SiteBase):
             being created. If the list is empty, the files will be created in the root.
             This is used also to generate the proper index.html urls.
         - category_filter: list of categories to use for this page (acts as a filter)
+            or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Only uses those which have at least one category
             in the category_filter list.
@@ -113,13 +114,16 @@ class SiteDefault(SiteBase):
             base_path = os.path.join(*path)
             self._MkDestDir(base_path)
 
-        # filter relevant items
-        relevant_items = []
-        for i in items:
-            for c in i.categories:
-                if c in category_filter:
-                    relevant_items.append(i)
-                    break
+        # filter relevant items (or all of them if there's no category_filter)
+        if category_filter is None:
+            relevant_items = items
+        else:
+            relevant_items = []
+            for i in items:
+                for c in i.categories:
+                    if c in category_filter:
+                        relevant_items.append(i)
+                        break
 
         prev_url = None
         next_url = None

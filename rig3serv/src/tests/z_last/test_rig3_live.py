@@ -71,7 +71,13 @@ class Rig3LiveTest(RigTestCase):
         # sub-directories are parsed for file items too
         self.assertHtmlSearch('<td class="title">\s*<span class="date">2008/01/02</span>Sub File Item</td></tr>',
                                index_izu)
-
+        # posts with no tags/categories are accepted
+        self.assertHtmlSearch('<td class="title">\s*<span class="date">2007/10/02</span>No Tags</td></tr>',
+                               index_izu)
+        # empty posts are accepted
+        self.assertHtmlSearch('<td class="title">\s*<span class="date">2007/10/01</span>Empty Post</td></tr>',
+                               index_izu)
+        
 
 
 #------------------------

@@ -1,7 +1,5 @@
 ---- TODO ----
 
-20080118 Template: Bug, posts with no categories should not be rejected
-20080118 Template: Disable s:en flags (Add SiteSettings to enable)
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071206 Izu:      [label|rig:image_glob] (with thumbnail)
 20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url
@@ -39,6 +37,8 @@
 
 ---- Done Version 0.3 ----
 
+20080118 Template: Bug, posts with no categories should not be rejected
+20080118 Template: Disable s:en flags (Add SiteSettings to enable) [=> obsolete]
 20080118 Template: SiteSetting base_url must be optional
 20080117 Engine:   Site settings, category_filter
 20080117 Engine:   Parsing for Site settings, category_filter (+UT, not used yet)

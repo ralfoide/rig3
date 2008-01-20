@@ -140,6 +140,10 @@ class SourceFileReaderTest(RigTestCase):
                 RelDir (self._tempdir, "file_items") ),
               ( RelFile(self.path, os.path.join("file_items", "2008-01-17 U Haz Been eZcluded.izu")),
                 RelDir (self._tempdir, "file_items") ),
+              ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-01 Empty Post.izu")),
+                RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
+              ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-02 No Tags.izu")),
+                RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
               ( RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")),
                 RelDir (self._tempdir, os.path.join("file_items", "sub_dir")) ),
              ],
@@ -153,7 +157,11 @@ class SourceFileReaderTest(RigTestCase):
               SourceFile(datetime.fromtimestamp(4),
                          RelFile(self.path, os.path.join("file_items", "2008-01-17 U Haz Been eZcluded.izu"))),
               SourceFile(datetime.fromtimestamp(5),
-                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu")))
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-01 Empty Post.izu"))),
+              SourceFile(datetime.fromtimestamp(6),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-02 No Tags.izu"))),
+              SourceFile(datetime.fromtimestamp(7),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu"))),
             ],
             p)
 
