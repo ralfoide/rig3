@@ -37,6 +37,7 @@
 
 ---- Done Version 0.3 ----
 
+20080120 Misc:     Created http://groups.google.com/group/rig3-discuss
 20080118 Template: Bug, posts with no categories should not be rejected
 20080118 Template: Disable s:en flags (Add SiteSettings to enable) [=> obsolete]
 20080118 Template: SiteSetting base_url must be optional
