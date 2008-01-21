@@ -24,6 +24,8 @@ _DATE_YMD = re.compile(r"^(?P<year>\d{4})[:/-]?(?P<month>\d{2})[:/-]?(?P<day>\d{
 
 _WS_LINE = re.compile(r"^[ \t\r\n\f]*$")
 
+_IZU_CAT_SEP = re.compile("[, \t\f]")
+
 _ACCENTS_TO_HTML = {
     "á": "&aacute;",
     "à": "&agrave;",
@@ -146,8 +148,8 @@ class IzuParser(object):
         self._log = log
         # custom section handlers. Unlisted sections use the "default" formatter
         self._formatters = { "images": self._ImagesSection,
-                             "html": self._HtmlSection }
-        self._tag_handlers = { "cat": self._CatHandler,
+                             "html":   self._HtmlSection }
+        self._tag_handlers = { "cat":  self._CatHandler,
                                "date": self._DateHandler }
 
     def RenderFileToHtml(self, filestream):
@@ -538,7 +540,12 @@ class IzuParser(object):
         """
         Handle izu:cat (categories) tags.
         """
-        state.Tags()[tag] = [s.strip() for s in value.split(",") if s.strip()]
+        cats = state.Tags().get(tag, {})
+        for cat in _IZU_CAT_SEP.split(value.lower()):
+            if cat:
+                cats[cat] = True
+        state.Tags()[tag] = cats
+
 
     # --- Utilites
 

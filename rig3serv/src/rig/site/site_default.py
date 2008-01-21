@@ -240,10 +240,11 @@ class SiteDefault(SiteBase):
             return None
 
         # Are item categories accepted on this site?
-        cats = tags.get("cat", [])
+        cats = tags.get("cat", {}).keys()
         if not self._AcceptCategories(cats, self._settings):
             return None
-        
+        cats.sort()
+
         date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
 

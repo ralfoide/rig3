@@ -14,6 +14,8 @@ from rig.settings_base import SettingsBase
 from rig.source_reader import SourceDirReader, SourceFileReader
 from rig.site_base import DEFAULT_THEME
 
+_CAT_FILTER_SEP = re.compile("[, \t\f]")
+
 #------------------------
 class SiteSettings(object):
     """
@@ -185,12 +187,16 @@ class SitesSettings(SettingsBase):
         s.cat_include = {}
         words = vars.get("cat_filter", None)
         if words:
-            words = words.split()  # split on any nwhitespace
+            # split on whitespace or comma
+            # categories are case insensitive
+            words = _CAT_FILTER_SEP.split(words.lower())
         if not words:
             s.cat_include = None
             s.cat_exclude = None
             return
         for word in words:
+            if not word:
+                continue
             if word.startswith(_EXCLUDE) and s.cat_exclude != _ALL:
                 exc = word[1:]
                 if not exc or exc == _EXCLUDE:

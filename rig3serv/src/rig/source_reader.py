@@ -17,6 +17,7 @@ from datetime import datetime
 from rig.source_item import SourceDir, SourceFile
 from rig.parser.dir_parser import DirParser, RelFile
 
+
 #------------------------
 class SourceReaderBase(object):
     """

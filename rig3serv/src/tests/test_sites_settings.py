@@ -142,6 +142,21 @@ class SitesSettingsTest(RigTestCase):
         self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
         self.assertEquals(None, s.cat_include)
         self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
+        
+        # category names are case-insenstive, they are internally all lower-case
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "foo Foo FooBar Bar bAr bar" })
+        self.assertDictEquals({ "foo": True, "bar": True, "foobar": True }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        # categories can be comma-separated or whitespace separated
+        s = SiteSettings()
+        self.m._ProcessCatFilter(s, { "cat_filter": "   a,b c d\te,f,,g  h\t\ti , \t j " })
+        self.assertDictEquals({ "a": True, "b": True, "c": True, "d": True,
+                                "e": True, "f": True, "g": True, "h": True,
+                                "i": True, "j": True, }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
 
 #------------------------
 # Local Variables:

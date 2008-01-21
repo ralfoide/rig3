@@ -37,6 +37,10 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml(text)
         return sections.get("en", None)
 
+    def _Tags(self, text):
+        tags, sections = self.m.RenderStringToHtml(text)
+        return tags
+
     def testEscapes(self):
         self.assertEquals(
             '<div class="izu">\n___3___ __2__</div>',
@@ -167,7 +171,7 @@ class IzuParserTest(RigTestCase):
         self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 22) }, tags)
 
         tags, sections = self.m.RenderStringToHtml("[izu:cat:videos,photos]")
-        self.assertDictEquals({ "cat":  [ "videos", "photos" ] }, tags)
+        self.assertDictEquals({ "cat":  { "videos": True, "photos": True } }, tags)
 
         tags, sections = self.m.RenderStringToHtml("[izu:title:some random title with : colon]")
         self.assertDictEquals({ "title":  "some random title with : colon" }, tags)
@@ -176,12 +180,12 @@ class IzuParserTest(RigTestCase):
         self.assertDictEquals({}, tags)
 
     def testParseFirstLine(self):
-        source = "<!-- [izu:author:ralf] [izu:date:2006-05-28 17:18:05] [izu:cat:] [izu:title:Video May/Mai 2006, Part 1] -->\nline 2\nline 3\n"
+        source = "<!-- [izu:author:ralf] [izu:date:2006-05-28 17:18:05] [izu:cat:foo,BAR Test] [izu:title:Video May/Mai 2006, Part 1] -->\nline 2\nline 3\n"
         tags = self.m.ParseFirstLine(source)
         self.assertDictEquals({ "title":  "Video May/Mai 2006, Part 1",
                                 "author": "ralf",
                                 "date":  datetime(2006, 5, 28, 17, 18, 5),
-                                "cat": [] },
+                                "cat": { "foo": True, "bar": True, "test": True } },
                                tags)
 
     def testAutoLink(self):
@@ -219,6 +223,17 @@ class IzuParserTest(RigTestCase):
             'href="[[raw rig_curr_album_link]]&img=A01234%20My%20Image.jpg">'
             'This is &amp; comment</a></div>',
             self._Render("[This is & comment|riglink:A01234*.jpg]"))
+
+    def testCatHandler(self):
+        self.assertEquals(None,
+            self._Tags("[izu:blah:]").get("cat"))
+
+        self.assertDictEquals({},
+            self._Tags("[izu:cat:]").get("cat"))
+
+        self.assertDictEquals(
+            { "foo": True, "bar": True, "foobar": True, "foob": True, "babar": True, "foobar2": True },
+            self._Tags("[izu:cat:foo,bar,Foo Bar FooBar,,foob  babar\t\ffoobar2]").get("cat"))
 
 #------------------------
 # Local Variables:
