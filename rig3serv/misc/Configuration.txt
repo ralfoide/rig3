@@ -88,10 +88,10 @@ The following variables have default values:
 - rss: True. Boolean, generate an RSS feed.
 
 Details:
-- cat_filter is a space-separated list of categories to include in given
-  site. The special symbol "*" matches all categories. The special symbol "$"
-  matches empty categories lists (i.e. post with no categories). A category
-  name can be prefixed by ! to be excluded. The order is NOT relevant.
+- cat_filter is a space-separated or comma-separated list of categories to include
+  in given site. The special symbol "*" matches all categories. The special
+  symbol "$" matches empty categories lists (i.e. post with no categories). A
+  category name can be prefixed by ! to be excluded. The order is NOT relevant.
   The exclusion has precedence on the inclusion.
   The default category filter (i.e. its absence) is "*", so that it matches everything.
 

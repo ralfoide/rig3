@@ -93,12 +93,13 @@ The value can be anything but a closing bracket.
 As for any other tags, use a second opening bracket to invalidate it (i.e. [[izu:tag:value]).
 
 The tags currently recognized by Rig3 are:
-- cat: A comma-separated list of categories. Category names cannot contain commas, and it is
-       recommended they do not contain whitespace. They are currently case-sensitive but that
-       is expected to change.
+- cat: A comma-separated or whitespace-separated list of categories. Category names
+       cannot contain commas nor whitespace. They are case-insensitive.
 - date: An optional date for the post. If present, it will override the one extracted from the
        post's filename or directory name. The accepted formats are:
         YYYYMMDDHHMMSS
+        YYYYMMDDHHM
+        YYYYMMDD
        	YYYY-MM-DD,HH:MM:SS (accepted separators are - : / and , or space for date/time)
        	YYYY-MM-DD,HH:MM
        	YYYY-MM-DD
