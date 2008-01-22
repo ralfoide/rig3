@@ -221,9 +221,8 @@ class SiteDefault(SiteBase):
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
             if may_have_images:
-                album = urllib.quote(rel_dir.rel_curr)
                 keywords = { "rig_curr_album_link":
-                                self._settings.rig_url + 'index.php?album=' + album }
+                              self._RigAlbumLink(self._settings, rel_dir.rel_curr) }
             else:
                 keywords = {}
 
@@ -370,14 +369,12 @@ class SiteDefault(SiteBase):
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
         album_title = cgi.escape(os.path.basename(source_dir.rel_curr))
-        album = urllib.quote(source_dir.rel_curr)
-        link = self._settings.rig_url + 'index.php?album=' + album
+        album = source_dir.rel_curr
+        link = self._RigAlbumLink(self._settings, album)
         if leafname:
             title = os.path.splitext(leafname)[0]
-            img = urllib.quote(leafname)
-            link += '&img=' + img
-            img = '%sindex.php?th=&album=%s&img=%s&sz=%s&q=75' % (
-                  self._settings.rig_url, album, img, size)
+            link = self._RigImgLink(self._settings, album, leafname)
+            img = self._RigThumbLink(self._settings, album, leafname, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
                 "title": title,
                 "img": img }
@@ -390,6 +387,30 @@ class SiteDefault(SiteBase):
         return url
 
     # Utilities, overridable for unit tests
+
+    def _RigAlbumLink(self, settings, album):
+        if not settings.rig_base:
+            return ""
+        return settings.rig_album_url % {
+                 "rig_base": settings.rig_base,
+                 "album": urllib.quote(album) }
+
+    def _RigImgLink(self, settings, album, img):
+        if not settings.rig_base:
+            return ""
+        return settings.rig_img_url % {
+                 "rig_base": settings.rig_base,
+                 "album": urllib.quote(album),
+                 "img":   urllib.quote(img) }
+
+    def _RigThumbLink(self, settings, album, img, size):
+        if not settings.rig_base:
+            return ""
+        return settings.rig_thumb_url % {
+                 "rig_base": settings.rig_base,
+                 "album": urllib.quote(album),
+                 "img":   urllib.quote(img),
+                 "size":  urllib.quote(str(size)) }
 
     def _GetRating(self, ascii):
         return self._RATING.get(ascii, self._RATING_DEFAULT)

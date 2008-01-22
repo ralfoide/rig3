@@ -26,8 +26,14 @@ class SiteSettings(object):
     - theme (str): Name of the theme to use, must match a directory in templates.
     - base_url (str): URL where the site will be published, in case templates wants to use that.
       Will be used as-is, so you probably want to terminate it with a / separator.
-    - rig_url (str): URL of the RIG served album. Will be used as-is, i.e. typically by
-      appending index.php, so you really want to terminate it with a / separator.
+    - rig_base(string): An http:// URL for the base of your RIG album.
+    - rig_link_px(int): 512, the default size of a [rigimg] tag in Izumi
+    - rig_album_url(string): Declares how to generate a link to a given RIG album.
+        rig_album_url=%(rig_base)s?album=%(album)s
+    - rig_img_url(string): Declares how to generate a text link to a given RIG image _page_.
+        rig_img_url=%(rig_base)s?album=%(album)s&img=%(img)s
+    - rig_thumb_url(string): Declares how to generate an IMG reference to a give RIG image.
+        rig_thumb_url=%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
     - header_img_height (int): The height of the header_img. Default is 185.
@@ -47,8 +53,12 @@ class SiteSettings(object):
                  source_list=None,
                  dest_dir=None,
                  theme=DEFAULT_THEME,
-                 base_url="http://html.base.url/",
-                 rig_url="http://rig.base.url/photos/",
+                 base_url=None,
+                 rig_base=None,
+                 rig_album_url="%(rig_base)s?album=%(album)s",
+                 rig_img_url="%(rig_base)s?album=%(album)s&img=%(img)s",
+                 rig_thumb_url="%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75",
+                 rig_link_px=512,
                  header_img_url="",
                  header_img_height=185,
                  tracking_code="",
@@ -59,7 +69,11 @@ class SiteSettings(object):
         self.dest_dir = dest_dir
         self.theme = theme
         self.base_url = base_url
-        self.rig_url = rig_url
+        self.rig_base = rig_base
+        self.rig_album_url = rig_album_url
+        self.rig_img_url = rig_img_url
+        self.rig_thumb_url = rig_thumb_url
+        self.rig_link_px = rig_link_px
         self.header_img_url = header_img_url
         self.header_img_height = header_img_height
         self.tracking_code = tracking_code

@@ -64,11 +64,16 @@ will simply do nothing.
 ----------------------
 
 Here is the list of all variables expected in a site.
+Remember that _any_ variable can be defined in the [DEFAULT] section and when
+doing so it will be inherited by each site's section, and you can of course
+override it in any section.
+
 
 The following variables are required:
 
 - sources = string, path of source directory (absolute or relative, see section 4 below)
 - dest_dir=None, path of output directory (absolute or relative)
+
 
 The following variables have default values:
 
@@ -76,24 +81,41 @@ The following variables have default values:
 - theme=DEFAULT_THEME, string of theme directory
 - base_url="http://html.base.url/", for templates which want to use it
 - header_img_url="", to replace the default header image in the default template
+- header_img_url=185, the height of the header_img in pixels.
+- rig_link_px=512, the default size of a [rigimg] tag in Izumi
 - tracking_code="", a raw html piece for google analytics or similar
-
-- rig_img_url: string format with <album> and <img> parameters
-- rig_album_url: string format with <album> parameter
 - link_to_rig_album: False. Should images link to the rig album?
-- link_to_rig_img: True. Should images link to the corresponding rig image? 
-- cat_filter: None or list of category names (strings, case-insensitive) to accept
+- link_to_rig_img: True. Should images link to the corresponding rig image?
 - permalinks: True. Boolean, true if should have permalinks
 - toc: False. Boolean, true if we want a TOC at the top of the index
 - rss: True. Boolean, generate an RSS feed.
 
-Details:
-- cat_filter is a space-separated or comma-separated list of categories to include
-  in given site. The special symbol "*" matches all categories. The special
-  symbol "$" matches empty categories lists (i.e. post with no categories). A
-  category name can be prefixed by ! to be excluded. The order is NOT relevant.
-  The exclusion has precedence on the inclusion.
-  The default category filter (i.e. its absence) is "*", so that it matches everything.
+The following optional variables are described in more details below:
+
+- cat_filter: None or list of category names (strings, case-insensitive) to accept.
+- sources: List of source directories (i.e. where posts & entries are read from.)
+- rig_img_url: string format with <album> and <img> parameters
+- rig_album_url: string format with <album> parameter
+
+
+----------------------
+5- Category Filter
+----------------------
+
+"cat_filter" is an optional variable that you can define per site.
+It lists categories that you want to filter in or out.
+
+cat_filter is a space-separated or comma-separated list of categories to include
+in given site.
+
+The special symbol "*" matches all categories.
+The special symbol "$" matches empty categories lists (i.e. post with no categories).
+
+A category name can be prefixed by ! to be excluded.
+
+The order is NOT relevant.
+The exclusion has precedence on the inclusion.
+The default category filter (i.e. its absence) is "*", so that it matches everything.
 
 Examples:
   cat_filter=public cats !dogs !parrots $ funny
@@ -120,8 +142,9 @@ and
   	=> accepts all posts except those with no categories, i.e. accepts posts must
   	   have at least one category set.
 
+
 ----------------------
-5- Source Selection
+6- Source Selection
 ----------------------
 
 To specify source(s), you need to add one or more "sources" variables.
@@ -154,20 +177,87 @@ Example:
 
 
 ----------------------
-6- Examples
+7- RIG URLs
+----------------------
+
+To be able to link to RIG, you need to specify how to generate the
+URL to create RIG images.
+
+Rig3 does not currently generate any image per se. Instead it creates
+_links_ to your existing RIG albums. The trick is simply to have both rig3
+and RIG point to the same source directories and the paths will align.
+
+There are 4 variables that are used to generate RIG links. One of them is
+mandatory, the others have default values.
+
+- rig_base: An http:// URL for the base of your RIG album (i.e. the web path to
+  the index.php).
+
+For example, if I have an album available at "http://www.exmple.com/pix/index.php",
+I'd use: rig_base=http://www.exmple.com/pix/index.php
+
+By default rig_base is EMPTY. When it is left empty, no RIG links or images are generated.
+
+
+- rig_album_url: This variable declares how to generate a link to a given RIG album.
+
+The default is:
+	rig_album_url=%(rig_base)s?album=%(album)s
+
+Where:
+	%(rig_base)s is the value of the site's rig_base variable as-is
+	%(album)s    is the URL-encoded album's path relative to the source directory
+	
+
+Note that "%(name)s" is a standard Python idiom for inserting a variable in a string.
+In this case "%(rig_base)s" will get replaced by the value of rig_base whereas
+%(album)s will get replaced by the URL-encoded album's relative path (relative to the
+corresponding source's directory).
+
+
+- rig_img_url: This variable declares how to generate a text link to a given RIG image _page_.
+
+Note: This does insert a *text* link to a RIG page for one image. Compare with the
+variable rig_thumb_url below, which generates a link to INCLUDE an image in-place.
+
+The default is:
+	rig_img_url=%(rig_base)s?album=%(album)s&img=%(img)s
+
+Where:
+	%(rig_base)s is the value of the site's rig_base variable as-is
+	%(album)s    is the URL-encoded album's path relative to the source directory
+	%(img)s      is the URL-encoded image's name (with extension)
+
+
+- rig_thumb_url: This variable declares how to generate an IMG reference to a give RIG image.
+
+The default is:
+	rig_thumb_url=%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75
+
+Where:
+	%(rig_base)s is the value of the site's rig_base variable as-is
+	%(album)s    is the URL-encoded album's path relative to the source directory
+	%(img)s      is the URL-encoded image's name (with extension)
+	%(size)s	 is the size in pixel of the largest dimension of the image
+
+
+----------------------
+7- Examples
 ----------------------
 
 One of the nice effects you can achieve is to define several sites in your configuration
 file that use the same source, but with different category filters and different attributes.
 For example, you can define a site for public post and another one for all private posts:
+
  [public-site]
  source = /path/to/posts
  dest_dir = public_html/blog/public
- category_filter = public
+ cat_filter = public
+ 
  [private-site]
  source = /path/to/posts
  dest_dir = public_html/blog/private
- category_filter = !public
+ cat_filter = !public
 
 Note that in this case you just need to specify a different destination directory and a
 different category filter.

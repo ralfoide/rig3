@@ -59,7 +59,7 @@ class SourceDirReaderTest(RigTestCase):
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",
-                              rig_url="http://example.com/photos/")
+                              rig_base="http://example.com/photos/")
         self.m = MockSourceDirReader(self.Log(), self.s, self.path)
 
     def tearDown(self):
@@ -127,7 +127,7 @@ class SourceFileReaderTest(RigTestCase):
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",
-                              rig_url="http://example.com/photos/")
+                              rig_base="http://example.com/photos/")
         self.m = MockSourceFileReader(self.Log(), self.s, self.path)
 
     def testParse(self):

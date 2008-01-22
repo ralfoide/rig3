@@ -61,7 +61,7 @@ class SiteDefaultTest(RigTestCase):
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",
-                              rig_url="http://example.com/photos/")
+                              rig_base="http://example.com/photos/index.php")
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
@@ -285,7 +285,7 @@ class SiteDefaultTest(RigTestCase):
                   { 'index.html': {
                        'max_page': 1,
                        'prev_url': None,
-                       'rig_url': 'http://example.com/photos/',
+                       'rig_base': 'http://example.com/photos/index.php',
                        'header_img_url': '',
                        'entries': [],
                        'next_url': None,
@@ -378,6 +378,37 @@ class SiteDefaultTest(RigTestCase):
         self.assertFalse(m._AcceptCategories([ "toto", "foo" ], s))
         self.assertFalse(m._AcceptCategories([ "bar" ], s))
         self.assertFalse(m._AcceptCategories([ "foo", "bar" ], s))
+
+    def testRigAlbumLink(self):
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        
+        settings = SiteSettings()
+        self.assertEquals("", m._RigAlbumLink(settings, "my album"))
+
+        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        self.assertEquals("http://my.rig/index.php?album=my%20album",
+                          m._RigAlbumLink(settings, "my album"))
+        
+    def testRigImgLink(self):
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
+        settings = SiteSettings()
+        self.assertEquals("", m._RigImgLink(settings, "my album", "my image.jpg"))
+
+        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        self.assertEquals("http://my.rig/index.php?album=my%20album&img=my%20image.jpg",
+                          m._RigImgLink(settings, "my album", "my image.jpg"))
+
+    def testRigThumbLink(self):
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        
+        settings = SiteSettings()
+        self.assertEquals("", m._RigThumbLink(settings, "my album", "my image.jpg", 640))
+
+        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        self.assertEquals("http://my.rig/index.php?th=&album=my%20album&img=my%20image.jpg&sz=640&q=75",
+                          m._RigThumbLink(settings, "my album", "my image.jpg", 640))
+
 
 #------------------------
 # Local Variables:

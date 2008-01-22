@@ -56,7 +56,7 @@ class SiteBaseTest(RigTestCase):
                               dest_dir=self._tempdir,
                               theme=DEFAULT_THEME,
                               base_url="http://www.example.com",
-                              rig_url="http://example.com/photos/")
+                              rig_base="http://example.com/photos/")
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
