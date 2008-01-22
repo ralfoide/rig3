@@ -181,7 +181,7 @@ class SourceFileReader(SourceReaderBase):
     Only files which name match the specified FILE_PATTERN regexp are considered valid.
     """
 
-    FILE_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
+    FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
     def __init__(self, log, settings, path):
         """
