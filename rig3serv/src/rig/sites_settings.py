@@ -27,7 +27,7 @@ class SiteSettings(object):
     - base_url (str): URL where the site will be published, in case templates wants to use that.
       Will be used as-is, so you probably want to terminate it with a / separator.
     - rig_base(string): An http:// URL for the base of your RIG album.
-    - rig_link_px(int): 512, the default size of a [rigimg] tag in Izumi
+    - rig_img_size(int): 512, the default size of a [rigimg] tag in Izumi
     - rig_album_url(string): Declares how to generate a link to a given RIG album.
         rig_album_url=%(rig_base)s?album=%(album)s
     - rig_img_url(string): Declares how to generate a text link to a given RIG image _page_.
@@ -58,7 +58,7 @@ class SiteSettings(object):
                  rig_album_url="%(rig_base)s?album=%(album)s",
                  rig_img_url="%(rig_base)s?album=%(album)s&img=%(img)s",
                  rig_thumb_url="%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75",
-                 rig_link_px=512,
+                 rig_img_size=512,
                  header_img_url="",
                  header_img_height=185,
                  tracking_code="",
@@ -73,7 +73,7 @@ class SiteSettings(object):
         self.rig_album_url = rig_album_url
         self.rig_img_url = rig_img_url
         self.rig_thumb_url = rig_thumb_url
-        self.rig_link_px = rig_link_px
+        self.rig_img_size = rig_img_size
         self.header_img_url = header_img_url
         self.header_img_height = header_img_height
         self.tracking_code = tracking_code

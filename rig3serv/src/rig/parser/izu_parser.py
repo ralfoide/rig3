@@ -450,9 +450,13 @@ class IzuParser(object):
         line = re.sub(r'(^|[^\[])\[((?:https?://|ftp://|#)[^"<>]+?)\]',
                       r'\1<a href="\2">\2</a>', line)
 
-        # rig link: [name|hriglink:image_glob]
+        # rig link: [name|riglink:image_glob]
         line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|riglink:([^"<>]+?)\]',
-                      lambda m: self._ReplRigLink(state, m), line)
+            lambda m: self._ReplRigLink(state, m.group(1), m.group(2), m.group(3)), line)
+
+        # rig image: [name|rigimg:size:image_glob]
+        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)([^"<>]+?)\]',
+            lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4)), line)
 
         # unformated link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
@@ -464,7 +468,7 @@ class IzuParser(object):
                       r'\1<a href="\2">\2</a>\3', line)
         return line
 
-    def _ReplRigLink(self, state, match):
+    def _ReplRigLink(self, state, first, title, image_glob):
         """
         Returns the replacement string for a [name|riglink:...] tag.
         
@@ -472,15 +476,32 @@ class IzuParser(object):
         located in the current Izu's file directory if possible.
         """
         result = ""
-        first = match.group(1)
-        title = match.group(2)
-        image_glob = match.group(3)
         filename = state.Filename()
         if filename and image_glob:
             choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
-                result = '<a title="%(name)s" href="[[[raw rig_curr_album_link]]&img=%(img)s">%(name)s</a>'
-                result %= { "name": title, "img": urllib.quote(choices[0], "/") }
+                result = '[[[if rig_base]]<a title="%(name)s" href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">%(name)s</a>[[[end]]'
+                result %= { "name": title, 
+                            "img": urllib.quote(choices[0], "/") }
+        return first + result
+
+    def _ReplRigImage(self, state, first, title, size, image_glob):
+        """
+        Returns the replacement string for a [name|rigimg:size:image_glob]
+        Title and size are optional and can be empty or None. 
+        
+        The image_glob parameter must be a leaf name (no paths) and will be
+        located in the current Izu's file directory if possible.
+        """
+        result = ""
+        filename = state.Filename()
+        if filename and image_glob:
+            choices = self._GlobGlob(os.path.dirname(filename), image_glob)
+            if choices:
+                result = '[[[if rig_base]]<img title="%(name)s" href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]"/>[[[end]]'
+                result %= { "name": title,
+                            "img": urllib.quote(choices[0], "/"),
+                            "size": size and ('"%s"' % size) or "rig_img_size" }
         return first + result
 
     def _FormatLists(self, state, line):

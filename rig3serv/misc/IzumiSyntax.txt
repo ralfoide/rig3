@@ -78,10 +78,28 @@ Sections: [s:<lang>], such as [s:en] and [s:fr].
 
 - rig link: [name|riglink:image_glob]
 
-This generate a *text* link onto a RIG image located in the *same* directory.
+This generates a *text* link onto a RIG image located in the *same* directory.
 Glob cannot move accross directories. It has to be something like "344_*.jpg" for example,
-not "../myimages/....".
-Note: Soon another tag will generate an izu image in place.
+not "../myimages/....". It replies on the site settings "rig_img_url" and "rig_base"
+variables.
+
+- rig image/thumbnail: [name|rigimg:size:image_glob]
+
+This generates a rig image/thumbnail inserted in-place in the generated HTML.
+It replies on the site settings "rig_thumb_url", "rig_base" and "rig_img_size" variables.
+
+The "name" part, if present, is the title/tag of the generated <IMG> HTML tag.
+It generally appears when hovering over the image.
+
+The "size" is expressed in pixels. It is optional, in which case the default
+value from "rig_img_size" is used.
+
+The following syntaxes are valid:
+	[name|rigimg:size:image_glob]
+	[name|rigimg:image_glob]
+	[rigimg:size:image_glob]
+	[rigimg:image_glob]
+
 
 
 **** Izumi Tags

@@ -4,6 +4,10 @@ Some content in English.
 
 Rig link: [This is a rig link|riglink:T12896*.jpg]
 
+Rig Image: [This is a rig image|rigimg:T12896*.jpg]
+
+Rig Image: [This is a rig image|rigimg:124:T12896*.jpg]
+
 [s:fr]
 Un mot ou deux en francais, avec des accents en ISO 8859-1:
       ça, où est le pré près du prêt?

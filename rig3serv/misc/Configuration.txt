@@ -82,7 +82,7 @@ The following variables have default values:
 - base_url="http://html.base.url/", for templates which want to use it
 - header_img_url="", to replace the default header image in the default template
 - header_img_url=185, the height of the header_img in pixels.
-- rig_link_px=512, the default size of a [rigimg] tag in Izumi
+- rig_img_size=512, the default size of a [rigimg] tag in Izumi
 - tracking_code="", a raw html piece for google analytics or similar
 - link_to_rig_album: False. Should images link to the rig album?
 - link_to_rig_img: True. Should images link to the corresponding rig image?
@@ -239,6 +239,8 @@ Where:
 	%(album)s    is the URL-encoded album's path relative to the source directory
 	%(img)s      is the URL-encoded image's name (with extension)
 	%(size)s	 is the size in pixel of the largest dimension of the image
+
+- rig_img_size=512, the default size of a [rigimg] tag in Izumi
 
 
 ----------------------

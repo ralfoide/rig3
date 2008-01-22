@@ -220,13 +220,10 @@ class SiteDefault(SiteBase):
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
-            if may_have_images:
-                keywords = { "rig_curr_album_link":
-                              self._RigAlbumLink(self._settings, rel_dir.rel_curr) }
-            else:
-                keywords = {}
-
             for s in sections.iterkeys():
+                keywords = self._settings.AsDict()
+                if may_have_images:
+                    keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
                 template = Template(self._log, source=sections[s])
                 sections[s] = template.Generate(keywords)
 

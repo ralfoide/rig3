@@ -219,9 +219,9 @@ class IzuParserTest(RigTestCase):
         self.m = MockIzuParser(self.Log(),
                                glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
         self.assertEquals(
-            '<div class="izu">\n<a title="This is &amp; comment" '
-            'href="[[raw rig_curr_album_link]]&img=A01234%20My%20Image.jpg">'
-            'This is &amp; comment</a></div>',
+            '<div class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
+            'href="[[raw rig_img_url % { "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg" } ]]">'
+            'This is &amp; comment</a>[[end]]</div>',
             self._Render("[This is & comment|riglink:A01234*.jpg]"))
 
     def testCatHandler(self):
