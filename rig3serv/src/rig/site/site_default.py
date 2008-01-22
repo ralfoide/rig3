@@ -287,6 +287,9 @@ class SiteDefault(SiteBase):
         TODO: currently has a lot of hardcoded things that should go into
         site-dependent prefs.
         """
+        if not self._settings.rig_base:
+            return None
+
         images = {}
         # images: index => { "top_rating": number,
         #                    "files": [ pattern.groupdict + "full": leaf name ] }
