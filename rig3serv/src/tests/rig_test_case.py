@@ -95,6 +95,15 @@ class RigTestCase(unittest.TestCase):
 
     # Fancy asserts
 
+    def assertEquals(self, expected, actual, msg=None):
+        """
+        Same as the base unittest.TestCase.assertEquals
+        except it prints both values on different lines for easier visual diff.
+        """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+              (msg or "assertEquals failed", expected, actual)
+        super(RigTestCase, self).assertEquals(expected, actual, msg)
+
     def assertSame(self, expected, actual, msg=None):
         """
         Asserts that the two reference point to the same object, not just
@@ -102,7 +111,7 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
               (msg or "assertSame failed", expected, actual)
-        self.assertEquals(id(expected), id(actual), msg)
+        super(RigTestCase, self).assertEquals(id(expected), id(actual), msg)
 
     def assertSearch(self, expected_regexp, actual, msg=None):
         """
@@ -164,7 +173,7 @@ class RigTestCase(unittest.TestCase):
                 (msg or "assertDictEquals failed", repr(expected), repr(actual))
         self.assertTrue(isinstance(actual, dict), msg)
         self.assertTrue(isinstance(expected, dict), msg)
-        self.assertEquals(expected, actual, msg)
+        super(RigTestCase, self).assertEquals(expected, actual, msg)
 
     def assertListEquals(self, expected, actual, msg=None, sort=False):
         """
@@ -196,7 +205,7 @@ class RigTestCase(unittest.TestCase):
         if expected != actual:
             for p in difflib.Differ().compare([str(i) for i in expected], [str(j) for j in actual]):
                 msg += "\n" + p
-            self.assertEquals(expected, actual, msg)
+            super(RigTestCase, self).assertEquals(expected, actual, msg)
 
     def assertHtmlEquals(self, expected, actual, msg=None):
         """
@@ -212,7 +221,7 @@ class RigTestCase(unittest.TestCase):
         if expected != actual:
             for p in difflib.Differ().compare(self.HtmlToList(expected), self.HtmlToList(actual)):
                 msg += "\n" + p
-            self.assertEquals(expected, actual, msg)
+            super(RigTestCase, self).assertEquals(expected, actual, msg)
 
     def assertHtmlMatches(self, expected_regexp, actual, msg=None):
         """

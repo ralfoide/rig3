@@ -12,6 +12,7 @@ __author__ = "ralfoide@gmail.com"
 from tests.rig_test_case import RigTestCase
 from rig.template.buffer import Buffer
 from rig.template.node import *
+from rig.template.tag import Tag
 
 #------------------------
 class NodeTest(RigTestCase):
@@ -26,8 +27,8 @@ class NodeTest(RigTestCase):
         self.assertEquals(content, NodeList([ NodeLiteral("abc"),
                                               NodeLiteral("second") ]))
 
-        self.assertEquals(NodeTag("for", [ "param1", "param2" ], content),
-                          NodeTag("for", [ "param1", "param2" ], content))
+        self.assertEquals(NodeTag(Tag("for", True), [ "param1", "param2" ], content),
+                          NodeTag(Tag("for", True), [ "param1", "param2" ], content))
 
 
 #------------------------
