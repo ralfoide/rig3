@@ -1,7 +1,6 @@
 ---- TODO ----
 
 20071225 Engine:   Site settings, Disable auto-image insertion
-20071206 Izu:      [label|rig:image_glob] (with thumbnail)
 20071225 Engine:   Site settings, Hidden categories
 
 20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
@@ -36,6 +35,7 @@
 
 ---- Done Version 0.3 ----
 
+20080123 Izu:      [label|rigimg:image_glob] (with thumbnail)
 20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url
 20080121 Engine:   Categories should be case-insensitive. Allow space-split in [izu:cat], like in cat_filter
 20080120 Misc:     Created http://groups.google.com/group/rig3-discuss

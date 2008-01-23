@@ -215,14 +215,51 @@ class IzuParserTest(RigTestCase):
               "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
               self.m._ConvertAccents("ça, où est le pré près du prêt?"))
 
-    def testAutoLinkRig(self):
+    def testRigLink(self):
         self.m = MockIzuParser(self.Log(),
                                glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
-            'href="[[raw rig_img_url % { "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg" } ]]">'
+            'href="[[raw rig_img_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg" } ]]">'
             'This is &amp; comment</a>[[end]]</div>',
             self._Render("[This is & comment|riglink:A01234*.jpg]"))
+
+    def testRigImage(self):
+        self.m = MockIzuParser(self.Log(),
+                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+        
+        # full tag with name, size and glob
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg:256:A01234*.jpg]"))
+        
+        # tag with name and glob, no size
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg:A01234*.jpg]"))
+        
+        # size field present but empty
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg::A01234*.jpg]"))
+
+        # full tag with size and glob but no name
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+            '[[end]]</div>',
+            self._Render("[rigimg:256:A01234*.jpg]"))
 
     def testCatHandler(self):
         self.assertEquals(None,

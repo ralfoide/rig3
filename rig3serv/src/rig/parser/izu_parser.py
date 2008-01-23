@@ -455,7 +455,7 @@ class IzuParser(object):
             lambda m: self._ReplRigLink(state, m.group(1), m.group(2), m.group(3)), line)
 
         # rig image: [name|rigimg:size:image_glob]
-        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)([^"<>]+?)\]',
+        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>]+?)\]',
             lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4)), line)
 
         # unformated link: http://blah or ftp:// (link cannot contain quotes)
@@ -498,7 +498,10 @@ class IzuParser(object):
         if filename and image_glob:
             choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
-                result = '[[[if rig_base]]<img title="%(name)s" href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]"/>[[[end]]'
+                result = '[[[if rig_base]]<img '
+                if title:
+                    result += 'title="%(name)s" '
+                result += 'href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">[[[end]]'
                 result %= { "name": title,
                             "img": urllib.quote(choices[0], "/"),
                             "size": size and ('"%s"' % size) or "rig_img_size" }
