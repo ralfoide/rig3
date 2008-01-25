@@ -261,6 +261,42 @@ class IzuParserTest(RigTestCase):
             '[[end]]</div>',
             self._Render("[rigimg:256:A01234*.jpg]"))
 
+        # full tag with name, size, glob and caption
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+            '<br><tt>This is a caption!</tt>'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg:256:A01234*.jpg|This is a caption!]"))
+
+        # tag with name and glob, no size and caption
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
+            '<br><tt>This is a caption!</tt>'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg:A01234*.jpg|This is a caption!]"))
+        
+        # size field present but empty and caption
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
+            '<br><tt>This is a caption!</tt>'
+            '[[end]]</div>',
+            self._Render("[This is & comment|rigimg::A01234*.jpg|This is a caption!]"))
+
+        # full tag with size and glob but no name and caption
+        self.assertEquals(
+            '<div class="izu">\n[[if rig_base]]<img '
+            'href="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+            '<br><tt>This is a caption!</tt>'
+            '[[end]]</div>',
+            self._Render("[rigimg:256:A01234*.jpg|This is a caption!]"))
+
     def testCatHandler(self):
         self.assertEquals(None,
             self._Tags("[izu:blah:]").get("cat"))

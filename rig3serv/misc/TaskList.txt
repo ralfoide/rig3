@@ -36,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20080124 Izu:      Support for rigimg with caption
 20080123 Izu:      [label|rigimg:image_glob] (with thumbnail)
 20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url
 20080121 Engine:   Categories should be case-insensitive. Allow space-split in [izu:cat], like in cat_filter

@@ -455,8 +455,8 @@ class IzuParser(object):
             lambda m: self._ReplRigLink(state, m.group(1), m.group(2), m.group(3)), line)
 
         # rig image: [name|rigimg:size:image_glob]
-        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>]+?)\]',
-            lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4)), line)
+        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]',
+            lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)), line)
 
         # unformated link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
@@ -485,9 +485,9 @@ class IzuParser(object):
                             "img": urllib.quote(choices[0], "/") }
         return first + result
 
-    def _ReplRigImage(self, state, first, title, size, image_glob):
+    def _ReplRigImage(self, state, first, title, size, image_glob, caption):
         """
-        Returns the replacement string for a [name|rigimg:size:image_glob]
+        Returns the replacement string for a [name|rigimg:size:image_glob|caption]
         Title and size are optional and can be empty or None. 
         
         The image_glob parameter must be a leaf name (no paths) and will be
@@ -501,10 +501,14 @@ class IzuParser(object):
                 result = '[[[if rig_base]]<img '
                 if title:
                     result += 'title="%(name)s" '
-                result += 'href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">[[[end]]'
+                result += 'href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
+                if caption:
+                    result += "<br><tt>%(caption)s</tt>"
+                result += '[[[end]]'
                 result %= { "name": title,
                             "img": urllib.quote(choices[0], "/"),
-                            "size": size and ('"%s"' % size) or "rig_img_size" }
+                            "size": size and ('"%s"' % size) or "rig_img_size",
+                            "caption": caption }
         return first + result
 
     def _FormatLists(self, state, line):

@@ -83,7 +83,7 @@ Glob cannot move accross directories. It has to be something like "344_*.jpg" fo
 not "../myimages/....". It replies on the site settings "rig_img_url" and "rig_base"
 variables.
 
-- rig image/thumbnail: [name|rigimg:size:image_glob]
+- rig image/thumbnail: [title|rigimg:size:image_glob|caption]
 
 This generates a rig image/thumbnail inserted in-place in the generated HTML.
 It replies on the site settings "rig_thumb_url", "rig_base" and "rig_img_size" variables.
@@ -95,8 +95,12 @@ The "size" is expressed in pixels. It is optional, in which case the default
 value from "rig_img_size" is used.
 
 The following syntaxes are valid:
-	[name|rigimg:size:image_glob]
-	[name|rigimg:image_glob]
+	[title|rigimg:size:image_glob|caption]
+	[title|rigimg:image_glob|caption]
+	[rigimg:size:image_glob|caption]
+	[rigimg:image_glob|caption]
+	[title|rigimg:size:image_glob]
+	[title|rigimg:image_glob]
 	[rigimg:size:image_glob]
 	[rigimg:image_glob]
 
