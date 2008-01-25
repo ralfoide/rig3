@@ -1,5 +1,6 @@
 ---- TODO ----
 
+20080124 Engine:   Ability to have a different rig_base per source
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
 
