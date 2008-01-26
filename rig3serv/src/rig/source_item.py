@@ -22,13 +22,15 @@ class SourceItem(object):
     In real usage, clients will process derived classes (e.g. SourceDir)
     which have members with actual data to process.
     """
-    def __init__(self, date, categories=None):
+    def __init__(self, date, rig_base=None, categories=None):
         self.date = date
+        self.rig_base = rig_base
         self.categories = categories or []
 
     def __eq__(self, rhs):
         return (isinstance(rhs, SourceItem) and
                 self.date == rhs.date and
+                self.rig_base == rhs.rig_base and
                 self.categories == rhs.categories)
 
 #------------------------

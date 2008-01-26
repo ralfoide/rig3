@@ -28,10 +28,11 @@ class SourceReaderBase(object):
     path. The settings are used for specific configuration, for example
     filtering patterns.
     """
-    def __init__(self, log, settings, path):
+    def __init__(self, log, settings, path, rig_base):
         self._log = log
         self._path = path
         self._settings = settings
+        self._rig_base = rig_base
 
     def GetPath(self):
         return self._path
@@ -79,7 +80,7 @@ class SourceDirReader(SourceReaderBase):
     DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
-    def __init__(self, log, settings, path):
+    def __init__(self, log, settings, path, rig_base):
         """
         Constructs a new SourceDirReader.
         
@@ -89,7 +90,7 @@ class SourceDirReader(SourceReaderBase):
         - path (String): The base directory to read recursively 
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceDirReader, self).__init__(log, settings, path)
+        super(SourceDirReader, self).__init__(log, settings, path, rig_base)
 
     def Parse(self, dest_dir):
         """
@@ -183,7 +184,7 @@ class SourceFileReader(SourceReaderBase):
 
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
-    def __init__(self, log, settings, path):
+    def __init__(self, log, settings, path, rig_base):
         """
         Constructs a new SourceDirReader.
         
@@ -193,7 +194,7 @@ class SourceFileReader(SourceReaderBase):
         - path (String): The base directory to read recursively 
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceFileReader, self).__init__(log, settings, path)
+        super(SourceFileReader, self).__init__(log, settings, path, rig_base)
 
     def Parse(self, dest_dir):
         """

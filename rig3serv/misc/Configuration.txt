@@ -144,40 +144,7 @@ and
 
 
 ----------------------
-6- Source Selection
-----------------------
-
-To specify source(s), you need to add one or more "sources" variables.
-Each variable contains one or more 'type: path' entries, separated by commas.
-If you need to use a comma in the path, place the path in double-quotes.
-
-Type is one of all | dirs | files | blogs:
- - "dirs": Each entry is stored in a directory which name is "date title",
-           The directory must contain an "index.izu" to be valid.
- - "files": Each entry is stored in a separate file which name is "date title.izu"
- - "blogs": Entries are grouped *.izu files with an [izu:blog] header. Each file
-           represents a blog category.
-
-The type "all" is an alias for "all the other source readers for this path".
-It is /really/ a shortcut to entering the same path 3 times with the different
-specific types. As a side effect, rig3 will read the path recursively *three*
-times. So unless you really mean that, use a specific type for a given path.
-
-Since duplicate variable names cannot be used, if you want multiple variables
-just add a suffix to "sources". It can be anything, e.g. "sources_1" or
-"sourcesABC" or "sourcesss", as long as it's a valid variable name. Sources
-variables are processed in lexicographical order.
-
-Example:
-
- sources = all: /home/user/izu_files, dirs: /my/dir, files: "/my,files/", files: /my/files2
- sources2 = all: /more/stuff
- sources_001 = all: /even/more/stuff
- sourcesStuff = all: /some/stuff
-
-
-----------------------
-7- RIG URLs
+6- RIG URLs
 ----------------------
 
 To be able to link to RIG, you need to specify how to generate the
@@ -241,6 +208,57 @@ Where:
 	%(size)s	 is the size in pixel of the largest dimension of the image
 
 - rig_img_size=512, the default size of a [rigimg] tag in Izumi
+
+
+----------------------
+7- Source Selection
+----------------------
+
+To specify source(s), you need to add one or more "sources" variables.
+Each variable contains one or more 'type: path' entries, separated by commas.
+If you need to use a comma in the path, place the path in double-quotes.
+
+Type is one of all | dirs | files | blogs:
+ - "dirs": Each entry is stored in a directory which name is "date title",
+           The directory must contain an "index.izu" to be valid.
+ - "files": Each entry is stored in a separate file which name is "date title.izu"
+ - "blogs": Entries are grouped *.izu files with an [izu:blog] header. Each file
+           represents a blog category.
+
+The type "all" is an alias for "all the other source readers for this path".
+It is /really/ a shortcut to entering the same path 3 times with the different
+specific types. As a side effect, rig3 will read the path recursively *three*
+times. So unless you really mean that, use a specific type for a given path.
+
+You can have as many entries as you want on per line.
+
+Since duplicate variable names cannot be used, if you want multiple variables
+just add a suffix to "sources". It can be anything, e.g. "sources_1" or
+"sourcesABC" or "sourcesss", as long as it's a valid variable name. Sources
+variables are processed in lexicographical order.
+
+Example:
+
+ sources = all: /home/user/izu_files, dirs: /my/dir, files: "/my,files/", files: /my/files2
+ sources2 = all: /more/stuff
+ sources_001 = all: /even/more/stuff
+ sourcesStuff = all: /some/stuff
+
+
+It might be convenient to override the RIG album generation depending on the source.
+Do to so, you can add one "rig_base: URL" entry per "sources" variable, it will
+apply to all the sources defined on that line and it will override the 
+"rig_base" variable for that site (or the global one defined in DEFAULT) if any.
+
+Example:
+
+ rig_base = http://main.server.com/pix/index.php
+ sources1 = files: "/my,files/", files: /my/files2
+ sources2 = files: /my/public/files, rig_base: http://public.server.com/index.php
+ sources3 = dirs: /home/dirs, rig_base: http://public.server.com/index.php, files: /home/files
+
+In this example, the files from sources1 will use the global rig_base variable
+whereas sources2 and 3 will use the specific rig_base defined in that variable.
 
 
 ----------------------
