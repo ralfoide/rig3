@@ -28,11 +28,11 @@ class SourceReaderBase(object):
     path. The settings are used for specific configuration, for example
     filtering patterns.
     """
-    def __init__(self, log, settings, path, rig_base):
+    def __init__(self, log, site_settings, path, source_settings):
         self._log = log
         self._path = path
-        self._settings = settings
-        self._rig_base = rig_base
+        self._site_settings = site_settings
+        self._source_settings = source_settings
 
     def GetPath(self):
         return self._path
@@ -54,12 +54,12 @@ class SourceReaderBase(object):
     def __eq__(self, rhs):
         """
         Two readers are equal if they have the same type, the same path
-        and the same settings.
+        and the same site_settings.
         """
         if isinstance(rhs, SourceReaderBase):
             return (type(self) == type(rhs) and
                     self._path == rhs._path and
-                    self._settings == rhs._settings)
+                    self._site_settings == rhs._site_settings)
         else:
             return False
     
@@ -80,17 +80,18 @@ class SourceDirReader(SourceReaderBase):
     DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
-    def __init__(self, log, settings, path, rig_base):
+    def __init__(self, log, site_settings, path, source_settings=None):
         """
         Constructs a new SourceDirReader.
         
         Arguments:
         - log (Log)
-        - settings (SiteSettings)
+        - site_settings (SiteSettings)
         - path (String): The base directory to read recursively 
+        - source_settings(SourceSettings): optional SourceSettings
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceDirReader, self).__init__(log, settings, path, rig_base)
+        super(SourceDirReader, self).__init__(log, site_settings, path, source_settings)
 
     def Parse(self, dest_dir):
         """
@@ -117,7 +118,7 @@ class SourceDirReader(SourceReaderBase):
             if all_files:
                 # Only process directories that have at least one file of interest
                 self._log.Debug("[%s] Process '%s' to '%s'",
-                                self._settings and self._settings.public_name or "[Unnamed Site]",
+                                self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
                                source_dir.rel_curr, dest_dir.rel_curr)
                 if self._UpdateNeeded(source_dir, dest_dir, all_files):
                     date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_path))
@@ -150,13 +151,13 @@ class SourceDirReader(SourceReaderBase):
         #try:
         #    dest_ts = self._DirTimeStamp(dest_dir.abs_path)
         #except OSError:
-        #    self._log.Info("[%s] Dest '%s' does not exist", self._settings.public_name,
+        #    self._log.Info("[%s] Dest '%s' does not exist", self._site_settings.public_name,
         #                   dest_dir.abs_path)
         #    return True
         #try:
         #    source_ts = self._DirTimeStamp(source_dir.abs_path)
         #except OSError:
-        #    self._log.Warn("[%s] Source '%s' does not exist", self._settings.public_name,
+        #    self._log.Warn("[%s] Source '%s' does not exist", self._site_settings.public_name,
         #                   source_dir.abs_path)
         #    return False
         #return source_ts > dest_ts
@@ -184,17 +185,18 @@ class SourceFileReader(SourceReaderBase):
 
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
-    def __init__(self, log, settings, path, rig_base):
+    def __init__(self, log, site_settings, path, source_settings=None):
         """
         Constructs a new SourceDirReader.
         
         Arguments:
         - log (Log)
-        - settings (SiteSettings)
+        - site_settings (SiteSettings)
         - path (String): The base directory to read recursively 
+        - source_settings(SourceSettings): optional SourceSettings
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceFileReader, self).__init__(log, settings, path, rig_base)
+        super(SourceFileReader, self).__init__(log, site_settings, path, source_settings)
 
     def Parse(self, dest_dir):
         """
@@ -217,7 +219,7 @@ class SourceFileReader(SourceReaderBase):
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Debug("[%s] Process '%s' to '%s'",
-                            self._settings and self._settings.public_name or "[Unnamed Site]",
+                            self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
                            source_dir.rel_curr, dest_dir.rel_curr)
             for file in all_files:
                 if self.FILE_PATTERN.search(file):

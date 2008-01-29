@@ -24,7 +24,7 @@ class SourceReaderBaseTest(RigTestCase):
     def setUp(self):
         self._tempdir = self.MakeTempDir()
         path = os.path.join(self.getTestDataPath(), "album")
-        self.m = SourceReaderBase(self.Log(), None, path)
+        self.m = SourceReaderBase(self.Log(), None, path, None)
 
     def tearDown(self):
         self.m = None

@@ -12,25 +12,34 @@ from datetime import datetime
 from rig.parser.dir_parser import RelDir, RelFile
 
 #------------------------
+class SourceSettings(object):
+    """
+    Settings that can be overriden and attached to a specific source.
+    """
+    def __init__(self, rig_base=None):
+        self.rig_base = rig_base
+
+#------------------------
 class SourceItem(object):
     """
     Abstract base class to represents an item:
     - list of categories (list of string)
     - date (datetime)
+    - optional SourceSettings
 
     The class is conceptually abstract, meaning it has no data.
     In real usage, clients will process derived classes (e.g. SourceDir)
     which have members with actual data to process.
     """
-    def __init__(self, date, rig_base=None, categories=None):
+    def __init__(self, date, source_settings=None, categories=None):
         self.date = date
-        self.rig_base = rig_base
+        self.source_settings = source_settings
         self.categories = categories or []
 
     def __eq__(self, rhs):
         return (isinstance(rhs, SourceItem) and
                 self.date == rhs.date and
-                self.rig_base == rhs.rig_base and
+                self.source_settings == rhs.source_settings and
                 self.categories == rhs.categories)
 
 #------------------------
@@ -46,8 +55,8 @@ class SourceDir(SourceItem):
     - rel_dir (RelDir): absolute+relative source directory
     - all_files (list [string]): All interesting files in this directory
     """
-    def __init__(self, date, rel_dir, all_files):
-        super(SourceDir, self).__init__(date)
+    def __init__(self, date, rel_dir, all_files, source_settings=None):
+        super(SourceDir, self).__init__(date, source_settings)
         self.rel_dir = rel_dir
         self.all_files = all_files
 
@@ -74,8 +83,8 @@ class SourceFile(SourceItem):
     - date (datetime): Date of the file
     - rel_file (RelFile): absolute+relative source file
     """
-    def __init__(self, date, rel_file):
-        super(SourceFile, self).__init__(date)
+    def __init__(self, date, rel_file, source_settings=None):
+        super(SourceFile, self).__init__(date, source_settings)
         self.rel_file = rel_file
 
     def __eq__(self, rhs):
