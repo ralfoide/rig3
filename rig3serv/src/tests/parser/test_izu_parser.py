@@ -74,9 +74,25 @@ class IzuParserTest(RigTestCase):
             self._Render("__foo\\\nbar__"))
 
     def testBr(self):
+        # [br] generates a <br> and can be used inside a formatting tag such as __bold__
         self.assertEquals(
             '<div class="izu">\nthere is a <b>break<br>in the line</b>\nbut not here.</div>',
             self._Render("there is a __break[br]in the line__\nbut not here."))
+
+        # / at the end of the lines generates a <br> but it cannot be used inside a formatting tag
+        self.assertEquals(
+            '<div class="izu">\nthere is a _break<br>\nin the line_\nbut not here.</div>',
+            self._Render("there is a __break/\nin the line__\nbut not here."))
+
+        # A double-slash // does not generate a <br> 
+        self.assertEquals(
+            '<div class="izu">\nthere is no //\na break.</div>',
+            self._Render("there is no //\na break."))
+
+        # / not at the end of the line is used as-is 
+        self.assertEquals(
+            '<div class="izu">\nthere is no /a break.</div>',
+            self._Render("there is no /a break."))
 
     def testP(self):
         self.assertEquals(

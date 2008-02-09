@@ -441,10 +441,13 @@ class IzuParser(object):
         Format simple tags. Currently only [br] and [p].
         Returns the formatted line.
         """
-        # [br] HTML <br>
+        # [br] generates an HTML <br> in-place
         line = re.sub(r'(^|[^\[])\[br\]', r'\1<br>', line)
+        
+        # A single forward-slash at the end of a line generates a <br> too
+        line = re.sub(r'(^|[^/])/$', r'\1<br>', line)
        
-        # [p] HTML <p>
+        # [p] generates an HTML <p/> in-place
         line = re.sub(r'(^|[^\[])\[p\]', r'\1<p/>', line)
 
         return line
