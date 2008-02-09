@@ -338,6 +338,7 @@ class IzuParser(object):
 
         # --- formatting tags
         line = self._FormatBoldItalicHtmlEmpty(line)
+        line = self._FormatSimpleTags(state, line)
         line = self._FormatLinks(state, line)
         line = self._FormatLists(state, line)
 
@@ -433,6 +434,19 @@ class IzuParser(object):
         # Code: ==word==
         line = re.sub(r"(^|[^=])==([^=].*?)==($|[^=])", r"\1<code>\2</code>\3", line)
        
+        return line
+
+    def _FormatSimpleTags(self, state, line):
+        """
+        Format simple tags. Currently only [br] and [p].
+        Returns the formatted line.
+        """
+        # [br] HTML <br>
+        line = re.sub(r'(^|[^\[])\[br\]', r'\1<br>', line)
+       
+        # [p] HTML <p>
+        line = re.sub(r'(^|[^\[])\[p\]', r'\1<p/>', line)
+
         return line
 
     def _FormatLinks(self, state, line):

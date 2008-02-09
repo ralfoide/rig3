@@ -73,6 +73,16 @@ class IzuParserTest(RigTestCase):
         self.assertEquals('<div class="izu">\n<b>foobar</b></div>',
             self._Render("__foo\\\nbar__"))
 
+    def testBr(self):
+        self.assertEquals(
+            '<div class="izu">\nthere is a <b>break<br>in the line</b>\nbut not here.</div>',
+            self._Render("there is a __break[br]in the line__\nbut not here."))
+
+    def testP(self):
+        self.assertEquals(
+            '<div class="izu">\nthere is a <b>break<p/>in the line</b>\nbut not here.</div>',
+            self._Render("there is a __break[p]in the line__\nbut not here."))
+
     def testBold(self):
         self.assertEquals(
             '<div class="izu">\n<b>this</b> is <b>in bold</b> but not <b>this</b></div>',
