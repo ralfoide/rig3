@@ -36,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20080209 Izu:      Support for line merging (end line with backslash before \r or \n)
 20080124 Izu:      Support for rigimg with caption
 20080123 Izu:      [label|rigimg:image_glob] (with thumbnail)
 20071123 Engine:   Site settings, rig_url => rig_img_url + rig_album_url

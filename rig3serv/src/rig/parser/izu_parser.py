@@ -223,6 +223,12 @@ class IzuParser(object):
             line = state.ReadLine()
             if line is None:
                 break
+            while line.endswith("\\"):
+                line = line[:-1]
+                temp = state.ReadLine()
+                if not temp is None:
+                    line += temp
+                
 
             # --- comments
             # First take care of the case of comment that opens and close on the same line

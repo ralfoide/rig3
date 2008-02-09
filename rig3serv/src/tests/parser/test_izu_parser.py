@@ -64,6 +64,12 @@ class IzuParserTest(RigTestCase):
             '<div class="izu">\n[izu-tag]\nLine 1\nLine 2\n<p>\nLine 3</div>',
             self._Render("[izu-tag]\nLine 1\nLine 2\n\nLine 3"))
 
+    def testLineContinuation(self):
+        self.assertEquals('<div class="izu">\n_foo\nbar_</div>',
+            self._Render("__foo\nbar__"))
+        self.assertEquals('<div class="izu">\n<b>foobar</b></div>',
+            self._Render("__foo\\\nbar__"))
+
     def testBold(self):
         self.assertEquals(
             '<div class="izu">\n<b>this</b> is <b>in bold</b> but not <b>this</b></div>',
