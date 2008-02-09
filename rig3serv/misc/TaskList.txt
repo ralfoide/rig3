@@ -36,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20080209 Template: Fix parsing of invalid dates such as 20071027-4400
 20080209 Izu:      Support for break by using a / at end of line
 20080209 Izu:      Support for [br] and [p]
 20080209 Izu:      Support for line merging (end line with backslash before \r or \n)

@@ -493,7 +493,9 @@ class SiteDefault(SiteBase):
         - or (None, original title)
         """
         m = self._DATE_YMD.match(title)
-        if m:
+        if not m:
+            return (None, title)
+        try:
             return (datetime(int(m.group("year" ) or 0),
                              int(m.group("month") or 0),
                              int(m.group("day"  ) or 0),
@@ -501,7 +503,23 @@ class SiteDefault(SiteBase):
                              int(m.group("min"  ) or 0),
                              int(m.group("sec"  ) or 0)),
                     (m.group("rest") or "").strip().strip("_"))
-        return (None, title)
+        except ValueError, e:
+            self._log.Warn("Failed to extract date from title '%s': %s", title, str(e))
+        
+        # Fall back, trying again without the time part
+        try:
+            return (datetime(int(m.group("year" ) or 0),
+                             int(m.group("month") or 0),
+                             int(m.group("day"  ) or 0),
+                             0,
+                             0,
+                             0),
+                    (m.group("rest") or "").strip().strip("_"))
+        except ValueError, e:
+            # This time we don't ignore it. If you get an exception here, please
+            # this your title or adjust the regexps for your site.
+            self._log.Exception("Failed to extract date from title '%s': %s", title, str(e))
+            raise
 
     def _AcceptCategories(self, cats, _settings):
         """

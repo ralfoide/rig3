@@ -150,6 +150,26 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007/10/27 12:13:14"))
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10/27,12/13/14"))
 
+    def testDateAndTitleFromTitle_ErrorCases(self):
+        m = MockSiteDefault(self, self.Log(), False, self.s)
+
+        # Hour is invalid: 44>23... log warning and ignore hour in this case
+        self.assertEquals((datetime(2007, 10, 27), ""),
+                          m._DateAndTitleFromTitle("20071027-4400"))
+
+        # Day must be in 1..31
+        self.assertRaises(ValueError, m._DateAndTitleFromTitle, "20071034")
+
+        # Month must be in 1..12
+        self.assertRaises(ValueError, m._DateAndTitleFromTitle, "20071527")
+
+        # Year must be in range 1..9999
+        self.assertRaises(ValueError, m._DateAndTitleFromTitle, "00001027")
+        self.assertEquals((datetime(1, 10, 27), ""),
+                          m._DateAndTitleFromTitle("00011027"))
+        self.assertEquals((datetime(9999, 10, 27), ""),
+                          m._DateAndTitleFromTitle("99991027"))
+
     def testGenerateItems_Izu(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album")
