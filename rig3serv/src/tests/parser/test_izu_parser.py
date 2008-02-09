@@ -65,8 +65,11 @@ class IzuParserTest(RigTestCase):
             self._Render("[izu-tag]\nLine 1\nLine 2\n\nLine 3"))
 
     def testLineContinuation(self):
+        # By default, a tag such as bold cannot be split on several lines
         self.assertEquals('<div class="izu">\n_foo\nbar_</div>',
             self._Render("__foo\nbar__"))
+        # Lines can be concatenated by using a backslash at the end, which allows
+        # single-line tags to work on several lines.
         self.assertEquals('<div class="izu">\n<b>foobar</b></div>',
             self._Render("__foo\\\nbar__"))
 

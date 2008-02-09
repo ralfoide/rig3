@@ -223,6 +223,8 @@ class IzuParser(object):
             line = state.ReadLine()
             if line is None:
                 break
+            # A backslash at the end of a line means the line must be merged
+            # with the next one. This is useful to split tags on several lines.
             while line.endswith("\\"):
                 line = line[:-1]
                 temp = state.ReadLine()
