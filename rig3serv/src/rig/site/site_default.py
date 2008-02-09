@@ -216,7 +216,7 @@ class SiteDefault(SiteBase):
         sections = {}
         tags = {}
         if izu_file:
-            self._log.Info("[%s] Render '%s' to HMTL", self._settings.public_name,
+            self._log.Info("[%s] Render '%s' to HTML", self._settings.public_name,
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
