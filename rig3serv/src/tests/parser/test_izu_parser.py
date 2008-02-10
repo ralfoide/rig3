@@ -152,11 +152,32 @@ class IzuParserTest(RigTestCase):
             '<div class="izu">\nfoo\nbar</div>',
             self._Render("foo[!-- blah blah\n\n\n\nbleh bleh --]bar"))
 
+        # You can have multiple comments on a single line
+        self.assertEquals(
+            '<div class="izu">\nfoo\ntoto\nbar</div>',
+            self._Render("foo[!--blah1--]toto[!--blah2--]bar"))
+
     def testRawHtmlBlock(self):
         # The raw html block can pass anything in
         self.assertEquals(
             '<div class="izu">\nfoo<img whatever>\nand &lt;img&gt;bar</div>',
             self._Render("foo[!html:<img whatever>--]and <img>bar"))
+
+        # You can have multiple raw html blocks on a single line
+        self.assertEquals(
+            '<div class="izu">\nfoo<blah1>\ntoto<blah2>\nbar</div>',
+            self._Render("foo[!html:<blah1>--]toto[!html:<blah2>--]bar"))
+
+        # Comments and HTML don't nest. Whichever comes first wins.
+        self.assertEquals(
+            '<div class="izu">\nfoo\nand &lt;img&gt;bar</div>',
+            self._Render("foo[!--[!html:<img whatever>--]and <img>bar"))
+
+        # A block can start on a line and end on another. Inner new lines are
+        # discarded. TODO: this should be fixed, they should be passed as-is.
+        self.assertEquals(
+            '<div class="izu">\nfirst line\nfoo<blah1><blah2>toto</blah2>\nbar\nend</div>',
+            self._Render("first line\nfoo[!html:<blah1>\n<blah2>toto</blah2>--]bar\nend"))
 
     def testSection(self):
         tags, sections = self.m.RenderStringToHtml("default section is en")

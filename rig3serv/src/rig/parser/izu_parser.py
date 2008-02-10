@@ -236,48 +236,20 @@ class IzuParser(object):
             is_block, line = self._ParseEscapeBlock(is_block, state, line)
             if not is_block:
                 self._ParseLine(state, line)
-            continue
-
-#            # --- escaped blocks
-#            # First take care of the case of comment that opens and close on the same line
-#            line = re.sub(r"(^|[^\[])\[!--.*?--\]", r"\1", line)
-#
-#            # Now handle the case of a comment that gets closed and another one opened
-#            # on the line...
-#            if is_block:
-#                m = re.match(".*?--\](?P<line>.*)$", line)
-#                if m:
-#                    # A comment is being closed.
-#                    is_block = False
-#                    line = m.group("line") or ""
-#                else:
-#                    # We're still in a comment and it's not being closed, skip line
-#                    continue
-#
-#            if not is_block:
-#                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", line)
-#                if m:
-#                    # A comment has been opened, just use the start of the line
-#                    is_block = True
-#                    line = m.group("line") or ""
-#                    # Skip empty lines (they don't generate <p> in a comment)
-#                    if not line:
-#                        continue
-#
-#            self._ParseLine(state, line)
         # end of file reached
 
     def _ParseEscapeBlock(self, is_block, state, line):
         """
         """
         # First take care of the case of a block that opens and closes on the same line
-        m = re.match(r"(?P<start>(?:^|.*[^\[]))\[!(?P<name>--|html:)(?P<body>.*?)--\](?P<end>.*)$", line)
-        if m:
+        while line:
+            m = re.match(r"(?P<start>(?:^|.*?[^\[]))\[!(?P<name>--|html:)(?P<body>.*?)--\](?P<end>.*)$", line)
+            if not m:
+                break
             start = m.group("start")
             line  = m.group("end")
             name  = m.group("name")
             body  = m.group("body")
-
             if start:
                 self._ParseLine(state, start)
             if body:
@@ -295,7 +267,7 @@ class IzuParser(object):
                 is_block = None
                 line = m.group("line") or ""
             else:
-                # We're still in a block and it's not being closed, process line
+                # We're still in a block and it's not being closed, process line.
                 self._escape_block[is_block](state, line)
 
         if not is_block:

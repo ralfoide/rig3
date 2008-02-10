@@ -35,6 +35,7 @@
 
 ---- Done Version 0.3 ----
 
+20080210 Izu:      More UT for multi-line escape blocks + fixes
 20080209 Izu:      Raw HTML tag [!html: ... --]
 20080209 Template: Fix parsing of invalid dates such as 20071027-4400
 20080209 Izu:      Support for break by using a / at end of line
