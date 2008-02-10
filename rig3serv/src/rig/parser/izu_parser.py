@@ -147,6 +147,8 @@ class IzuParser(object):
     def __init__(self, log):
         self._log = log
         # custom section handlers. Unlisted sections use the "default" formatter
+        self._escape_block = { "--": self._EscapeComment,
+                               "html:": self._EscapeRawHtml }
         self._formatters = { "images": self._ImagesSection,
                              "html":   self._HtmlSection }
         self._tag_handlers = { "cat":  self._CatHandler,
@@ -215,7 +217,7 @@ class IzuParser(object):
             
 
     def _ParseStream(self, state):
-        is_comment = False
+        is_block = None
         state.SetCurrSection("en",
                              self._formatters.get("en", self._DefaultSection))
 
@@ -230,38 +232,108 @@ class IzuParser(object):
                 temp = state.ReadLine()
                 if not temp is None:
                     line += temp
-                
 
-            # --- comments
-            # First take care of the case of comment that opens and close on the same line
-            line = re.sub(r"(^|[^\[])\[!--.*?--\]", r"\1", line)
+            is_block, line = self._ParseEscapeBlock(is_block, state, line)
+            if not is_block:
+                self._ParseLine(state, line)
+            continue
 
-            # Now handle the case of a comment that gets closed and another one opened
-            # on the line...
-            if is_comment:
-                m = re.match(".*?--\](?P<line>.*)$", line)
-                if m:
-                    # A comment is being closed.
-                    is_comment = False
-                    line = m.group("line") or ""
-                else:
-                    # We're still in a comment and it's not being closed, skip line
-                    continue
-
-            if not is_comment:
-                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", line)
-                if m:
-                    # A comment has been opened, just use the start of the line
-                    is_comment = True
-                    line = m.group("line") or ""
-                    # Skip empty lines (they don't generate <p> in a comment)
-                    if not line:
-                        continue
-
-            self._ParseLine(state, line)
+#            # --- escaped blocks
+#            # First take care of the case of comment that opens and close on the same line
+#            line = re.sub(r"(^|[^\[])\[!--.*?--\]", r"\1", line)
+#
+#            # Now handle the case of a comment that gets closed and another one opened
+#            # on the line...
+#            if is_block:
+#                m = re.match(".*?--\](?P<line>.*)$", line)
+#                if m:
+#                    # A comment is being closed.
+#                    is_block = False
+#                    line = m.group("line") or ""
+#                else:
+#                    # We're still in a comment and it's not being closed, skip line
+#                    continue
+#
+#            if not is_block:
+#                m = re.match("(?P<line>.*?(?:^|[^\[]))\[!--.*$", line)
+#                if m:
+#                    # A comment has been opened, just use the start of the line
+#                    is_block = True
+#                    line = m.group("line") or ""
+#                    # Skip empty lines (they don't generate <p> in a comment)
+#                    if not line:
+#                        continue
+#
+#            self._ParseLine(state, line)
         # end of file reached
 
+    def _ParseEscapeBlock(self, is_block, state, line):
+        """
+        """
+        # First take care of the case of a block that opens and closes on the same line
+        m = re.match(r"(?P<start>(?:^|.*[^\[]))\[!(?P<name>--|html:)(?P<body>.*?)--\](?P<end>.*)$", line)
+        if m:
+            start = m.group("start")
+            line  = m.group("end")
+            name  = m.group("name")
+            body  = m.group("body")
 
+            if start:
+                self._ParseLine(state, start)
+            if body:
+                self._escape_block[name](state, body)
+            
+        # Now handle the case of a block that gets closed and another one opened
+        # on the line...
+        if is_block:
+            m = re.match("(?P<body>.*?)--\](?P<line>.*)$", line)
+            if m:
+                # A block is being closed.
+                body  = m.group("body")
+                if body:
+                    self._escape_block[is_block](state, body)
+                is_block = None
+                line = m.group("line") or ""
+            else:
+                # We're still in a block and it's not being closed, process line
+                self._escape_block[is_block](state, line)
+
+        if not is_block:
+            m = re.match("(?P<start>.*?(?:^|[^\[]))\[!(?P<name>--|html:)(?P<body>.*)$", line)
+            if m:
+                # A block has been opened, just use the start of the line
+                start  = m.group("start")
+                name  = m.group("name")
+                body  = m.group("body")
+
+                is_block = name
+                line = ""
+
+                if start:
+                    self._ParseLine(state, start)
+                if body:
+                    self._escape_block[name](state, body)
+
+        return is_block, line
+
+    def _EscapeComment(self, state, line):
+        """
+        Process an escaped line in an [!-- ... --] comment block.
+        We simply drop the line.
+        """
+        pass
+
+    def _EscapeRawHtml(self, state, line):
+        """
+        Process an escaped line in an [!html: ... --] block.
+        We simply appending the line as-is, unescaped, to the current section
+        without using the current section formatter.
+        """
+        curr_section = state.CurrSection()
+        state.InitSection(curr_section, "")
+        state.Append(curr_section, line)
+
+                               
     # --- structural parsers
 
     def _ParseLine(self, state, line):
@@ -328,6 +400,7 @@ class IzuParser(object):
 
 
     # --- section formatters
+        # finally append the line to the section
 
     def _DefaultSection(self, state, line):
         """

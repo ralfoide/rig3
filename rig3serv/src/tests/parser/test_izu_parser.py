@@ -128,8 +128,10 @@ class IzuParserTest(RigTestCase):
             self._Render("Line 1\nLine 4[Line 5|http://link.com]\n"))
 
     def testComments(self):
+        # An inline comment generates a section break, so the section formatter
+        # will insert a whitespace.
         self.assertEquals(
-            '<div class="izu">\nfoobar</div>',
+            '<div class="izu">\nfoo\nbar</div>',
             self._Render("foo[!-- blah blah --]bar"))
 
         self.assertEquals(
@@ -149,6 +151,12 @@ class IzuParserTest(RigTestCase):
         self.assertEquals(
             '<div class="izu">\nfoo\nbar</div>',
             self._Render("foo[!-- blah blah\n\n\n\nbleh bleh --]bar"))
+
+    def testRawHtmlBlock(self):
+        # The raw html block can pass anything in
+        self.assertEquals(
+            '<div class="izu">\nfoo<img whatever>\nand &lt;img&gt;bar</div>',
+            self._Render("foo[!html:<img whatever>--]and <img>bar"))
 
     def testSection(self):
         tags, sections = self.m.RenderStringToHtml("default section is en")
