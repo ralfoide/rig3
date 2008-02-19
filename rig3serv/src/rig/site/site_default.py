@@ -86,16 +86,22 @@ class SiteDefault(SiteBase):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
+        # Generate pages with all posts (whether they have a category or not)
         self._GeneratePageByCategory("", "", None, categories, items)
-        for c in categories:
-            self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
+        
+        # Only generate per-category pages if we have more than one category
+        if len(categories) > 1:
+            for c in categories:
+                self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
         # TODO: self.GeneratePageMonth(month, items)
 
-    def _GeneratePageByCategory(self, path, rel_base, category_filter, all_categories, items):
+    def _GeneratePageByCategory(self, path, rel_base,
+                                category_filter, all_categories,
+                                items, max_num_pages=None):
         """
         Generates pages with items which have at least one category in the
         category_filter list. SiteItems are not re-ordered, it's up to the caller to
-        re-order the items list if necessary.
+        re-order the items by decreasing date order.
 
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
@@ -104,7 +110,8 @@ class SiteDefault(SiteBase):
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Only uses those which have at least one category
-            in the category_filter list.
+            in the category_filter list. Items must be sorted by decreasing date order.
+        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
         base_url = "/".join(path)
         if base_url:
@@ -129,6 +136,8 @@ class SiteDefault(SiteBase):
         next_url = None
         n = len(relevant_items)
         np = n / self._ITEMS_PER_PAGE
+        if max_num_pages:
+            np = min(np, max_num_pages)
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
