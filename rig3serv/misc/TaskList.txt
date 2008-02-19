@@ -1,6 +1,11 @@
 ---- TODO ----
 
+20080218 Template: Generate per-month pages and limit index to first page
+20080218 Template: Permalink to the per-month pages
+20080218 Engine:   Call custom script for on-the-fly image generation + pref
 20080124 Engine:   Ability to have a different rig_base per source
+20080218 Template: Custom page header per category
+
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
 
@@ -11,7 +16,6 @@
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
 20071123 Engine:   Site settings, permalinks
 20071123 Engine:   Site settings, toc
-20071123 Engine:   Site settings, link_to_rig=album|img(image)
 
 20071226 Tests:    UTs for SiteRalf / SiteMagic
 
