@@ -5,6 +5,7 @@
 20080218 Engine:   Call custom script for on-the-fly image generation + pref
 20080124 Engine:   Ability to have a different rig_base per source
 20080218 Template: Custom page header per category
+20080219 Engine:   Generate Atom feed
 
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
@@ -35,6 +36,9 @@
 
 20071123 Engine:   Site settings, rss
 20071215 Engine:   Investigate PIL support (for resizing, for header_img guess, etc.)
+
+20080215 Prefs:    Disable raw HTML by default
+20080219 Engine:   Generate RSS feed
 
 
 ---- Done Version 0.3 ----
