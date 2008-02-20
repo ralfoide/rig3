@@ -32,6 +32,7 @@ class MockSiteDefault(SiteDefault):
     def __init__(self, test_case, log, dry_run, settings):
         self._test_case = test_case
         self._fill_template_params = {}
+        self._write_file_params = []
         super(MockSiteDefault, self).__init__(log, dry_run, settings)
 
     def _TemplateDir(self):
@@ -44,10 +45,44 @@ class MockSiteDefault(SiteDefault):
         """
         Keeps a copy of the _FillTemplate parameters and then call the original.
         Trapped parameters are available in
-          self._fill_template_params[template] => keyuword dict.
+          self._fill_template_params[template] => list(keyuword dict.)
         """
-        self._fill_template_params[template] = dict(keywords)
+        if not template in self._fill_template_params:
+            self._fill_template_params[template] = []
+        self._fill_template_params[template].append(dict(keywords))
         return super(MockSiteDefault, self)._FillTemplate(template, **keywords)
+
+    def _WriteFile(self, data, dest_dir, leafname):
+        """
+        Keeps a copy of all parameters given to _WriteFile and then calls
+        the original. Trapped parameters are available in
+          self._write_file_params => list(data, dest_dir, leafname)
+        See GetWriteFileData(n, m) below.
+        """
+        self._write_file_params.append((data, dest_dir, leafname))
+
+    _DATA = 0
+    _DEST_DIR = 1
+    _LEAFNAME = 2
+    
+    def GetWriteFileData(self, tuple_index1, tuple_index2=None):
+        """
+        Returns a *copy* of the self._write_file_params list
+        with items rearanged.
+        - tuple_index1: _DATA, _DEST_DIR or _LEAFNAME, the first
+          value to return.
+        - tuple_index2: _DATA, _DEST_DIR, _LEAFNAME or None, the second value to return.
+        
+        This basically remaps (data, dest_dir, leafname) to whatever you like
+        to test. If tuple_index2 is None, only one value is given directly
+        in the list, otherwise it's a tuple (value1, value2).
+        """
+        # Hey kids, go write that in Java in less than a few dozen lines!
+        if tuple_index2 is None:
+            return [ p[tuple_index1] for p in self._write_file_params ]
+        else:
+            return [ ( p[tuple_index1], p[tuple_index2] ) for p in self._write_file_params ]
+
 
 #------------------------
 class SiteDefaultTest(RigTestCase):
@@ -90,7 +125,9 @@ class SiteDefaultTest(RigTestCase):
         html = m._FillTemplate("index.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertTrue("index.html" in m._fill_template_params)
-        self.assertDictEquals(keywords, m._fill_template_params["index.html"])
+        self.assertTrue(1, len(m._fill_template_params["index.html"]))
+        self.assertDictEquals(keywords, m._fill_template_params["index.html"][0])
+        self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
         self.assertHtmlEquals(
             r"""<html lang="en-US">
                 <head>
@@ -114,7 +151,9 @@ class SiteDefaultTest(RigTestCase):
         html = m._FillTemplate("entry.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertTrue("entry.html" in m._fill_template_params)
-        self.assertDictEquals(keywords, m._fill_template_params["entry.html"])
+        self.assertTrue(1, len(m._fill_template_params["entry.html"]))
+        self.assertDictEquals(keywords, m._fill_template_params["entry.html"][0])
+        self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
         self.assertHtmlEquals(
             r"""<div class="entry">
                 <h2>MyTitle</h2>
