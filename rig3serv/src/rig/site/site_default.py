@@ -70,8 +70,6 @@ class SiteDefault(SiteBase):
         The base implementation is expected to be good enough.
         
         Returns self for chaining
-
-        Subclassing: Derived classes SHOULD override this. Parent does nothing.
         """
         self._MkDestDir(self._ITEMS_DIR)
         return self
@@ -80,8 +78,6 @@ class SiteDefault(SiteBase):
         """
         - categories: list of categories accumulated from each entry
         - items: list of SiteItem
-
-        Subclassing: Derived classes MUST override this and not call the parent.
         """
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
@@ -183,8 +179,6 @@ class SiteDefault(SiteBase):
 
         Arguments:
         - source_item: An instance of SourceItem.
-
-        Subclassing: Derived classes MUST override this and not call the parent.
         """
         may_have_images = False
         all_files = None

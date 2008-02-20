@@ -14,7 +14,7 @@ from datetime import datetime
 from tests.rig_test_case import RigTestCase
 
 from rig.site.site_default import SiteDefault
-from rig.site_base import DEFAULT_THEME
+from rig.site_base import DEFAULT_THEME, SiteItem
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
@@ -54,8 +54,11 @@ class MockSiteDefault(SiteDefault):
 
     def _WriteFile(self, data, dest_dir, leafname):
         """
-        Keeps a copy of all parameters given to _WriteFile and then calls
-        the original. Trapped parameters are available in
+        Keeps a copy of all parameters given to _WriteFile.
+        This implementation does NOT call the base class so that nothing gets
+        written anywhere.
+        
+        Trapped parameters are available in
           self._write_file_params => list(data, dest_dir, leafname)
         See GetWriteFileData(n, m) below.
         """
@@ -468,7 +471,29 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals("http://my.rig/index.php?th=&album=my%20album&img=my%20image.jpg&sz=640&q=75",
                           m._RigThumbLink(settings, "my album", "my image.jpg", 640))
 
+    def testGeneratePages(self):
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
 
+        # printing an empty list of items only generates an index page
+        m.GeneratePages(categories=[], items=[])
+        self.assertListEquals([ "index.html" ], m.GetWriteFileData(m._LEAFNAME))
+        
+        # printing 3 times + 1 the number of items per page generates 4 pages
+        items = []
+        cats = []
+        for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 1):
+            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          rel_filename="entry_%d" % x,
+                          content="content",
+                          categories=cats)
+            items.append(si)
+        m.GeneratePages(cats, items)
+        self.assertListEquals(
+          [ "index.html", "index1.html", "index2.html", "index3.html" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        
 #------------------------
 # Local Variables:
 # mode: python
