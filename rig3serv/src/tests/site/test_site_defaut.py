@@ -488,6 +488,7 @@ class SiteDefaultTest(RigTestCase):
                           content="content",
                           categories=cats)
             items.append(si)
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "index.html", "index1.html", "index2.html", "index3.html" ],
