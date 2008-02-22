@@ -494,6 +494,57 @@ class SiteDefaultTest(RigTestCase):
           [ "index.html", "index1.html", "index2.html", "index3.html" ],
           m.GetWriteFileData(m._LEAFNAME))
 
+        # print items with only one category, this does not generate
+        # category indexes.
+        items = []
+        cats = [ "first" ]
+        for x in xrange(0, m._ITEMS_PER_PAGE + 1):
+            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          rel_filename="entry_%d" % x,
+                          content="content",
+                          categories=cats)
+            items.append(si)
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m.GeneratePages(cats, items)
+        self.assertListEquals(
+          [ "index.html", "index1.html" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        # with two categories, we get category pages too
+        items = []
+        cats = [ "first", "second" ]
+        for x in xrange(0, m._ITEMS_PER_PAGE + 1):
+            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          rel_filename="entry_%d" % x,
+                          content="content",
+                          categories=cats)
+            items.append(si)
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m.GeneratePages(cats, items)
+        self.assertListEquals(
+          [ "index.html", "index1.html",
+            os.path.join("cat", "first", "index.html"), os.path.join("cat", "first", "index1.html"),
+            os.path.join("cat", "second", "index.html"), os.path.join("cat", "second", "index1.html") ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        # more categories: 4 main pages but each category has only 2 pages
+        items = []
+        cats = [ "first", "second", "three" ]
+        for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 3):
+            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          rel_filename="entry_%d" % x,
+                          content="content",
+                          categories=[ cats[x % 3] ])
+            items.append(si)
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m.GeneratePages(cats, items)
+        self.assertListEquals(
+          [ "index.html", "index1.html", "index2.html", "index3.html", 
+            os.path.join("cat", "first", "index.html"), os.path.join("cat", "first", "index1.html"),
+            os.path.join("cat", "second", "index.html"), os.path.join("cat", "second", "index1.html"),
+            os.path.join("cat", "three", "index.html"), os.path.join("cat", "three", "index1.html") ],
+          m.GetWriteFileData(m._LEAFNAME))
+
         
 #------------------------
 # Local Variables:
