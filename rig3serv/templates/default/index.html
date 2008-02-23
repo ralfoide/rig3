@@ -2,7 +2,7 @@
 Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
-- rel_base_url: string, Relative url to base of site. May be empty.
+- rel_base_url: string, Relative url to base of site. May be empty or like ../../
 - prev_url: None or string url
 - next_url: None or string url
 - curr_page: int, Current page number
@@ -58,7 +58,7 @@ Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
 <br/>[[end]]
 [[if max_page > 1]]Page [[html curr_page]] / [[html max_page]]<br/>[[end]]
 [[if month_pages]]
-More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
+More pages: [[for m in month_pages]] <a href="[[url rel_base_url + m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
 <br/>[[end]]
 <p/>
 [[raw tracking_code]]
