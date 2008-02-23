@@ -16,6 +16,7 @@ import cgi
 import zlib
 import errno
 import urllib
+import operator
 from datetime import datetime
 
 from rig.site_base import SiteBase, SiteItem
@@ -82,16 +83,18 @@ class SiteDefault(SiteBase):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        # Generate pages with all posts (whether they have a category or not)
-        self._GeneratePageByCategory("", "", None, categories, items)
+        # Generate an index page with all posts (whether they have a category or not)
+        self._GenerateIndexPage("", "", None, categories, items, max_num_pages=1)
+        # Generate monthly pages
+        self._GenerateMonthPages("", "", None, categories, items, max_num_pages=None)
         
         # Only generate per-category pages if we have more than one category
         if len(categories) > 1:
             for c in categories:
-                self._GeneratePageByCategory([ "cat", c ], "../../", [ c ], categories, items)
-        # TODO: self.GeneratePageMonth(month, items)
+                # there is no index for category pages
+                self._GenerateMonthPages([ "cat", c ], "../../", [ c ], categories, items, max_num_pages=None)
 
-    def _GeneratePageByCategory(self, path, rel_base,
+    def _GenerateIndexPage(self, path, rel_base,
                                 category_filter, all_categories,
                                 items, max_num_pages=None):
         """
@@ -156,6 +159,94 @@ class SiteDefault(SiteBase):
             keywords["prev_url"] = prev_url
             keywords["next_url"] = next_url
             keywords["curr_page"] = p + 1
+            keywords["max_page"] = np + 1
+            keywords["last_gen_ts"] = datetime.today()
+            keywords["last_content_ts"] = older_date
+            keywords["all_categories"] = all_categories
+            version = Version()
+            keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
+                                                  version.SvnRevision())
+            
+            content = self._FillTemplate("index.html", **keywords)
+            self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+            prev_url = url
+
+    def _GenerateMonthPages(self, path, rel_base,
+                                category_filter, all_categories,
+                                items, max_num_pages=None):
+        """
+        [UPDATE]Generates pages with items which have at least one category in the
+        category_filter list. SiteItems are not re-ordered, it's up to the caller to
+        re-order the items by decreasing date order.
+
+        - path: A list of sub-directories/sub-path indicating where the files are
+            being created. If the list is empty, the files will be created in the root.
+            This is used also to generate the proper index.html urls.
+        - category_filter: list of categories to use for this page (acts as a filter)
+            or None to accept all categories (even those with no categories)
+        - all_categories: list of all categories (used for template to create links)
+        - items: list of SiteItem. Only uses those which have at least one category
+            in the category_filter list. Items must be sorted by decreasing date order.
+        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
+        """
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
+        base_path = ""
+        if path:
+            base_path = os.path.join(*path)
+            self._MkDestDir(base_path)
+
+        # filter relevant items (or all of them if there's no category_filter)
+        if category_filter is None:
+            relevant_items = items
+        else:
+            relevant_items = []
+            for i in items:
+                for c in i.categories:
+                    if c in category_filter:
+                        relevant_items.append(i)
+                        break
+
+        by_months = {}
+        for i in relevant_items:
+            # key is index=(year+month*16), the year and the month.
+            # the index is there just to ease sorting.
+            key = (i.date.year + i.date.month << 4, i.date.year, i.date.month)
+            if not key in by_months:
+                by_months[key] = []
+            by_months[key].append(i)
+        relevant_items = None
+        keys = by_months.keys()
+        keys.sort(reverse=True, key=operator.itemgetter(0))  # sort by key/index
+
+        prev_url = None
+        next_url = None
+        np = len(keys)
+        for n in xrange(0, np):
+            month_key = keys[n]
+            year = month_key[1]
+            month = month_key[2]
+            filename = "y%04d_%02d.html" % (year, month)
+            url = base_url + filename
+            if n + 1 < np:
+                next_url = base_url + "y%04d_%02d.html" % (
+                                   keys[n+1][1], keys[n+1][2])
+            else:
+                next_url = None
+            entries = []
+            older_date = None
+            for j in by_months[month_key]:
+                entries.append(j.content)
+                older_date = (older_date is None) and j.date or max(older_date, j.date)
+
+            keywords = self._settings.AsDict()
+            keywords["title"] = "All Items"
+            keywords["entries"] = entries
+            keywords["rel_base_url"] = rel_base
+            keywords["prev_url"] = prev_url
+            keywords["next_url"] = next_url
+            keywords["curr_page"] = n + 1
             keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
             keywords["last_content_ts"] = older_date

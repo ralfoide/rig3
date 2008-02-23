@@ -337,10 +337,10 @@ class SiteDefaultTest(RigTestCase):
             '<table class="image-table"><tr><td>\n' + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
 
-    def testGeneratePageByCategory(self):
+    def testGenerateIndexPage(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         
-        m._GeneratePageByCategory("", "", [], [], [])
+        m._GenerateIndexPage("", "", [], [], [])
         if False:
             # TODO: can't work because of last_gen_ts == today
             self.assertDictEquals(
