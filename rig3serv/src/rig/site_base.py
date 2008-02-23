@@ -47,14 +47,11 @@ class SiteItem(object):
     - list of categories (list of string)
     - content: the data of the file
     - date (datetime)
-    - rel_filename: filename of the generated file relative to the site's
-                    dest_dir.
     """
-    def __init__(self, date, rel_filename, content, categories=None):
+    def __init__(self, date, content, categories=None):
         self.date = date
         self.content = content
         self.categories = categories or []
-        self.rel_filename = rel_filename
 
     def __eq__(self, rhs):
         """
@@ -64,8 +61,7 @@ class SiteItem(object):
         if isinstance(rhs, SiteItem):
             return (self.date == rhs.date and
                     self.content == rhs.content and
-                    self.categories == rhs.categories and
-                    self.rel_filename == rhs.rel_filename)
+                    self.categories == rhs.categories)
         return False
 
 

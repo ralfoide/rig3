@@ -41,11 +41,8 @@ class SiteDefault(SiteBase):
     _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
-    _ITEMS_DIR = "items"
     _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
     _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
-    
-    _TEMPLATE_NEED_ITEM_FILES = False # TODO make a site.rc pref
     
     _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
@@ -72,7 +69,6 @@ class SiteDefault(SiteBase):
         
         Returns self for chaining
         """
-        self._MkDestDir(self._ITEMS_DIR)
         return self
         
     def GeneratePages(self, categories, items):
@@ -373,13 +369,7 @@ class SiteDefault(SiteBase):
         keywords["tags"] = tags
         keywords["categories"] = cats
         content = self._FillTemplate("entry.html", **keywords)
-        filename = self._SimpleFileName(os.path.join(main_filename.rel_curr))
-        if self._TEMPLATE_NEED_ITEM_FILES:
-            assert self._WriteFile(content,
-                                   os.path.join(self._settings.dest_dir, self._ITEMS_DIR),
-                                   filename)
-        dest = os.path.join(self._ITEMS_DIR, filename)
-        return SiteItem(date, dest, content=content, categories=cats)
+        return SiteItem(date, content=content, categories=cats)
 
     def _GenerateImages(self, source_dir, all_files):
         """

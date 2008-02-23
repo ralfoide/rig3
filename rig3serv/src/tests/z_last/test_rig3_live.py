@@ -50,10 +50,6 @@ class Rig3LiveTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
 
-        if SiteDefault._TEMPLATE_NEED_ITEM_FILES:
-            self.assertTrue(os.path.exists(os.path.join(d, "items", "2007-10-07_Folder-1-index_izu")))
-            self.assertTrue(os.path.exists(os.path.join(d, "items", "2006-08-05-20_00_38-Progress-index_html")))
-
         f = file(os.path.join(d, "index.html"), "r")
         index_izu = f.read()
         f.close()
