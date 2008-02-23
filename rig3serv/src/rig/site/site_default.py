@@ -17,7 +17,7 @@ import zlib
 import errno
 import urllib
 import operator
-from datetime import datetime
+from datetime import date, datetime
 
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
@@ -83,33 +83,43 @@ class SiteDefault(SiteBase):
         # Sort by decreasing date (i.e. compares y to x, not x to y)
         items.sort(lambda x, y: cmp(y.date, x.date))
 
-        # Generate an index page with all posts (whether they have a category or not)
-        self._GenerateIndexPage("", "", None, categories, items, max_num_pages=1)
+        # we skip categories if there's only one of them
+        if len(categories) == 1:
+            categories = []
+
         # Generate monthly pages
-        self._GenerateMonthPages("", "", None, categories, items, max_num_pages=None)
-        
-        # Only generate per-category pages if we have more than one category
-        if len(categories) > 1:
+        month_pages = self._GenerateMonthPages("", "", None, categories, items)
+        # Generate an index page with all posts (whether they have a category or not)
+        self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
+
+        # Only generate per-category months pages if we have more than one category
+        if categories:
             for c in categories:
-                # there is no index for category pages
-                self._GenerateMonthPages([ "cat", c ], "../../", [ c ], categories, items, max_num_pages=None)
+                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
+                                               categories, items)
+                self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
+                                                categories, items, month_pages, max_num_pages=1)
 
     def _GenerateIndexPage(self, path, rel_base,
                                 category_filter, all_categories,
-                                items, max_num_pages=None):
+                                items, month_pages,
+                                max_num_pages=None):
         """
-        Generates pages with items which have at least one category in the
-        category_filter list. SiteItems are not re-ordered, it's up to the caller to
-        re-order the items by decreasing date order.
+        Generates most-recent pages with items that match the category_filter list.
+
+        SiteItems are not re-ordered, it's up to the caller to order the items
+        by decreasing date order.
 
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
-            This is used also to generate the proper index.html urls.
+            This is used also to generate the proper urls.
         - category_filter: list of categories to use for this page (acts as a filter)
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
-        - items: list of SiteItem. Only uses those which have at least one category
-            in the category_filter list. Items must be sorted by decreasing date order.
+        - items: list of SiteItem. Items MUST be sorted by decreasing date order.
+        - month_pages: list(tuple(url, date)) for each month page generated for the
+            same entries. Can be an empty list but not None. MUST be sorted in
+            decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
         base_url = "/".join(path)
@@ -135,8 +145,8 @@ class SiteDefault(SiteBase):
         next_url = None
         n = len(relevant_items)
         np = n / self._ITEMS_PER_PAGE
-        if max_num_pages:
-            np = min(np, max_num_pages)
+        if max_num_pages > 0:
+            np = min(np, max_num_pages - 1)
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
@@ -163,6 +173,7 @@ class SiteDefault(SiteBase):
             keywords["last_gen_ts"] = datetime.today()
             keywords["last_content_ts"] = older_date
             keywords["all_categories"] = all_categories
+            keywords["month_pages"] = month_pages
             version = Version()
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
@@ -175,20 +186,25 @@ class SiteDefault(SiteBase):
                                 category_filter, all_categories,
                                 items, max_num_pages=None):
         """
-        [UPDATE]Generates pages with items which have at least one category in the
-        category_filter list. SiteItems are not re-ordered, it's up to the caller to
-        re-order the items by decreasing date order.
+        Generates months pages with items that match the category_filter list.
+        
+        SiteItems are not re-ordered, it's up to the caller to re-order the
+        items by decreasing date order.
 
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
-            This is used also to generate the proper index.html urls.
+            This is used also to generate the proper urls.
         - category_filter: list of categories to use for this page (acts as a filter)
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
-        - items: list of SiteItem. Only uses those which have at least one category
-            in the category_filter list. Items must be sorted by decreasing date order.
-        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
+        - items: list of SiteItem. Items MUST be sorted by decreasing date order.
+        - max_num_pages: How many pages to create? 0 or None to create them all.
+        
+        Returns a list( tuple(string: URL, date) ) of URLs to the pages just
+        created with the datetime matching the month.
         """
+        result_urls = []
+
         base_url = "/".join(path)
         if base_url:
             base_url += "/"
@@ -227,18 +243,22 @@ class SiteDefault(SiteBase):
             month_key = keys[n]
             year = month_key[1]
             month = month_key[2]
-            filename = "y%04d_%02d.html" % (year, month)
+            filename = "%04d-%02d.html" % (year, month)
             url = base_url + filename
             if n + 1 < np:
-                next_url = base_url + "y%04d_%02d.html" % (
+                next_url = base_url + "%04d-%02d.html" % (
                                    keys[n+1][1], keys[n+1][2])
             else:
                 next_url = None
             entries = []
+            earlier_date = None
             older_date = None
             for j in by_months[month_key]:
                 entries.append(j.content)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
+                earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
+            if earlier_date is None:
+                earlier_date = datetime(year, month, 1)
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
@@ -255,9 +275,11 @@ class SiteDefault(SiteBase):
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
             
-            content = self._FillTemplate("index.html", **keywords)
+            content = self._FillTemplate("month.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+            result_urls.append((url, earlier_date.date()))
             prev_url = url
+        return result_urls
 
     def GenerateItem(self, source_item):
         """

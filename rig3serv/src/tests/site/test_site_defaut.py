@@ -340,7 +340,7 @@ class SiteDefaultTest(RigTestCase):
     def testGenerateIndexPage(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         
-        m._GenerateIndexPage("", "", [], [], [])
+        m._GenerateIndexPage("", "", [], [], [], [])
         if False:
             # TODO: can't work because of last_gen_ts == today
             self.assertDictEquals(
@@ -483,6 +483,7 @@ class SiteDefaultTest(RigTestCase):
         items = []
         cats = []
         for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 1):
+            # x % 12 => we'll generate 12 month pages
             si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
                           rel_filename="entry_%d" % x,
                           content="content",
@@ -491,7 +492,10 @@ class SiteDefaultTest(RigTestCase):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         m.GeneratePages(cats, items)
         self.assertListEquals(
-          [ "index.html", "index1.html", "index2.html", "index3.html" ],
+          [ "2000-12.html", "2000-11.html", "2000-10.html", "2000-09.html",
+            "2000-08.html", "2000-07.html", "2000-06.html", "2000-05.html",
+            "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
+            "index.html" ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # print items with only one category, this does not generate
@@ -499,7 +503,8 @@ class SiteDefaultTest(RigTestCase):
         items = []
         cats = [ "first" ]
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
-            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+            # x % 7 => we'll generate 7 month pages
+            si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
                           rel_filename="entry_%d" % x,
                           content="content",
                           categories=cats)
@@ -507,14 +512,17 @@ class SiteDefaultTest(RigTestCase):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         m.GeneratePages(cats, items)
         self.assertListEquals(
-          [ "index.html", "index1.html" ],
+          [ "2000-07.html", "2000-06.html", "2000-05.html",
+            "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
+            "index.html" ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # with two categories, we get category pages too
         items = []
         cats = [ "first", "second" ]
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
-            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+            # x % 5 => we'll generate 5 month pages
+            si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
                           rel_filename="entry_%d" % x,
                           content="content",
                           categories=cats)
@@ -522,16 +530,29 @@ class SiteDefaultTest(RigTestCase):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         m.GeneratePages(cats, items)
         self.assertListEquals(
-          [ "index.html", "index1.html",
-            os.path.join("cat", "first", "index.html"), os.path.join("cat", "first", "index1.html"),
-            os.path.join("cat", "second", "index.html"), os.path.join("cat", "second", "index1.html") ],
+          [ "2000-05.html", "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
+            "index.html",
+            os.path.join("cat", "first", "2000-05.html"),
+            os.path.join("cat", "first", "2000-04.html"),
+            os.path.join("cat", "first", "2000-03.html"),
+            os.path.join("cat", "first", "2000-02.html"),
+            os.path.join("cat", "first", "2000-01.html"),
+            os.path.join("cat", "first", "index.html"),
+            os.path.join("cat", "second", "2000-05.html"),
+            os.path.join("cat", "second", "2000-04.html"),
+            os.path.join("cat", "second", "2000-03.html"),
+            os.path.join("cat", "second", "2000-02.html"),
+            os.path.join("cat", "second", "2000-01.html"),
+            os.path.join("cat", "second", "index.html") ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # more categories: 4 main pages but each category has only 2 pages
         items = []
         cats = [ "first", "second", "three" ]
         for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 3):
-            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+            # x % 3 => we'll generate 3 month pages and we have 3 categories
+            # so each category ends up in the same month.
+            si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
                           rel_filename="entry_%d" % x,
                           content="content",
                           categories=[ cats[x % 3] ])
@@ -539,13 +560,17 @@ class SiteDefaultTest(RigTestCase):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         m.GeneratePages(cats, items)
         self.assertListEquals(
-          [ "index.html", "index1.html", "index2.html", "index3.html", 
-            os.path.join("cat", "first", "index.html"), os.path.join("cat", "first", "index1.html"),
-            os.path.join("cat", "second", "index.html"), os.path.join("cat", "second", "index1.html"),
-            os.path.join("cat", "three", "index.html"), os.path.join("cat", "three", "index1.html") ],
+          [ "2000-03.html", "2000-02.html", "2000-01.html",
+            "index.html", 
+            os.path.join("cat", "first", "2000-01.html"),
+            os.path.join("cat", "first", "index.html"),
+            os.path.join("cat", "second", "2000-02.html"),
+            os.path.join("cat", "second", "index.html"),
+            os.path.join("cat", "three", "2000-03.html"),
+            os.path.join("cat", "three", "index.html") ],
           m.GetWriteFileData(m._LEAFNAME))
 
-        
+
 #------------------------
 # Local Variables:
 # mode: python

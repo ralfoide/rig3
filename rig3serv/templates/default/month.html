@@ -1,4 +1,4 @@
-[[# Main index template.
+[[# Month template.
 Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
@@ -12,7 +12,6 @@ Expected parameters:
 - rig3_version: string, a version number or SVN info for this rig3 build
 - all_categories: list(string), all categories names.
 - tracking_code: Raw HTML for stats tracking (e.g. Google Analytics' tracking code) as defined per site-prefs.
-- month_pages: list((string,date)), URLs+date to the month pages in decreasing order.
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.
@@ -51,16 +50,12 @@ Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
   [[raw html_entry]]
 [[end]]
 <hr width="80%"/>
-[[if prev_url or next_url]]
 [[if prev_url]]<a href="[[url rel_base_url]][[url prev_url]]">Prev</a>[[end]]
 &nbsp;||&nbsp;
 [[if next_url]]<a href="[[url rel_base_url]][[url next_url]]">Next</a>[[end]]
-<br/>[[end]]
-[[if max_page > 1]]Page [[html curr_page]] / [[html max_page]]<br/>[[end]]
-[[if month_pages]]
-More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
-<br/>[[end]]
-<p/>
+<br/>
+Page [[html curr_page]] / [[html max_page]]
+<p>
 [[raw tracking_code]]
 </body>
 </html>
