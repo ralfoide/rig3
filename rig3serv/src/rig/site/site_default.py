@@ -292,7 +292,8 @@ class SiteDefault(SiteBase):
         return "%04d-%02d.html" % (year, month)
     
     def _Permalink(self, year, month, title):
-        return "%s#%s" % (self._MonthPageName(year, month), self._SimpleFileName(title))
+        name = self._SimpleFileName(title)
+        return "%s#%s" % (self._MonthPageName(year, month), name), name
 
     def GenerateItem(self, source_item):
         """
@@ -383,8 +384,9 @@ class SiteDefault(SiteBase):
         keywords["date"] = date
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
-        permalink = self._Permalink(date.year, date.month, title)
-        keywords["permalink"] = permalink
+        permalink_url, permalink_name = self._Permalink(date.year, date.month, title)
+        keywords["permalink_url"] = permalink_url
+        keywords["permalink_name"] = permalink_name
 
         def _generate_content(_keywords, _img_params, _extra_keywords=None):
             # we need to make sure we can't contaminate the caller's dictionaries
@@ -404,7 +406,7 @@ class SiteDefault(SiteBase):
             return self._FillTemplate("entry.html", **_keywords)
 
         return SiteItem(date,
-                        permalink,
+                        permalink_url,
                         categories=cats,
                         content_gen=lambda extra=None: _generate_content(keywords, img_params, extra))
 
