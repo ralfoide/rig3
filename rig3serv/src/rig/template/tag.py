@@ -65,8 +65,12 @@ class TagRaw(Tag):
         super(TagRaw, self).__init__(tag="raw", has_content=False)
     
     def Generate(self, tag_node, context):
-        result = eval(tag_node.Parameters(), dict(context))
-        return str(result)
+        try:
+            result = eval(tag_node.Parameters(), dict(context))
+            result = str(result)
+        except Exception, e:
+            raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
+        return result
 
 
 #------------------------
@@ -80,8 +84,12 @@ class TagHtml(Tag):
         super(TagHtml, self).__init__(tag="html", has_content=False)
     
     def Generate(self, tag_node, context):
-        result = eval(tag_node.Parameters(), dict(context))
-        return cgi.escape(str(result))
+        try:
+            result = eval(tag_node.Parameters(), dict(context))
+            result = cgi.escape(str(result))
+        except Exception, e:
+            raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
+        return result
 
 
 #------------------------
@@ -95,8 +103,11 @@ class TagUrl(Tag):
         super(TagUrl, self).__init__(tag="url", has_content=False)
     
     def Generate(self, tag_node, context):
-        result = eval(tag_node.Parameters(), dict(context))
-        result = _RE_URL.sub(_UrlEncode, str(result))
+        try:
+            result = eval(tag_node.Parameters(), dict(context))
+            result = _RE_URL.sub(_UrlEncode, str(result))
+        except Exception, e:
+            raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
         return result
 
 def _UrlEncode(m):
