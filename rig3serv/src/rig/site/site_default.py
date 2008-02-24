@@ -83,15 +83,15 @@ class SiteDefault(SiteBase):
         if len(categories) == 1:
             categories = []
 
-        # Generate monthly pages
-        month_pages = self._GenerateMonthPages("", "", None, categories, items)
+        # Generate monthly pages and get a cached version of each item
+        month_pages, cached_content = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
         self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
 
         # Only generate per-category months pages if we have more than one category
         if categories:
             for c in categories:
-                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
+                month_pages, _ = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
                                                categories, items)
                 self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
                                                 categories, items, month_pages, max_num_pages=1)
@@ -199,10 +199,14 @@ class SiteDefault(SiteBase):
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
         - max_num_pages: How many pages to create? 0 or None to create them all.
         
-        Returns a list( tuple(string: URL, date) ) of URLs to the pages just
-        created with the datetime matching the month.
+        Returns:
+        - a list( tuple(string: URL, date) ) of URLs to the pages just
+          created with the date matching the month.
+        - a dict( SiteItem: item => string: content) ) for each
+          entry generated (where item is an item from the input items list).
         """
         result_urls = []
+        result_entries = {}
 
         base_url = "/".join(path)
         if base_url:
@@ -242,11 +246,10 @@ class SiteDefault(SiteBase):
             month_key = keys[n]
             year = month_key[1]
             month = month_key[2]
-            filename = "%04d-%02d.html" % (year, month)
+            filename = self._MonthPageName(year, month)
             url = base_url + filename
             if n + 1 < np:
-                next_url = base_url + "%04d-%02d.html" % (
-                                   keys[n+1][1], keys[n+1][2])
+                next_url = base_url + self._MonthPageName(keys[n+1][1], keys[n+1][2])
             else:
                 next_url = None
 
@@ -268,6 +271,8 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
+                content = j.content_gen(keywords)
+                result_entries[j] = content
                 entries.append(j.content_gen(keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
                 earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
@@ -281,7 +286,13 @@ class SiteDefault(SiteBase):
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             result_urls.append((url, earlier_date.date()))
             prev_url = url
-        return result_urls
+        return result_urls, result_entries
+
+    def _MonthPageName(self, year, month):
+        return "%04d-%02d.html" % (year, month)
+    
+    def _Permalink(self, year, month, title):
+        return "%s#%s" % (self._MonthPageName(year, month), self._SimpleFileName(title))
 
     def GenerateItem(self, source_item):
         """
@@ -372,6 +383,8 @@ class SiteDefault(SiteBase):
         keywords["date"] = date
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
+        permalink = self._Permalink(date.year, date.month, title)
+        keywords["permalink"] = permalink
 
         def _generate_content(_keywords, _img_params, _extra_keywords=None):
             # we need to make sure we can't contaminate the caller's dictionaries
@@ -391,6 +404,7 @@ class SiteDefault(SiteBase):
             return self._FillTemplate("entry.html", **_keywords)
 
         return SiteItem(date,
+                        permalink,
                         categories=cats,
                         content_gen=lambda extra=None: _generate_content(keywords, img_params, extra))
 

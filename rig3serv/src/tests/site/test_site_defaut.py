@@ -481,6 +481,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 1):
             # x % 12 => we'll generate 12 month pages
             si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          permalink="item",
                           content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
@@ -500,6 +501,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
             # x % 7 => we'll generate 7 month pages
             si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          permalink="item",
                           content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
@@ -517,6 +519,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
             # x % 5 => we'll generate 5 month pages
             si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          permalink="item",
                           content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
@@ -546,6 +549,7 @@ class SiteDefaultTest(RigTestCase):
             # x % 3 => we'll generate 3 month pages and we have 3 categories
             # so each category ends up in the same month.
             si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
+                          permalink="item",
                           content_gen=lambda x: "content",
                           categories=[ cats[x % 3] ])
             items.append(si)
