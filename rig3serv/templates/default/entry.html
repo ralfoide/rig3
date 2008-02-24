@@ -9,6 +9,7 @@ Parameters:
 - categories: list[string cat], the tags for this entry. Can be empty.
 - sections: dict{string name: string content}, the HTML for the various sections.
 	- Expected sections names: html (old html), en, fr and images.
+- rel_base_url: string, Relative url to base of site. May be empty or like ../../
 ]]
 <div class="entry">
 
@@ -26,13 +27,13 @@ Parameters:
 
 [[if "en" in sections]]
 <table class="content en"><tr>
-[[if base_url]]<td class="flag"><img src="[[url base_url]]media/flag_usa.gif" /></td>[[end]]
+[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url]]media/flag_usa.gif" /></td>[[end]]
 <td>[[raw sections["en"] ]]</td></tr></table>
 [[end]]
 
 [[if "fr" in sections]]
 <table class="content en"><tr><td class="flag">
-[[if base_url]]<td class="flag"><img src="[[url base_url]]media/flag_fr.gif" /></td>[[end]]
+<td class="flag"><img src="[[url rel_base_url]]media/flag_fr.gif" /></td>
 <td>[[raw sections["fr"] ]]</td></tr></table>
 [[end]]
 

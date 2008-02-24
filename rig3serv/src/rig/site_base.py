@@ -45,22 +45,22 @@ class SiteItem(object):
     """
     Represents an item:
     - list of categories (list of string)
-    - content: the data of the file
+    - content_gen: A method (lambda) that generates the data of the entry
     - date (datetime)
     """
-    def __init__(self, date, content, categories=None):
+    def __init__(self, date, content_gen, categories=None):
         self.date = date
-        self.content = content
+        self.content_gen = content_gen
         self.categories = categories or []
 
     def __eq__(self, rhs):
         """
-        Two site items are equal if they have the same date, content,
+        Two site items are equal if they have the same date, content_gen,
         categories and relative filename.
         """
         if isinstance(rhs, SiteItem):
             return (self.date == rhs.date and
-                    self.content == rhs.content and
+                    self.content_gen == rhs.content_gen and
                     self.categories == rhs.categories)
         return False
 

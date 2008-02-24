@@ -220,7 +220,7 @@ class SiteDefaultTest(RigTestCase):
                                         [ "index.izu" ]))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
-        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content)
+        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen())
         self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
     
     def testGenerateItems_Html(self):
@@ -232,7 +232,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
-                               item.content)
+                               item.content_gen())
         self.assertListEquals([ "videos" ], item.categories, sort=True)
 
     def testImgPattern(self):
@@ -481,7 +481,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 1):
             # x % 12 => we'll generate 12 month pages
             si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
-                          content="content",
+                          content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -500,7 +500,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
             # x % 7 => we'll generate 7 month pages
             si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
-                          content="content",
+                          content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -517,7 +517,7 @@ class SiteDefaultTest(RigTestCase):
         for x in xrange(0, m._ITEMS_PER_PAGE + 1):
             # x % 5 => we'll generate 5 month pages
             si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
-                          content="content",
+                          content_gen=lambda x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -546,7 +546,7 @@ class SiteDefaultTest(RigTestCase):
             # x % 3 => we'll generate 3 month pages and we have 3 categories
             # so each category ends up in the same month.
             si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
-                          content="content",
+                          content_gen=lambda x: "content",
                           categories=[ cats[x % 3] ])
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()

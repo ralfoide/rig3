@@ -151,28 +151,31 @@ class SiteDefault(SiteBase):
                 next_url = base_url + "index%s.html" % (p + 1)
             else:
                 next_url = None            
-            entries = []
-            older_date = None
-            for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
-                entries.append(j.content)
-                older_date = (older_date is None) and j.date or max(older_date, j.date)
-            i += self._ITEMS_PER_PAGE
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
-            keywords["entries"] = entries
             keywords["rel_base_url"] = rel_base
             keywords["prev_url"] = prev_url
             keywords["next_url"] = next_url
             keywords["curr_page"] = p + 1
             keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
-            keywords["last_content_ts"] = older_date
             keywords["all_categories"] = all_categories
             keywords["month_pages"] = month_pages
             version = Version()
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
+
+            entries = []
+            older_date = None
+            for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
+                # SiteItem.content_gen is a lambda that generates the content
+                entries.append(j.content_gen(keywords))
+                older_date = (older_date is None) and j.date or max(older_date, j.date)
+            i += self._ITEMS_PER_PAGE
+
+            keywords["entries"] = entries
+            keywords["last_content_ts"] = older_date
             
             content = self._FillTemplate("index.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
@@ -246,31 +249,34 @@ class SiteDefault(SiteBase):
                                    keys[n+1][1], keys[n+1][2])
             else:
                 next_url = None
-            entries = []
-            earlier_date = None
-            older_date = None
-            for j in by_months[month_key]:
-                entries.append(j.content)
-                older_date = (older_date is None) and j.date or max(older_date, j.date)
-                earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
-            if earlier_date is None:
-                earlier_date = datetime(year, month, 1)
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
-            keywords["entries"] = entries
             keywords["rel_base_url"] = rel_base
             keywords["prev_url"] = prev_url
             keywords["next_url"] = next_url
             keywords["curr_page"] = n + 1
             keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
-            keywords["last_content_ts"] = older_date
             keywords["all_categories"] = all_categories
             version = Version()
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
-            
+
+            entries = []
+            earlier_date = None
+            older_date = None
+            for j in by_months[month_key]:
+                # SiteItem.content_gen is a lambda that generates the content
+                entries.append(j.content_gen(keywords))
+                older_date = (older_date is None) and j.date or max(older_date, j.date)
+                earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
+            if earlier_date is None:
+                earlier_date = datetime(year, month, 1)
+
+            keywords["entries"] = entries
+            keywords["last_content_ts"] = older_date
+
             content = self._FillTemplate("month.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             result_urls.append((url, earlier_date.date()))
@@ -356,20 +362,37 @@ class SiteDefault(SiteBase):
         date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
 
+        img_params = None
         if may_have_images and not "images" in sections:
-            # only a SourceDir can have images in the same folder...
-            html_img = self._GenerateImages(rel_dir, all_files)
-            if html_img:
-                sections["images"] = html_img
+            img_params = { "rel_dir": rel_dir, "all_files":list(all_files) }
 
         keywords = self._settings.AsDict()
         keywords["title"] = title
-        keywords["sections"] = sections
+        keywords["sections"] = dict(sections)
         keywords["date"] = date
-        keywords["tags"] = tags
-        keywords["categories"] = cats
-        content = self._FillTemplate("entry.html", **keywords)
-        return SiteItem(date, content=content, categories=cats)
+        keywords["tags"] = dict(tags)
+        keywords["categories"] = list(cats)
+
+        def _generate_content(_keywords, _img_params, _extra_keywords=None):
+            # we need to make sure we can't contaminate the caller's dictionaries
+            # so we just duplicate them here. Also we make sure not to use any
+            # variables which are declared in the outer method.
+            if _extra_keywords:
+                temp = dict(_extra_keywords)
+                temp.update(_keywords)
+                _keywords = temp
+            else:
+                _keywords = dict(_keywords)
+
+            if _img_params:
+                html_img = self._GenerateImages(_img_params["rel_dir"], _img_params["all_files"])
+                if html_img:
+                    _keywords["sections"]["images"] = html_img
+            return self._FillTemplate("entry.html", **_keywords)
+
+        return SiteItem(date,
+                        categories=cats,
+                        content_gen=lambda extra=None: _generate_content(keywords, img_params, extra))
 
     def _GenerateImages(self, source_dir, all_files):
         """
