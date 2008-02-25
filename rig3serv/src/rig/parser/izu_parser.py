@@ -571,7 +571,7 @@ class IzuParser(object):
                 result = '[[[if rig_base]]<img '
                 if title:
                     result += 'title="%(name)s" '
-                result += 'href="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
+                result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
                 if caption:
                     result += "<br><tt>%(caption)s</tt>"
                 result += '[[[end]]'

@@ -296,7 +296,7 @@ class IzuParserTest(RigTestCase):
         # full tag with name, size and glob
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '[[end]]</div>',
             self._Render("[This is & comment|rigimg:256:A01234*.jpg]"))
@@ -304,7 +304,7 @@ class IzuParserTest(RigTestCase):
         # tag with name and glob, no size
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
             '[[end]]</div>',
             self._Render("[This is & comment|rigimg:A01234*.jpg]"))
@@ -312,7 +312,7 @@ class IzuParserTest(RigTestCase):
         # size field present but empty
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
             '[[end]]</div>',
             self._Render("[This is & comment|rigimg::A01234*.jpg]"))
@@ -320,7 +320,7 @@ class IzuParserTest(RigTestCase):
         # full tag with size and glob but no name
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '[[end]]</div>',
             self._Render("[rigimg:256:A01234*.jpg]"))
@@ -328,7 +328,7 @@ class IzuParserTest(RigTestCase):
         # full tag with name, size, glob and caption
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '<br><tt>This is a caption!</tt>'
             '[[end]]</div>',
@@ -337,7 +337,7 @@ class IzuParserTest(RigTestCase):
         # tag with name and glob, no size and caption
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
             '<br><tt>This is a caption!</tt>'
             '[[end]]</div>',
@@ -346,7 +346,7 @@ class IzuParserTest(RigTestCase):
         # size field present but empty and caption
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
             '<br><tt>This is a caption!</tt>'
             '[[end]]</div>',
@@ -355,7 +355,7 @@ class IzuParserTest(RigTestCase):
         # full tag with size and glob but no name and caption
         self.assertEquals(
             '<div class="izu">\n[[if rig_base]]<img '
-            'href="[[raw rig_thumb_url % '
+            'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '<br><tt>This is a caption!</tt>'
             '[[end]]</div>',

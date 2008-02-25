@@ -1,6 +1,5 @@
 ---- TODO ----
 
-20080218 Template: Permalink to the per-month pages
 20080218 Engine:   Call custom script for on-the-fly image generation + pref
 20080124 Engine:   Ability to have a different rig_base per source
 20080218 Template: Custom page header per category
@@ -42,7 +41,9 @@
 
 ---- Done Version 0.3 ----
 
-20080218 Template: Generate per-month pages and limit index to first page
+20080224 Izu:      Fixed rigimg to correctly generate <img src="">
+20080224 Template: Permalink to the per-month pages
+20080223 Template: Generate per-month pages and limit index to first page
 20080210 Izu:      More UT for multi-line escape blocks + fixes
 20080209 Izu:      Raw HTML tag [!html: ... --]
 20080209 Template: Fix parsing of invalid dates such as 20071027-4400
