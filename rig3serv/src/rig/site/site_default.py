@@ -84,14 +84,14 @@ class SiteDefault(SiteBase):
             categories = []
 
         # Generate monthly pages and get a cached version of each item
-        month_pages, cached_content = self._GenerateMonthPages("", "", None, categories, items)
+        month_pages = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
         self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
 
         # Only generate per-category months pages if we have more than one category
         if categories:
             for c in categories:
-                month_pages, _ = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
+                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
                                                categories, items)
                 self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
                                                 categories, items, month_pages, max_num_pages=1)
@@ -199,14 +199,10 @@ class SiteDefault(SiteBase):
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
         - max_num_pages: How many pages to create? 0 or None to create them all.
         
-        Returns:
-        - a list( tuple(string: URL, date) ) of URLs to the pages just
-          created with the date matching the month.
-        - a dict( SiteItem: item => string: content) ) for each
-          entry generated (where item is an item from the input items list).
+        Returns a list( tuple(string: URL, date) ) of URLs to the pages just
+        created with the date matching the month.
         """
         result_urls = []
-        result_entries = {}
 
         base_url = "/".join(path)
         if base_url:
@@ -271,8 +267,6 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
-                content = j.content_gen(keywords)
-                result_entries[j] = content
                 entries.append(j.content_gen(keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
                 earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
@@ -286,7 +280,7 @@ class SiteDefault(SiteBase):
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
             result_urls.append((url, earlier_date.date()))
             prev_url = url
-        return result_urls, result_entries
+        return result_urls
 
     def _MonthPageName(self, year, month):
         return "%04d-%02d.html" % (year, month)
