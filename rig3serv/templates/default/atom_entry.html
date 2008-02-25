@@ -13,20 +13,22 @@ Parameters:
 - permalink_name: string, the permalink simplified name, for anchors
 - permalink_url: string, the permalink URL relative to the base URL
 ]]
-<div class="entry">
-
-<table class="deco">
-<tr><td class="left-top"> </td>
-<td class="title">
-<a name="[[url permalink_name]]"><a href="[[raw permalink_url]]"><span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a></a></td></tr>
-<tr><td class="left-bottom"> </td>
-<td class="right-bottom">
-
-<div class="content intro">
-[[html date.strftime("%Y-%m-%d %H:%M")]]
-[[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
-[[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
-</div>
+<entry>
+  <title type="html">[[html title]]</title>
+  <link rel="alternate" type="text/html" href="[[raw permalink_url]]"/>
+  <id>[[url permalink_name]]</id>
+  <published>[[# Converts date to UTC and prints its ISO8601 ]]
+    [[html datetime.datetime.utcfromtimestamp(time.mktime(time.gmtime(time.mktime( date.timetuple() )))).isoformat() + "Z" ]]
+  </published>
+[[if "author" in tags]]
+  <author><name>[[html tags["author"].capitalize() ]]</name></author>
+[[end]]
+[[if categories]]
+  [[for cat in categories]]
+  <category term="[[raw cat]]" label="[[html c.capitalize]]"/>
+  [[end]]
+[[end]]
+  <content type="html" xml:lang="en" [[if base_url]] xml:base="[[raw base_url]]" [[end]] >
 
 [[if "en" in sections]]
 <table class="content en"><tr>
@@ -48,5 +50,5 @@ Parameters:
 </div>
 [[end]]
 
-</td></tr></table>
-</div>
+  </content>
+</entry>
