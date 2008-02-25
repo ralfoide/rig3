@@ -686,3 +686,53 @@ each category index page and each category month page. For recent items,
 that means 2+num_category*2 generations and for older items it's 1+num_category.
 
 ----
+20080224 Free structures vs. typed structures
+
+One of the good things with Python is that you don't really need typed structures,
+i.e. "struct" in C/C++ or classes like in Java just to old a collection of members.
+
+Some people like strong typing, other dislike it.
+In Rig3, I use an intermediate level, which is most visible in settings:
+settings are typically well exprimed as dictionaries.
+
+However pure dictionaries have the problem that it's hard to guarantee which keys
+are used. One of the good points (and bad points) of strongly typed languages is that
+you ''have'' to declare the variables that will compose a structure but also their
+types. Here we don't really care about the type but it's nice to know that a given
+setting will contain this and that variables and that the compiler can enforce that
+there is no typo in the field name, for example.
+
+Of course you can define constant variables that will enforce which names are
+being used to prevent typos, but that becomes ugly:
+<some module>
+  PARAM1="param1"
+  PARAM2="param2"
+  settings={}
+  settings[PARAM1]=value
+  ...
+bleh!
+
+That's where Python shines, once again, due to its simplicity: a class instance is
+basically a dictionary and you can actually access this dictionary directly using
+self.__dict__.
+
+So typically I would define a settings "structure" like this:
+
+class MySettings(object):
+  def __init__(self, param1=default, param2...)
+    self.param1=param1
+    self.param2=param2
+
+You can have default values expressed in the initializer.
+You can access all the values as a dictionary: MySettings().__dict__
+You can access the list of known variables: MySettings().__dict__.keys()
+You can easily access known values with a nice syntax:
+  my_settings.param1
+
+And it's a dictionary so if you really need to dynamically add new fields... you can.
+
+In essence, you use the language syntax as a macro and the compiler as a verifier.
+Isn't that what they are for after all?
+
+----
+
