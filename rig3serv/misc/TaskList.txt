@@ -41,6 +41,7 @@
 
 ---- Done Version 0.3 ----
 
+20080224 Engine:   Continued adding support for SourceSettings and using it. Needs UTs.
 20080224 Izu:      Fixed rigimg to correctly generate <img src="">
 20080224 Template: Permalink to the per-month pages
 20080223 Template: Generate per-month pages and limit index to first page

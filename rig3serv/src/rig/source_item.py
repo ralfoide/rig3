@@ -19,6 +19,29 @@ class SourceSettings(object):
     def __init__(self, rig_base=None):
         self.rig_base = rig_base
 
+    def OverrideDict(self, remove_none=True):
+        """
+        Returns a copy of the settings' dictionnary.
+        It's safe for caller to modify this dictionnary.
+        
+        - remove_none: When true, items which are "None" are removed,
+          useful to update another dictionary and not "erase" unset values.
+        """
+        d = dict(self.__dict__)
+        if remove_none:
+            for k, v in d.items():  # not iteritems since we'll modify the dictionary
+                if v is None:
+                    del d[k]
+        return d
+
+    def KnownKeys(self):
+        """
+        List the variables declared by this SourceSettings
+        """
+        keys = self.__dict__.keys()
+        keys.sort()
+        return keys
+
 #------------------------
 class SourceItem(object):
     """

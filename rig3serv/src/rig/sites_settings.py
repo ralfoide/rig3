@@ -11,6 +11,7 @@ __author__ = "ralfoide@gmail.com"
 import re
 import ConfigParser
 from rig.settings_base import SettingsBase
+from rig.source_item import SourceSettings
 from rig.source_reader import SourceDirReader, SourceFileReader
 from rig.site_base import DEFAULT_THEME
 
@@ -154,11 +155,13 @@ class SitesSettings(SettingsBase):
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use.
         """
-        re_def = re.compile(r"^\s*(?P<type>all|dirs?|files?|items?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
+        re_def = re.compile(r"^\s*(?P<type>[a-z]+?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
         type_class = { "dir": SourceDirReader, "dirs": SourceDirReader,
                        "file": SourceFileReader, "files": SourceFileReader }
+        source_settings_keys= SourceSettings().KnownKeys()
         for k, value in vars.iteritems():
             if k.startswith("sources"):
+                curr_source_settings = SourceSettings()
                 old = None
                 while value and old != value:
                     old = value
@@ -174,13 +177,17 @@ class SitesSettings(SettingsBase):
                         path = path[1:-1]
                     if type == "all":
                         for t in ["dirs", "files"]:  # TODO: add support for , "items"]:
-                            settings.source_list.append(type_class[t](self._log, settings, path))
-                    elif type not in type_class:
+                            settings.source_list.append(type_class[t](self._log, settings, path,
+                                                                      source_settings=curr_source_settings))
+                    elif type in type_class:
+                        settings.source_list.append(type_class[type](self._log, settings, path,
+                                                                      source_settings=curr_source_settings))
+                    elif type in source_settings:
+                        curr_source_settings.__dict__[type] = path
+                    else:
                         self._log.Error("Unknown source type '%s' in '%s'",
                                         type,
                                         m.group(0))
-                    else:
-                        settings.source_list.append(type_class[type](self._log, settings, path))
         self._log.Info("[%s] Sources: %s",
                        settings.public_name,
                        ",".join([repr(s) for s in settings.source_list]))

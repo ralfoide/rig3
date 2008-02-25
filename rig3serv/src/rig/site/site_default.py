@@ -379,6 +379,8 @@ class SiteDefault(SiteBase):
             img_params = { "rel_dir": rel_dir, "all_files":list(all_files) }
 
         keywords = self._settings.AsDict()
+        if source_item.source_settings:
+            keywords.update(source_item.source_settings.OverrideDict())
         keywords["title"] = title
         keywords["sections"] = dict(sections)
         keywords["date"] = date
