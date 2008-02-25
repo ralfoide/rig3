@@ -150,7 +150,7 @@ class SiteDefaultTest(RigTestCase):
         keywords = self.s.AsDict()
         keywords["title"] = "MyTitle"
         keywords["sections"] = { "en": "Main <b>Text Content</b> as HTML",
-                                 "images": "<a href='page_url'><img href='image_url'/></a>" }
+                                 "images": "<a href='page_url'><img src='image_url'/></a>" }
         html = m._FillTemplate("entry.html", **keywords)
         self.assertIsInstance(str, html)
         self.assertTrue("entry.html" in m._fill_template_params)
@@ -162,7 +162,7 @@ class SiteDefaultTest(RigTestCase):
                 <h2>MyTitle</h2>
                 Main <b>Text Content</b> as HTML
                 <br/>
-                <a href='page_url'><img href='image_url'/></a>
+                <a href='page_url'><img src='image_url'/></a>
                 <br/>
                 </div>
                 """,
