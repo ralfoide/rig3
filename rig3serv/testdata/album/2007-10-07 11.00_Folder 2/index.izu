@@ -2,3 +2,11 @@
 
 [s:en]
 Some more content in English. Date above should override the one from the folder's name.
+
+
+[s:images]
+[Image 2 @ 128|rigimg:128:T*tiny2.jpg]
+[Image 1 @ 96 |rigimg:96:T*tiny1.jpg]
+[Image 2 @ 64 |rigimg:64:T*tiny2.jpg]
+[Image 2 @ 32 |rigimg:32:T*tiny2.jpg]
+

@@ -41,6 +41,7 @@
 
 ---- Done Version 0.3 ----
 
+20080330 Izu:      Initial support for [s:images] section 
 20080330 Template: Remove prev/next/curr/max links in templates, use month pages link
 20080330 Template: CSS color for entry title link back to yellow
 20080224 Engine:   Continued adding support for SourceSettings and using it. Needs UTs.

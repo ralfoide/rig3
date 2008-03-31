@@ -329,6 +329,12 @@ class SiteDefault(SiteBase):
                     keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
                 template = Template(self._log, source=sections[s])
                 sections[s] = template.Generate(keywords)
+            
+            # TODO: transform s:images section
+            #if "images" in sections:
+            #    content = self._FillTemplate("image_table.html",
+            #                             theme=self._settings.theme,
+            #                             lines=sections["images"])
 
         elif html_file:
             sections["html"] = self._ReadFile(html_file)

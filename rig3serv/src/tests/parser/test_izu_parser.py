@@ -205,24 +205,25 @@ class IzuParserTest(RigTestCase):
         self.assertEquals('<div class="izu">\nsection 1</div>', sections.get("fr", None))
         self.assertEquals('<div class="izu">\nsection 2</div>', sections.get("en", None))
 
+        # Empty sections generate *really* nothing, not even the wrapping div (since
+        # there's nothing to wrap)
+        tags, sections = self.m.RenderStringToHtml("\n\n\n\n[s:en]\n\n\n\n\n[s:fr]\n\n\n\n")
+        self.assertEquals('', sections.get("en", None))
+        self.assertEquals('', sections.get("fr", None))
+
         # A section before EOF generates nothing
         tags, sections = self.m.RenderStringToHtml("[s:fr]section 1[s:en]")
         self.assertEquals('<div class="izu">\nsection 1</div>', sections.get("fr", None))
-        self.assertEquals('<div class="izu"></div>', sections.get("en", None))
+        self.assertEquals('', sections.get("en", None))
 
         tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]")
         self.assertEquals('<div class="izu">\nsection 1</div>', sections.get("fr", None))
-        self.assertEquals('<div class="izu"></div>', sections.get("en", None))
+        self.assertEquals('', sections.get("en", None))
 
         # Sole section tags do not count as a white line that would generate a <p>
         tags, sections = self.m.RenderStringToHtml("\n[s:en]\nline 1\n\n[s:fr]\nline 2\n\n")
         self.assertEquals('<div class="izu">\nline 1</div>', sections.get("en", None))
         self.assertEquals('<div class="izu">\nline 2</div>', sections.get("fr", None))
-
-        # Empty sections generate nothing
-        tags, sections = self.m.RenderStringToHtml("\n\n\n\n[s:en]\n\n\n\n\n[s:fr]\n\n\n\n")
-        self.assertEquals('<div class="izu"></div>', sections.get("en", None))
-        self.assertEquals('<div class="izu"></div>', sections.get("fr", None))
     
     def testIzuTags(self):
         tags, sections = self.m.RenderStringToHtml("[izu:author:ralf]")
@@ -360,6 +361,29 @@ class IzuParserTest(RigTestCase):
             '<br><tt>This is a caption!</tt>'
             '[[end]]</div>',
             self._Render("[rigimg:256:A01234*.jpg|This is a caption!]"))
+
+    def testSectionImage(self):
+        self.m = MockIzuParser(self.Log(),
+                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+        tags, sections = self.m.RenderStringToHtml("[s:images]")
+        self.assertEquals(None, sections.get("en", None))
+        self.assertEquals(None, sections.get("fr", None))
+        self.assertEquals('', sections.get("images", None))
+
+        # Ignore invalid tags
+        tags, sections = self.m.RenderStringToHtml("[s:images]line 1\nline 2\n[not a rigimg tag]")
+        self.assertEquals(None, sections.get("en", None))
+        self.assertEquals(None, sections.get("fr", None))
+        self.assertEquals('', sections.get("images", None))
+
+        # full tag with name, size and glob
+        tags, sections = self.m.RenderStringToHtml("[s:images][This is & comment|rigimg:256:A01234*.jpg] ignore the rest")
+        self.assertHtmlEquals(
+            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'src="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+            '[[end]]</div>',
+            sections.get("images", None))
 
     def testCatHandler(self):
         self.assertEquals(None,

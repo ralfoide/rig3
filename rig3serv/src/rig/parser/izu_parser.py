@@ -131,10 +131,10 @@ class _State(object):
         
         Returns tuple(dict: tags, dict: sections)
         """
-        # Wrap existing HTML sessions in the appropriate div
-        for k in self._sections.keys():
-            if isinstance(self._sections[k], str):
-                self._sections[k] = '<div class="izu">%s</div>' % self._sections[k]
+        # Wrap existing non-empty HTML sessions in the appropriate div
+        for k, v in self._sections.iteritems():
+            if v and isinstance(v, str):
+                self._sections[k] = '<div class="izu">%s</div>' % v
         return self._tags, self._sections
 
 
@@ -214,7 +214,6 @@ class IzuParser(object):
             source = source[:a]
         tags, sections = self.RenderStringToHtml(source)
         return tags
-            
 
     def _ParseStream(self, state):
         is_block = None
@@ -387,13 +386,8 @@ class IzuParser(object):
         line = self._FormatLinks(state, line)
         line = self._FormatLists(state, line)
 
-        # --- remove escapes at the very end: double-[ which were used
-        # to escape normal [ tags and same for double-underscore, double-quotes
-        line = re.sub(r"\[(\[+)", r"\1", line)
-        line = re.sub(r"_(_+)", r"\1", line)
-        line = re.sub(r"'('+)", r"\1", line)
-        line = re.sub(r"=(=+)", r"\1", line)
-
+        # --- cleanup
+        line = self._RemoveEscapes(line)
         line = self._ConvertAccents(line)
 
         # --- append to buffer
@@ -435,6 +429,17 @@ class IzuParser(object):
 
         # finally append the line to the section
         state.Append(curr_section, line)
+
+    def _RemoveEscapes(self, line):
+        """
+        Remove escapes at the very end: double-[ which were used
+        to escape normal [ tags and same for double-underscore, double-quotes
+        """
+        line = re.sub(r"\[(\[+)", r"\1", line)
+        line = re.sub(r"_(_+)", r"\1", line)
+        line = re.sub(r"'('+)", r"\1", line)
+        line = re.sub(r"=(=+)", r"\1", line)
+        return line
 
     def _ConvertAccents(self, line):
         """
@@ -525,8 +530,7 @@ class IzuParser(object):
             lambda m: self._ReplRigLink(state, m.group(1), m.group(2), m.group(3)), line)
 
         # rig image: [name|rigimg:size:image_glob]
-        line = re.sub(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]',
-            lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)), line)
+        line = self._ParseRigImage(state, line, accept_rest=True)
 
         # unformated link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
@@ -536,6 +540,23 @@ class IzuParser(object):
         # (all these exceptions to prevent processing twice links in the form <a href="http...">http...</a>
         line = re.sub(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])',
                       r'\1<a href="\2">\2</a>\3', line)
+        return line
+
+    def _ParseRigImage(self, state, line, accept_rest):
+        """
+        Parses the line for a [name|rigimg:size:image_glob] tag.
+        
+        If accept_rest is True, a sub-replacement is done so the tag can be anywhere
+        in the line. If accept_rest is False, a pure match is done so the tag must
+        start at the beginning of the line and anything after the tag is ignored.
+        """
+        r = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
+        if accept_rest:
+            line = r.sub(lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)), line)
+        else:
+            m = r.match(line)
+            if m:
+                line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
         return line
 
     def _ReplRigLink(self, state, first, title, image_glob):
@@ -594,11 +615,20 @@ class IzuParser(object):
     def _ImagesSection(self, state, line):
         """
         Specific formatter for images section.
-        Currently TBD. Might be dropped altogether.
+        When present, the [s:images] section must contain a line-separated
+        list of [name|rigimg:size:image_glob] tags. Everything else is
+        ignored.
         """
         curr_section = state.CurrSection()
-        state.InitSection(curr_section, [])
-        raise NotImplementedError("Izu [s:images] section not implemented yet")
+        state.InitSection(curr_section, "")
+        if line:
+            line = self._FormatBoldItalicHtmlEmpty(line)
+            reference = line
+            line = self._ParseRigImage(state, line.strip(), accept_rest=False)
+            if line and line != reference:
+                line = self._RemoveEscapes(line)
+                line = self._ConvertAccents(line)
+                state.Append(curr_section, line + "\n")
 
     def _HtmlSection(self, state, line):
         """
