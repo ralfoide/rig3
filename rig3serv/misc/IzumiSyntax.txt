@@ -107,15 +107,20 @@ not "../myimages/....". It replies on the site settings "rig_img_url" and "rig_b
 variables.
 
 - rig image/thumbnail: [title|rigimg:size:image_glob|caption]
+  and                  [title|rigimglink:size:image_glob|caption]
 
 This generates a rig image/thumbnail inserted in-place in the generated HTML.
 It replies on the site settings "rig_thumb_url", "rig_base" and "rig_img_size" variables.
+
+When the tag name is "rigimglink" (instead of just "rigimg"), an HTML link is generated
+that wraps the image.
 
 The "name" part, if present, is the title/tag of the generated <IMG> HTML tag.
 It generally appears when hovering over the image.
 
 The "size" is expressed in pixels. It is optional, in which case the default
-value from "rig_img_size" is used.
+value from "rig_img_size" is used. When the size is omitted, the following
+colon must be omitted too.
 
 The following syntaxes are valid:
 	[title|rigimg:size:image_glob|caption]
@@ -126,7 +131,7 @@ The following syntaxes are valid:
 	[title|rigimg:image_glob]
 	[rigimg:size:image_glob]
 	[rigimg:image_glob]
-
+(same with rigimglink.)
 
 
 **** Izumi Tags

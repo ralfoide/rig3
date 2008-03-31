@@ -555,13 +555,14 @@ class IzuParser(object):
         in the line. If accept_rest is False, a pure match is done so the tag must
         start at the beginning of the line and anything after the tag is ignored.
         """
-        r = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
+        # griups:        1 first    .  2 title               3 islink.  4 size     5 img glob .    6 caption
+        r = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
         if accept_rest:
-            line = r.sub(lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)), line)
+            line = r.sub(lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)), line)
         else:
             m = r.match(line)
             if m:
-                line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
         return line
 
     def _ReplRigLink(self, state, first, title, image_glob):
@@ -581,7 +582,7 @@ class IzuParser(object):
                             "img": urllib.quote(choices[0], "/") }
         return first + result
 
-    def _ReplRigImage(self, state, first, title, size, image_glob, caption):
+    def _ReplRigImage(self, state, first, title, is_link, size, image_glob, caption):
         """
         Returns the replacement string for a [name|rigimg:size:image_glob|caption]
         Title and size are optional and can be empty or None. 
@@ -594,10 +595,18 @@ class IzuParser(object):
         if filename and image_glob:
             choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
-                result = '[[[if rig_base]]<img '
+                result = '[[[if rig_base]]'
+                if is_link:
+                    result += '<a '
+                    if title:
+                        result += 'title="%(name)s" '
+                    result += 'href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">'
+                result += '<img '
                 if title:
                     result += 'title="%(name)s" '
                 result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
+                if is_link:
+                    result += '</a>'
                 if caption:
                     result += "<br><tt>%(caption)s</tt>"
                 result += '[[[end]]'
