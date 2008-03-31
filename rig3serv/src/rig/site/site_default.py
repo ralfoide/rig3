@@ -137,8 +137,6 @@ class SiteDefault(SiteBase):
                         relevant_items.append(i)
                         break
 
-        prev_url = None
-        next_url = None
         n = len(relevant_items)
         np = n / self._ITEMS_PER_PAGE
         if max_num_pages > 0:
@@ -147,18 +145,10 @@ class SiteDefault(SiteBase):
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
             url = base_url + filename
-            if p < np:
-                next_url = base_url + "index%s.html" % (p + 1)
-            else:
-                next_url = None            
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
             keywords["rel_base_url"] = rel_base
-            keywords["prev_url"] = prev_url
-            keywords["next_url"] = next_url
-            keywords["curr_page"] = p + 1
-            keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories
             keywords["month_pages"] = month_pages
@@ -179,7 +169,6 @@ class SiteDefault(SiteBase):
             
             content = self._FillTemplate("index.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
-            prev_url = url
 
     def _GenerateMonthPages(self, path, rel_base,
                                 category_filter, all_categories,
@@ -202,7 +191,7 @@ class SiteDefault(SiteBase):
         Returns a list( tuple(string: URL, date) ) of URLs to the pages just
         created with the date matching the month.
         """
-        result_urls = []
+        month_pages = []
 
         base_url = "/".join(path)
         if base_url:
@@ -225,62 +214,52 @@ class SiteDefault(SiteBase):
 
         by_months = {}
         for i in relevant_items:
-            # key is index=(year+month*16), the year and the month.
+            # key is index=(year*16+month), the year and the month.
             # the index is there just to ease sorting.
-            key = (i.date.year + i.date.month << 4, i.date.year, i.date.month)
+            key = date(i.date.year, i.date.month, 1)
             if not key in by_months:
                 by_months[key] = []
             by_months[key].append(i)
         relevant_items = None
         keys = by_months.keys()
-        keys.sort(reverse=True, key=operator.itemgetter(0))  # sort by key/index
+        keys.sort(reverse=True)
 
-        prev_url = None
-        next_url = None
         np = len(keys)
         for n in xrange(0, np):
             month_key = keys[n]
-            year = month_key[1]
-            month = month_key[2]
+            year = month_key.year
+            month = month_key.month
             filename = self._MonthPageName(year, month)
+            month_pages.append((filename, month_key))
+            
+        for p in month_pages:
+            filename = p[0]
+            month_key = p[1]
             url = base_url + filename
-            if n + 1 < np:
-                next_url = base_url + self._MonthPageName(keys[n+1][1], keys[n+1][2])
-            else:
-                next_url = None
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
             keywords["rel_base_url"] = rel_base
-            keywords["prev_url"] = prev_url
-            keywords["next_url"] = next_url
-            keywords["curr_page"] = n + 1
-            keywords["max_page"] = np + 1
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories
+            keywords["month_pages"] = month_pages
             version = Version()
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
 
             entries = []
-            earlier_date = None
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
                 entries.append(j.content_gen(keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
-                earlier_date = (earlier_date is None) and j.date or min(earlier_date, j.date)
-            if earlier_date is None:
-                earlier_date = datetime(year, month, 1)
 
             keywords["entries"] = entries
             keywords["last_content_ts"] = older_date
 
             content = self._FillTemplate("month.html", **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
-            result_urls.append((url, earlier_date.date()))
-            prev_url = url
-        return result_urls
+        return month_pages
 
     def _MonthPageName(self, year, month):
         return "%04d-%02d.html" % (year, month)

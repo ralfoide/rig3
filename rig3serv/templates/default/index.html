@@ -3,10 +3,6 @@ Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
 - rel_base_url: string, Relative url to base of site. May be empty or like ../../
-- prev_url: None or string url
-- next_url: None or string url
-- curr_page: int, Current page number
-- max_page: int, Max page number
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
 - rig3_version: string, a version number or SVN info for this rig3 build
@@ -51,14 +47,8 @@ Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
   [[raw html_entry]]
 [[end]]
 <hr width="80%"/>
-[[if prev_url or next_url]]
-[[if prev_url]]<a href="[[url rel_base_url]][[url prev_url]]">Prev</a>[[end]]
-&nbsp;||&nbsp;
-[[if next_url]]<a href="[[url rel_base_url]][[url next_url]]">Next</a>[[end]]
-<br/>[[end]]
-[[if max_page > 1]]Page [[html curr_page]] / [[html max_page]]<br/>[[end]]
 [[if month_pages]]
-More pages: [[for m in month_pages]] <a href="[[url rel_base_url + m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
+More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
 <br/>[[end]]
 <p/>
 [[raw tracking_code]]

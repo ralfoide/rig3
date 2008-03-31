@@ -62,16 +62,16 @@ class Rig3LiveTest(RigTestCase):
         self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
-        self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item"><a href="2007-09.html#Izu-File-Item"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="2007-09.html#Izu-File-Item" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
                                index_izu)
         # sub-directories are parsed for file items too
-        self.assertHtmlSearch('<td class="title">\s*<a name="Sub-File-Item"><a href="2008-01.html#Sub-File-Item"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="Sub-File-Item" title="Permalink to \'Sub File Item\'"><a href="2008-01.html#Sub-File-Item" title="Permalink to \'Sub File Item\'"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
                                index_izu)
         # posts with no tags/categories are accepted
-        self.assertHtmlSearch('<td class="title">\s*<a name="No-Tags"><a href="2007-10.html#No-Tags"><span class="date">2007/10/02</span>No Tags</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="No-Tags" title="Permalink to \'No Tags\'"><a href="2007-10.html#No-Tags" title="Permalink to \'No Tags\'"><span class="date">2007/10/02</span>No Tags</a></a></td></tr>',
                                index_izu)
         # empty posts are accepted
-        self.assertHtmlSearch('<td class="title">\s*<a name="Empty-Post"><a href="2007-10.html#Empty-Post"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="Empty-Post" title="Permalink to \'Empty Post\'"><a href="2007-10.html#Empty-Post" title="Permalink to \'Empty Post\'"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
                                index_izu)
         
 
