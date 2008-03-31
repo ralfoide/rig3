@@ -115,6 +115,21 @@ body {
   /* border-radius-bottomright: 10px; */
 }
 
+.entry .title a:link {
+  color: yellow;
+  text-decoration: none;
+}
+
+.entry .title a:hover {
+  color: yellow;
+  text-decoration: underline;
+}
+
+.entry .title a:visited {
+  color: orange;
+  text-decoration: none;
+}
+
 .entry .title .date {
 	font-size: 1em;
 	font-weight: normal;
