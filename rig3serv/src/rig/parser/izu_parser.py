@@ -99,7 +99,12 @@ class _State(object):
         self._sections[section] = self._sections.get(section, default)
     
     def Append(self, section, content):
-        self._sections[section] += content
+        try:
+            # lists support append()
+            self._sections[section].append(content)
+        except AttributeError:
+            # strings support +=
+            self._sections[section] += content
 
     def EndsWith(self, section, word):
         return self._sections[section].endswith(word)
@@ -620,7 +625,7 @@ class IzuParser(object):
         ignored.
         """
         curr_section = state.CurrSection()
-        state.InitSection(curr_section, "")
+        state.InitSection(curr_section, [])
         if line:
             line = self._FormatBoldItalicHtmlEmpty(line)
             reference = line
@@ -628,7 +633,7 @@ class IzuParser(object):
             if line and line != reference:
                 line = self._RemoveEscapes(line)
                 line = self._ConvertAccents(line)
-                state.Append(curr_section, line + "\n")
+                state.Append(curr_section, line)
 
     def _HtmlSection(self, state, line):
         """

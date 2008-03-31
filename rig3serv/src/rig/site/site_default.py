@@ -323,18 +323,23 @@ class SiteDefault(SiteBase):
                            izu_file)
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
-            for s in sections.iterkeys():
-                keywords = self._settings.AsDict()
-                if may_have_images:
-                    keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
-                template = Template(self._log, source=sections[s])
-                sections[s] = template.Generate(keywords)
-            
-            # TODO: transform s:images section
-            #if "images" in sections:
-            #    content = self._FillTemplate("image_table.html",
-            #                             theme=self._settings.theme,
-            #                             lines=sections["images"])
+            for k, v in sections.iteritems():
+                if isinstance(v, str):
+                    keywords = self._settings.AsDict()
+                    if may_have_images:
+                        keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
+                    template = Template(self._log, source=v)
+                    sections[k] = template.Generate(keywords)
+                elif k == "images":
+                    if may_have_images:
+                        keywords = self._settings.AsDict()
+                        keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
+                        keywords["lines"] = [v]  # one line of many columns
+                        content = self._FillTemplate("image_table.html", **keywords)
+                        template = Template(self._log, source=content)
+                        sections[k] = template.Generate(keywords)
+                    else:
+                        sections[k] = ""
 
         elif html_file:
             sections["html"] = self._ReadFile(html_file)

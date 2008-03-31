@@ -368,21 +368,21 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml("[s:images]")
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
-        self.assertEquals('', sections.get("images", None))
+        self.assertEquals([], sections.get("images", None))
 
         # Ignore invalid tags
         tags, sections = self.m.RenderStringToHtml("[s:images]line 1\nline 2\n[not a rigimg tag]")
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
-        self.assertEquals('', sections.get("images", None))
+        self.assertEquals([], sections.get("images", None))
 
         # full tag with name, size and glob
         tags, sections = self.m.RenderStringToHtml("[s:images][This is & comment|rigimg:256:A01234*.jpg] ignore the rest")
-        self.assertHtmlEquals(
-            '<div class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
-            'src="[[raw rig_thumb_url % '
-            '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
-            '[[end]]</div>',
+        self.assertListEquals(
+            [ '[[if rig_base]]<img title="This is &amp; comment" '
+              'src="[[raw rig_thumb_url % '
+              '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
+              '[[end]]' ],
             sections.get("images", None))
 
     def testCatHandler(self):
