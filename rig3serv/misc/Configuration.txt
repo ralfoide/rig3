@@ -96,6 +96,7 @@ The following optional variables are described in more details below:
 - sources: List of source directories (i.e. where posts & entries are read from.)
 - rig_img_url: string format with <album> and <img> parameters
 - rig_album_url: string format with <album> parameter
+- img_gen_script: String. When not empty, script called for each album image used
 
 
 ----------------------
@@ -262,7 +263,25 @@ whereas sources2 and 3 will use the specific rig_base defined in that variable.
 
 
 ----------------------
-7- Examples
+8- img_gen_script
+----------------------
+
+When defined, the site setting "img_gen_script" is the script
+that will be executed for each album image generated for a given site.
+
+The definition of "img_gen_script" should be a string that will be
+executed using the system() command call. The following python arguments
+can be used:
+- %(src_leaf)s : The leaf name of the source image
+- %(src_dir)s : The directory of the source image
+- %(src_img)s : The path of the source image (directory + leaf name)
+- %(dest_leaf)s : The leaf name of the image that is expected to be generated
+- %(dest_dir)s : The directory of the image that is expected to be generated
+- %(dest_img)s : The path of the image that is expected to be generated (directory + leaf name)
+
+
+----------------------
+9- Examples
 ----------------------
 
 One of the nice effects you can achieve is to define several sites in your configuration

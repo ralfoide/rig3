@@ -44,6 +44,7 @@ class SiteSettings(object):
     - cat_include: A dict of category words to include. Empty or None or CAT_ALL to include all,
                    CAT_NOTAG to include all non-tagged.
                    Note that the values in the dictionnary are irrelevant, only keys matter.
+    - img_gen_script (string): An optional script to execute to generate images
     """
     CAT_ALL = "*"
     CAT_NOTAG = "$"
@@ -64,7 +65,8 @@ class SiteSettings(object):
                  header_img_height=185,
                  tracking_code="",
                  cat_exclude=None,
-                 cat_include=None):
+                 cat_include=None,
+                 img_gen_script=""):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -80,6 +82,7 @@ class SiteSettings(object):
         self.tracking_code = tracking_code
         self.cat_exclude = cat_exclude
         self.cat_include = cat_include
+        self.img_gen_script = img_gen_script
 
     def AsDict(self):
         """
