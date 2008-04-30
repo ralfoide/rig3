@@ -1,0 +1,160 @@
+[[# Default style for default template */
+
+--- base style extracted from my own wordpress theme
+Receives the following template variables:
+- base_url: empty string or url of blog
+- public_name: the blog's name
+]]
+
+body {
+	color: #29303B;
+	background: #F3F6ED url([[raw base_url]]media/content_bg.gif) repeat;
+}
+
+.header {
+	text-align: center;
+	width: 100%;
+	font-weight: bold;
+}
+
+.header img {
+	background:#fff;
+	margin: 0 auto;
+	padding: 0;
+	/* border: #fc9 1px solid; */
+}
+
+.blog-name {
+	text-align: center;
+	width: 100%;
+	font-weight: bold;
+	margin-bottom: 0.5em;
+}
+
+.categories {
+	text-align: center;
+	margin-bottom: 0.5em;
+}
+
+
+.rig_version {
+	font-size: smaller;
+	text-align: center;
+	margin-bottom: 0.5em;
+}
+
+.entry {
+	padding-bottom: 1em; 
+  /* margin-left: 1em; --TEST removed */
+}
+
+.izu {
+  display: inline;
+}
+
+.entry table.deco {
+  width: 100%;
+  border-spacing: 0px;
+  empty-cells: show;
+}
+
+.entry table.deco td.left-top {
+  width: 0.75em;
+  background-color: green;
+  border-top:    2px solid #ACA;
+  border-left:   2px solid #8C8;
+  -moz-border-radius-topleft: 10px;
+}
+
+.entry table.deco td.left-top {
+  border-radius-topleft: 10px;
+}
+
+.entry table.deco td.left-bottom {
+  width: 0.75em;
+  background-color: green;
+  border-left:   2px solid #8C8;
+  border-bottom: 2px solid #050;
+  border-right:  2px solid #050;
+  -moz-border-radius-bottomleft: 10px;
+  /* -moz-border-radius-bottomright: 10px; */
+}
+
+.entry table.deco td.left-bottom {
+  border-radius-bottomleft: 10px;
+  /* border-radius-bottomright: 10px; */
+}
+
+.entry table.deco td.right-bottom {
+  border-bottom: 1px solid #050;
+  border-right:  1px solid #050;
+  -moz-border-radius-bottomright: 10px;
+}
+
+.entry .title {
+  background-color: green;
+  color: yellow; 
+  font-size: 1.2em;
+  font-weight: bold;
+
+  margin-top: 1em;
+  margin-left: 0em;
+  padding-left: 0em;
+  padding-top: 0.5em;
+  padding-bottom: 0.3em;
+  border-right:  2px solid #050;
+  border-top:    2px solid #ACA;
+  border-bottom: 2px solid #050;
+
+  -moz-border-radius-topright: 10px;
+  /* -moz-border-radius-bottomright: 10px; */
+}
+
+.entry .title {
+  border-radius-topright: 10px;
+  /* border-radius-bottomright: 10px; */
+}
+
+.entry .title a:link {
+  color: yellow;
+  text-decoration: none;
+}
+
+.entry .title a:hover {
+  color: yellow;
+  text-decoration: underline;
+}
+
+.entry .title a:visited {
+  color: orange;
+  text-decoration: none;
+}
+
+.entry .title .date {
+	font-size: 1em;
+	font-weight: normal;
+}
+
+.content {
+	padding-bottom: 1em;
+}
+
+.content.image {
+	text-align: center;
+	width: 100%;
+}
+
+.content.intro {
+	font-size: smaller;
+	padding-left: 1em;
+	padding-bottom: 0.5em;
+}
+
+.image-table {
+	text-align: center;
+	width: 100%;
+}
+
+table.content td.flag {
+	vertical-align: top;
+}

@@ -1,0 +1,52 @@
+[[# Entry template.
+
+The generated entry should be a piece of HTML, not a full document.
+
+Parameters:
+- base_url: The generated site's base URL. May be empty.
+- title: string, title of the entry.
+- tags: dict{string tag: string value}, the parsed Izu tags.
+- categories: list[string cat], the tags for this entry. Can be empty.
+- sections: dict{string name: string content}, the HTML for the various sections.
+	- Expected sections names: html (old html), en, fr and images.
+- rel_base_url: string, Relative url to base of site. May be empty or like ../../
+- permalink_name: string, the permalink simplified name, for anchors
+- permalink_url: string, the permalink URL relative to the base URL
+]]
+<div class="entry">
+
+<table class="deco">
+<tr><td class="left-top"> </td>
+<td class="title">
+<a name="[[url permalink_name]]" title="Permalink to '[[html title]]'"><a href="[[raw permalink_url]]" title="Permalink to '[[html title]]'"><span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a></a></td></tr>
+<tr><td class="left-bottom"> </td>
+<td class="right-bottom">
+
+<div class="content intro">
+[[html date.strftime("%Y-%m-%d %H:%M")]]
+[[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
+[[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
+</div>
+
+[[if "en" in sections]]
+<table class="content en"><tr>
+[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url]]media/flag_usa.gif" /></td>[[end]]
+<td>[[raw sections["en"] ]]</td></tr></table>
+[[end]]
+
+[[if "fr" in sections]]
+<table class="content fr"><tr><td class="flag">
+<td class="flag"><img src="[[url rel_base_url]]media/flag_fr.gif" /></td>
+<td>[[raw sections["fr"] ]]</td></tr></table>
+[[end]]
+
+[[if "html" in sections]][[raw sections["html"] ]][[end]]
+
+[[if "images" in sections]]
+<div class="content images">
+[[raw sections["images"] ]]
+</div>
+[[end]]
+
+</td></tr></table>
+</div>
