@@ -13,40 +13,42 @@ Parameters:
 - permalink_name: string, the permalink simplified name, for anchors
 - permalink_url: string, the permalink URL relative to the base URL
 ]]
-<div class="entry">
 
-<table class="deco">
-<tr><td class="left-top"> </td>
-<td class="title">
-<a name="[[url permalink_name]]" title="Permalink to '[[html title]]'"><a href="[[raw permalink_url]]" title="Permalink to '[[html title]]'"><span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a></a></td></tr>
-<tr><td class="left-bottom"> </td>
-<td class="right-bottom">
+<h2 class="entry title">
+<a name="[[url permalink_name]]" title="Permalink to '[[html title]]'">
+<a href="[[raw permalink_url]]" title="Permalink to '[[html title]]'">
+<span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a>
+</a>
+</h2>
 
-<div class="content intro">
+<i>
 [[html date.strftime("%Y-%m-%d %H:%M")]]
 [[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
-</div>
+</i>
+
+<br/>
 
 [[if "en" in sections]]
-<table class="content en"><tr>
-[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url]]media/flag_usa.gif" /></td>[[end]]
-<td>[[raw sections["en"] ]]</td></tr></table>
+[[if "fr" in sections]]<img src="[[url rel_base_url]]media/flag_usa.gif" />[[end]]
+[[raw sections["en"] ]]
 [[end]]
 
+<p/>
+
 [[if "fr" in sections]]
-<table class="content fr"><tr><td class="flag">
-<td class="flag"><img src="[[url rel_base_url]]media/flag_fr.gif" /></td>
-<td>[[raw sections["fr"] ]]</td></tr></table>
+<img src="[[url rel_base_url]]media/flag_fr.gif" />
+[[raw sections["fr"] ]]
 [[end]]
+
+<p/>
 
 [[if "html" in sections]][[raw sections["html"] ]][[end]]
 
 [[if "images" in sections]]
-<div class="content images">
+<center>
 [[raw sections["images"] ]]
-</div>
+</center>
 [[end]]
 
-</td></tr></table>
-</div>
+<p/>
