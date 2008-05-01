@@ -5,3 +5,7 @@ Receives the following template variables:
 - base_url: empty string or url of blog
 - public_name: the blog's name
 ]]
+
+.izu {
+    dispaly: inline;
+}

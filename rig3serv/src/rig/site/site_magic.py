@@ -15,7 +15,7 @@ from rig.site.site_default import SiteDefault
 #------------------------
 class SiteMagic(SiteDefault):
     """
-    Describes and how to generate the content of a site using the "magic" theme.
+    Describes how to generate the content of a site using the "magic" theme.
     
     Right now the "magic" theme is identicaly to the "default" theme
     so the implementation is empty. This is expected to change later.

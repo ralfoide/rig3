@@ -15,7 +15,7 @@ from rig.site.site_default import SiteDefault
 #------------------------
 class SiteRalf(SiteDefault):
     """
-    Describes and how to generate the content of a site using the "ralf" theme.
+    Describes how to generate the content of a site using the "ralf" theme.
     
     Right now the "ralf" theme is identicaly to the "default" theme
     so the implementation is empty. This is expected to change later.

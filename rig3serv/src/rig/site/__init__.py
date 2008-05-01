@@ -10,11 +10,13 @@ rig.site.SiteXyz(rig.site_base.SiteBase).
 """
 
 from rig.site.site_default import SiteDefault
+from rig.site.site_plain import SitePlain
 from rig.site.site_ralf import SiteRalf
 from rig.site.site_magic import SiteMagic
 
 THEMES = {
     "default": SiteDefault,
+    "plain":   SitePlain,
     "ralf":    SiteRalf,
     "magic":   SiteMagic
 }

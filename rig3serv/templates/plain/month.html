@@ -1,8 +1,8 @@
-[[# Month template.
+[[# Month for PLAIN template.
 Expected parameters:
 - title: string, Web page title
 - entries: list(string), generated HTML for each entry.
-- rel_base_url: string, Relative url to base of site. May be empty.
+- rel_base_url: string, Relative url to base of site. May be empty or like ../../.
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
 - rig3_version: string, a version number or SVN info for this rig3 build
@@ -25,28 +25,37 @@ TODO:
 </head>
 <body>
 
-<div class="header"
-style="height: [[html header_img_height]]px; width: 100%; background: no-repeat top center scroll url([[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]][[url rel_base_url]]media/top_banner.jpg[[end]]) ">
-</div>
+<center>
+[[if header_img_url]] <img class="header" src="[[url header_img_url]]" /> [[end]]
+[[if not header_img_url]] <img class="header" src="[[url rel_base_url]]media/top_banner.jpg" /> [[end]]
 
-<div class="blog-name">[[html public_name]]</div>
+<br/>
 
-<div class="categories">
+[[# blog-name]] [[html public_name]]
+
+<br/>
+
+[[# categories ]]
 <a href="[[url rel_base_url]]">All</a>
 [[for cat in all_categories]] | <a href="[[url rel_base_url]]cat/[[url cat]]/">[[html cat.capitalize()]]</a>
 [[end]]
-</div>
 
-<div class="rig_version">
+<br/>
+
+[[# rig_version ]]
 [[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
 Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
 <a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
-</div>
+
+</center>
+<p/>
 
 [[for html_entry in entries]]
   [[raw html_entry]]
 [[end]]
+
 <hr width="80%"/>
+
 [[if month_pages]]
 More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
 <br/>[[end]]

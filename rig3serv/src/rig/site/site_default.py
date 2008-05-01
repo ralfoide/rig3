@@ -29,7 +29,7 @@ from rig.sites_settings import SiteSettings
 #------------------------
 class SiteDefault(SiteBase):
     """
-    Describes and how to generate the content of a site using the "default" theme.
+    Describes how to generate the content of a site using the "default" theme.
     
     Right now the "magic" theme is identicaly to the "default" theme
     so the implementation is empty. This is expected to change later.

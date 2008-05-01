@@ -141,7 +141,7 @@ class _State(object):
         # Wrap existing non-empty HTML sessions in the appropriate div
         for k, v in self._sections.iteritems():
             if v and isinstance(v, str):
-                self._sections[k] = '<div class="izu">%s</div>' % v
+                self._sections[k] = '<span class="izu">%s</span>' % v
         return self._tags, self._sections
 
 
