@@ -13,9 +13,10 @@ The purpose of this document is to explain the configuration file.
 
 By default, rig3 will look for a configuration file in the following locations:
 - /etc/rig3.rc
-- $HOME/.rig3rc (e.g. "/home/username/.rig3rc" under Linux or C:\Document and Settings\username\.rig3rc under Windows)
+- $HOME/.rig3rc (e.g. "/home/username/.rig3rc" under Linux or
+                 "C:\Document and Settings\username\.rig3rc" under Windows)
 
-However it is expected your configuration file probably resides elswhere, in which case you
+However it is expected your configuration file probably resides elsewhere, in which case you
 can use the "-c" command-line flag to specify it. The most common case is that the file is
 located in the current directory, so you'll do something like this:
  $ /path/to/rig3.py -c myconfig.rc
@@ -267,17 +268,36 @@ whereas sources2 and 3 will use the specific rig_base defined in that variable.
 ----------------------
 
 When defined, the site setting "img_gen_script" is the script
-that will be executed for each album image generated for a given site.
+that will be executed for each album image that should be included in a page.
 
-The definition of "img_gen_script" should be a string that will be
-executed using the system() command call. The following python arguments
-can be used:
-- %(src_leaf)s : The leaf name of the source image
-- %(src_dir)s : The directory of the source image
-- %(src_img)s : The path of the source image (directory + leaf name)
-- %(dest_leaf)s : The leaf name of the image that is expected to be generated
-- %(dest_dir)s : The directory of the image that is expected to be generated
-- %(dest_img)s : The path of the image that is expected to be generated (directory + leaf name)
+The script takes one argument, the leafname of the image to be generated (relative to the
+current page being generated), and must returns either the URL of the generated image or
+a full <img> HTML tag.
+
+When this happens, the default templating specified by the variables rig_thumb_url and
+rig_img_url is ignored and the returned string is used as-is.
+
+If the script returns a string "default" with error code 0, the default templating defined by
+rig_thumb_url and rig_img_url is used instead.
+
+If the script returns an error code != 0, the image will simply not be included.
+
+Input:
+- $1 = image leaf name
+Output:
+- error code 0: uses stdout
+- error code != 0: skip image
+Stdout:
+- default: use rig_thumb_url and rig_img_url as usual
+- nothing: skip image
+- <img ...>: insert HTML tag as-is.
+- other: URL to be inserted in a <img src="<url>"> tag.
+
+When <img ...> is used it must obey the following properties:
+- it must start exactly with "<img" followed by at least one space
+- it must end with ">"
+- all other < or > will be encoded in their proper HTML entity to prevent
+  the tag from embedding any other kind of tag.
 
 
 ----------------------

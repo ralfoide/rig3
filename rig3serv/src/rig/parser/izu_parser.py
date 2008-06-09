@@ -589,6 +589,8 @@ class IzuParser(object):
         Returns the replacement string for a [name|rigimg:size:image_glob|caption]
         Title and size are optional and can be empty or None. 
         
+        If the glob pattern returns more than one name, only the first one is used.
+        
         The image_glob parameter must be a leaf name (no paths) and will be
         located in the current Izu's file directory if possible.
         """
