@@ -600,26 +600,41 @@ class IzuParser(object):
         if filename and image_glob:
             choices = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choices:
-                result = '[[[if rig_base]]'
-                if is_link:
-                    result += '<a '
-                    if title:
-                        result += 'title="%(name)s" '
-                    result += 'href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">'
-                result += '<img '
-                if title:
-                    result += 'title="%(name)s" '
-                result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
-                if is_link:
-                    result += '</a>'
-                if caption:
-                    result += "<br><tt>%(caption)s</tt>"
-                result += '[[[end]]'
-                result %= { "name": title,
-                            "img": urllib.quote(choices[0], "/"),
-                            "size": size and ('"%s"' % size) or "rig_img_size",
-                            "caption": caption }
+                result = self._ExternalGenRigUrl(choices[0], title, is_link, size, caption)
+                if not result:
+                    result = self._InternalGenRigUrl(choices[0], title, is_link, size, caption)
         return first + result
+
+    def _ExternalGenRigUrl(self, filename, title, is_link, size, caption):
+        """
+        """
+        # TODO
+
+    def _InternalGenRigUrl(self, filename, title, is_link, size, caption):
+        """
+        Returns the replacement string for a [name|rigimg:size:image_glob|caption]
+        based on the rig_img_url and rig_thumb_url variables.
+        """
+        result = '[[[if rig_base]]'
+        if is_link:
+            result += '<a '
+            if title:
+                result += 'title="%(name)s" '
+            result += 'href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">'
+        result += '<img '
+        if title:
+            result += 'title="%(name)s" '
+        result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
+        if is_link:
+            result += '</a>'
+        if caption:
+            result += "<br><tt>%(caption)s</tt>"
+        result += '[[[end]]'
+        result %= { "name": title,
+                    "img": urllib.quote(filename, "/"),
+                    "size": size and ('"%s"' % size) or "rig_img_size",
+                    "caption": caption }
+        return result
 
     def _FormatLists(self, state, line):
         """
