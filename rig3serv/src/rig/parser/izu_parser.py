@@ -151,8 +151,9 @@ class IzuParser(object):
     Izumi parser.
     This class is stateless.
     """
-    def __init__(self, log):
+    def __init__(self, log, settings):
         self._log = log
+        self._settings = settings
         # custom section handlers. Unlisted sections use the "default" formatter
         self._escape_block = { "--": self._EscapeComment,
                                "html:": self._EscapeRawHtml }

@@ -16,9 +16,9 @@ from rig.parser.izu_parser import IzuParser
 
 #------------------------
 class MockIzuParser(IzuParser):
-    def __init__(self, log, glob=None):
+    def __init__(self, log, glob=None, settings=None):
         self._glob = glob or {}
-        super(MockIzuParser, self).__init__(log)
+        super(MockIzuParser, self).__init__(log, settings)
 
     def _GlobGlob(self, dir, pattern):
         return self._glob.get(pattern, [])

@@ -82,7 +82,7 @@ class SiteBase(object):
         self._log = log
         self._dry_run = dry_run
         self._settings = settings
-        self._izu_parser = IzuParser(self._log)
+        self._izu_parser = IzuParser(self._log, settings)
 
     # Derived class must implement this to define the desired behavoior
 

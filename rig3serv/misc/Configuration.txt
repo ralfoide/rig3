@@ -264,7 +264,7 @@ whereas sources2 and 3 will use the specific rig_base defined in that variable.
 
 
 ----------------------
-8- img_gen_script
+8- Image Generation Script
 ----------------------
 
 When defined, the site setting "img_gen_script" is the script
