@@ -14,6 +14,7 @@ import os
 import sys
 import fnmatch
 import urllib
+import subprocess
 from datetime import datetime
 from StringIO import StringIO
 
@@ -608,7 +609,54 @@ class IzuParser(object):
     def _ExternalGenRigUrl(self, filename, title, is_link, size, caption):
         """
         """
-        # TODO
+        script = self._settings.img_gen_script
+        if not script:
+            return None
+        
+        p = subprocess.Popen([script, filename],
+                             executable=None,
+                             stdin=None,
+                             stdout=PIPE,
+                             stderr=None,
+                             shell=True,
+                             cwd=None,
+                             env={ "TITLE":   title   and str(title)   or "",
+                                   "SIZE":    size    and str(size)    or "",
+                                   "IS_LINK": is_link and "1"          or "0",
+                                   "CAPTION": caption and str(caption) or ""
+                                 },
+                             universal_newlines=True)
+
+        output = p.communicate()[0]
+        if not output:
+            return None
+        ret = p.wait()
+        if ret != 0:
+            return None
+
+        if output.find("<img ") == -1:
+            # result must be an URL. Wrap in <img> tag.
+            img_tag = '<img '
+            if title:
+                img_tag += 'title="%(name)s" '
+            img_tag += 'src="%(output)s">'
+        else:
+            img_tag = output
+
+        if is_link and result.find("<a ") == -1:
+            result = '<a '
+            if title:
+                result += 'title="%(name)s" '
+            result += 'href="%(output)s">%(img)s</a>'
+        if caption and result.find("<tt>") == -1:
+            result += "<br><tt>%(caption)s</tt>"
+        result %= { "output": output,
+                    "name": title,
+                    "img": img_tag,
+                    "size": size and ('"%s"' % size) or "rig_img_size",
+                    "caption": caption }
+        return result
+        
 
     def _InternalGenRigUrl(self, filename, title, is_link, size, caption):
         """
