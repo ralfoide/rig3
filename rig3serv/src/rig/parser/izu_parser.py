@@ -609,14 +609,16 @@ class IzuParser(object):
     def _ExternalGenRigUrl(self, filename, title, is_link, size, caption):
         """
         """
+        if not self._settings:
+            return None
         script = self._settings.img_gen_script
         if not script:
             return None
         
-        p = subprocess.Popen([script, filename],
+        p = self._SubprocessPopen([script, filename],
                              executable=None,
                              stdin=None,
-                             stdout=PIPE,
+                             stdout=subprocess.PIPE,
                              stderr=None,
                              shell=True,
                              cwd=None,
@@ -643,12 +645,12 @@ class IzuParser(object):
         else:
             img_tag = output
 
-        if is_link and result.find("<a ") == -1:
+        if is_link and output.find("<a ") == -1:
             result = '<a '
             if title:
                 result += 'title="%(name)s" '
             result += 'href="%(output)s">%(img)s</a>'
-        if caption and result.find("<tt>") == -1:
+        if caption and output.find("<tt>") == -1:
             result += "<br><tt>%(caption)s</tt>"
         result %= { "output": output,
                     "name": title,
@@ -773,6 +775,12 @@ class IzuParser(object):
                 result.append(leaf)
         return result
 
+    def _SubprocessPopen(self, *popenargs, **kwargs):
+        """
+        Returns the result from subprocess.Popen().
+        This is useful for mocking in unit tests. 
+        """
+        return subprocess.Popen(*popenargs, **kwargs)
 
 #------------------------
 # Local Variables:

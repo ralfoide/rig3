@@ -15,14 +15,42 @@ from tests.rig_test_case import RigTestCase
 from rig.parser.izu_parser import IzuParser
 
 #------------------------
+class MockSettings(object):
+    def __init__(self, settings):
+        self.__dict__.update(settings)
+        
 class MockIzuParser(IzuParser):
     def __init__(self, log, glob=None, settings=None):
+        self._popen_args = None
+        self._popen_kw = None
+        self._popen_ret = None
+        self._popen_out = None
+        
         self._glob = glob or {}
+        
+        if settings and isinstance(settings, dict):
+            settings = MockSettings(settings)
         super(MockIzuParser, self).__init__(log, settings)
 
     def _GlobGlob(self, dir, pattern):
         return self._glob.get(pattern, [])
-        
+
+    def SetPopenValues(self, retcode, stdout):
+        self._popen_ret = retcode
+        self._popen_out = stdout
+
+    def _SubprocessPopen(self, *popenargs, **kwargs):
+        self._popen_args = popenargs
+        self._popen_kw = kwargs
+        return self
+    
+    def communicate(self, input=None):
+        """ Simulates subprocess.Popen.communicate """
+        return [ self._popen_out, "MOCK-stderr" ]
+    
+    def wait(self):
+        """ Simulates subprocess.Popen.wait """
+        return self._popen_ret
 
 #------------------------
 class IzuParserTest(RigTestCase):
@@ -395,6 +423,28 @@ class IzuParserTest(RigTestCase):
         self.assertDictEquals(
             { "foo": True, "bar": True, "foobar": True, "foob": True, "babar": True, "foobar2": True },
             self._Tags("[izu:cat:foo,bar,Foo Bar FooBar,,foob  babar\t\ffoobar2]").get("cat"))
+
+    def testExternalGenRigUrl(self):
+        self.assertEqual(None, self.m._ExternalGenRigUrl(
+                             filename=1, title=2, is_link=False, size=4, caption=5))
+
+        m = MockIzuParser(self.Log(),
+                          settings={ "img_gen_script": "/path/to/my/script" })
+
+        # error code is not 0, so nothing is done
+        m.SetPopenValues(42, "blah")
+        self.assertEqual(None, m._ExternalGenRigUrl(
+                             filename=1, title=2, is_link=False, size=4, caption=5))
+
+        # output is empty, so nothing is done
+        m.SetPopenValues(0, "")
+        self.assertEqual(None, m._ExternalGenRigUrl(
+                             filename=1, title=2, is_link=False, size=4, caption=5))
+
+        m.SetPopenValues(0, "output-is-not-a-url")
+        self.assertEqual("", m._ExternalGenRigUrl(
+                             filename=1, title=2, is_link=False, size=4, caption=5))
+
 
 #------------------------
 # Local Variables:
