@@ -270,34 +270,42 @@ whereas sources2 and 3 will use the specific rig_base defined in that variable.
 When defined, the site setting "img_gen_script" is the script
 that will be executed for each album image that should be included in a page.
 
-The script takes one argument, the leafname of the image to be generated (relative to the
-current page being generated), and must returns either the URL of the generated image or
-a full <img> HTML tag.
+The script receives several arguments, as described below. It must returns either:
+- the URL of the generated image (to be wrapped in an <img> tag)
+- a full <a> HTML tag if a link is requested.
+- a full <img> HTML tag otherwise
 
-When this happens, the default templating specified by the variables rig_thumb_url and
+When this happens, the default template specified by the variables rig_thumb_url and
 rig_img_url is ignored and the returned string is used as-is.
 
-If the script returns a string "default" with error code 0, the default templating defined by
-rig_thumb_url and rig_img_url is used instead.
+If the script returns an error code != 0 or does not output anything, the default
+template specified by the variables rig_thumb_url and rig_img_url is used.
 
-If the script returns an error code != 0, the image will simply not be included.
+Environment:
+- NAME: the same as $1
+- IS_LINK: "1" if <a> is required, "0" otherwise.
+- SIZE: an optional size in pixels for the image. Empty string when absent.
+- TITLE: an optional title for the <img> or <a> tags. Empty string when absent.
+- CAPTION: an optional caption for the <img> or <a> tags. Empty string when absent.
 
 Input:
-- $1 = image leaf name
+- $1 = same as $NAME
+- $2 = same as $IS_LINK
+- $3 = same as $SIZE
+- $4 = same as $TITLE
+- $5 = same as $CAPTION
+
 Output:
 - error code 0: uses stdout
-- error code != 0: skip image
-Stdout:
-- default: use rig_thumb_url and rig_img_url as usual
-- nothing: skip image
-- <img ...>: insert HTML tag as-is.
-- other: URL to be inserted in a <img src="<url>"> tag.
+- error code != 0: use rig_thumb_url and rig_img_url as usual
 
-When <img ...> is used it must obey the following properties:
-- it must start exactly with "<img" followed by at least one space
-- it must end with ">"
-- all other < or > will be encoded in their proper HTML entity to prevent
-  the tag from embedding any other kind of tag.
+Stdout:
+- nothing: use rig_thumb_url and rig_img_url as usual
+- <img ...>: insert HTML tag as-is.
+- <a... >: insert HTML tag as-is.
+- other: URL to be inserted in a <img src="<url>"> tag.
+- if CAPTION is defined and <tt> is not present, the caption will be added in
+  a <tt> tag at the end.
 
 
 ----------------------

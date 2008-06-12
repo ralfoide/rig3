@@ -614,19 +614,28 @@ class IzuParser(object):
         script = self._settings.img_gen_script
         if not script:
             return None
-        
-        p = self._SubprocessPopen([script, filename],
+
+        env = { "NAME":    filename,
+                "IS_LINK": is_link and "1"          or "0",
+                "SIZE":    size    and str(size)    or "",
+                "TITLE":   title   and str(title)   or "",
+                "CAPTION": caption and str(caption) or ""
+              }
+
+        p = self._SubprocessPopen( [ script,
+                                     env["NAME"],
+                                     env["IS_LINK"],
+                                     env["SIZE"],
+                                     env["TITLE"],
+                                     env["CAPTION"],
+                                   ],
                              executable=None,
                              stdin=None,
                              stdout=subprocess.PIPE,
                              stderr=None,
                              shell=True,
                              cwd=None,
-                             env={ "TITLE":   title   and str(title)   or "",
-                                   "SIZE":    size    and str(size)    or "",
-                                   "IS_LINK": is_link and "1"          or "0",
-                                   "CAPTION": caption and str(caption) or ""
-                                 },
+                             env=env,
                              universal_newlines=True)
 
         output = p.communicate()[0]
@@ -636,26 +645,19 @@ class IzuParser(object):
         if ret != 0:
             return None
 
+        result = output
         if output.find("<img ") == -1:
             # result must be an URL. Wrap in <img> tag.
-            img_tag = '<img '
+            result = '<img '
             if title:
-                img_tag += 'title="%(name)s" '
-            img_tag += 'src="%(output)s">'
-        else:
-            img_tag = output
+                result += 'title="%(title)s" '
+            result += 'src="%(output)s">'
 
-        if is_link and output.find("<a ") == -1:
-            result = '<a '
-            if title:
-                result += 'title="%(name)s" '
-            result += 'href="%(output)s">%(img)s</a>'
         if caption and output.find("<tt>") == -1:
             result += "<br><tt>%(caption)s</tt>"
+
         result %= { "output": output,
-                    "name": title,
-                    "img": img_tag,
-                    "size": size and ('"%s"' % size) or "rig_img_size",
+                    "title": title,
                     "caption": caption }
         return result
         
