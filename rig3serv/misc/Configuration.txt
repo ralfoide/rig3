@@ -294,7 +294,7 @@ Input:
 - $1 = same as $IMG_DIR
 - $2 = same as $IMG_NAME
 - $3 = same as $IS_LINK
-- $4 = same as OPT_$SIZE
+- $4 = same as $OPT_SIZE
 - $5 = same as $OPT_TITLE
 - $6 = same as $OPT_CAPTION
 
