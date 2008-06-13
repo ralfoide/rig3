@@ -599,14 +599,15 @@ class IzuParser(object):
         result = ""
         filename = state.Filename()
         if filename and image_glob:
-            choices = self._GlobGlob(os.path.dirname(filename), image_glob)
+            img_dir = os.path.dirname(filename)
+            choices = self._GlobGlob(img_dir, image_glob)
             if choices:
-                result = self._ExternalGenRigUrl(choices[0], title, is_link, size, caption)
+                result = self._ExternalGenRigUrl(img_dir, choices[0], title, is_link, size, caption)
                 if not result:
                     result = self._InternalGenRigUrl(choices[0], title, is_link, size, caption)
         return first + result
 
-    def _ExternalGenRigUrl(self, filename, title, is_link, size, caption):
+    def _ExternalGenRigUrl(self, img_dir, filename, title, is_link, size, caption):
         """
         """
         if not self._settings:
@@ -615,25 +616,27 @@ class IzuParser(object):
         if not script:
             return None
 
-        env = { "NAME":    filename,
-                "IS_LINK": is_link and "1"          or "0",
-                "SIZE":    size    and str(size)    or "",
-                "TITLE":   title   and str(title)   or "",
-                "CAPTION": caption and str(caption) or ""
+        env = { "IMG_DIR":     img_dir,
+                "IMG_NAME":    filename,
+                "IS_LINK":     is_link and "1"          or "0",
+                "OPT_SIZE":    size    and str(size)    or "",
+                "OPT_TITLE":   title   and str(title)   or "",
+                "OPT_CAPTION": caption and str(caption) or ""
               }
 
         p = self._SubprocessPopen( [ script,
-                                     env["NAME"],
+                                     env["IMG_DIR"],
+                                     env["IMG_NAME"],
                                      env["IS_LINK"],
-                                     env["SIZE"],
-                                     env["TITLE"],
-                                     env["CAPTION"],
+                                     env["OPT_SIZE"],
+                                     env["OPT_TITLE"],
+                                     env["OPT_CAPTION"],
                                    ],
                              executable=None,
                              stdin=None,
                              stdout=subprocess.PIPE,
                              stderr=None,
-                             shell=True,
+                             shell=False,
                              cwd=None,
                              env=env,
                              universal_newlines=True)

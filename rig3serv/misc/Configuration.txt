@@ -282,18 +282,21 @@ If the script returns an error code != 0 or does not output anything, the defaul
 template specified by the variables rig_thumb_url and rig_img_url is used.
 
 Environment:
-- NAME: the same as $1
+- IMG_DIR: the current directory being processed (this *may* be relative, depending
+           on the current source setting being processed.)
+- IMG_NAME: the basename of the image 
 - IS_LINK: "1" if <a> is required, "0" otherwise.
-- SIZE: an optional size in pixels for the image. Empty string when absent.
-- TITLE: an optional title for the <img> or <a> tags. Empty string when absent.
-- CAPTION: an optional caption for the <img> or <a> tags. Empty string when absent.
+- OPT_SIZE: an optional size in pixels for the image. Empty string when absent.
+- OPT_TITLE: an optional title for the <img> or <a> tags. Empty string when absent.
+- OPT_CAPTION: an optional caption for the <img> or <a> tags. Empty string when absent.
 
 Input:
-- $1 = same as $NAME
-- $2 = same as $IS_LINK
-- $3 = same as $SIZE
-- $4 = same as $TITLE
-- $5 = same as $CAPTION
+- $1 = same as $IMG_DIR
+- $2 = same as $IMG_NAME
+- $3 = same as $IS_LINK
+- $4 = same as OPT_$SIZE
+- $5 = same as $OPT_TITLE
+- $6 = same as $OPT_CAPTION
 
 Output:
 - error code 0: uses stdout
