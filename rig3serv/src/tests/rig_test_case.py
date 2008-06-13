@@ -191,8 +191,8 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertListEquals failed", repr(expected), repr(actual))
-        self.assertTrue(isinstance(actual, list), msg)
-        self.assertTrue(isinstance(expected, list), msg)
+        self.assertTrue(isinstance(actual, (list, tuple)), msg)
+        self.assertTrue(isinstance(expected, type(actual)), msg)
         if sort is not False:
             expected = list(expected)
             actual = list(actual)

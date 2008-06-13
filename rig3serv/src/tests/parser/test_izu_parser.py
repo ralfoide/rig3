@@ -40,6 +40,18 @@ class MockIzuParser(IzuParser):
         self._popen_out = stdout
     
     def GetPopenArgs(self):
+        """
+        Returns the positional arguments given to Popen (as a tuple)
+        and the dictionary of keyword arguments.
+
+        _popen_args is a tuple of all positional args (i.e. non keywords).
+        The only positional args given to popen by the caller is the list
+        of arguments strings for the process.
+        In other words:
+          _popen_args = tuple( list [ strings: process-args ], )
+
+        _popen_kw is a dict { string: string }
+        """
         return self._popen_args, self._popen_kw
 
     def _SubprocessPopen(self, *popenargs, **kwargs):
@@ -468,6 +480,24 @@ class IzuParserTest(RigTestCase):
              m._ExternalGenRigUrl(filename="file1", title=None,
                                   is_link=False, size="size4", caption=None))
 
+    def testExternalGenRigUrl_env(self):
+        m = MockIzuParser(self.Log(),
+                          settings={ "img_gen_script": "/path/to/my/script" })
+        m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
+
+        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
+             m._ExternalGenRigUrl(filename="file1", title="title2",
+                                  is_link=False, size="size4", caption="caption5"))
+
+        args, kw = m.GetPopenArgs()
+        
+        self.assertListEquals( ( [ "/path/to/my/script",
+                                   "file1", "0", "size4", "title2", "caption5" ], ),
+                               args)
+        self.assertDictEquals( { "NAME": "file1", "IS_LINK": "0", "SIZE": "size4",
+                                "TITLE": "title2", "CAPTION": "caption5" },
+                               kw["env"])
+
     def testExternalGenRigUrl_img(self):
         m = MockIzuParser(self.Log(),
                           settings={ "img_gen_script": "/path/to/my/script" })
@@ -502,23 +532,20 @@ class IzuParserTest(RigTestCase):
              m._ExternalGenRigUrl(filename="file1", title=None,
                                   is_link=False, size="size4", caption=None))
 
-    def testExternalGenRigUrl_env(self):
+    def testExternalGenRigUrl_tt(self):
         m = MockIzuParser(self.Log(),
                           settings={ "img_gen_script": "/path/to/my/script" })
-        m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
+        m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a><tt>boo</tt>')
 
-        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
+        self.assertEquals('<a href="foo"><img src"toto"><blah></a><tt>boo</tt>',
              m._ExternalGenRigUrl(filename="file1", title="title2",
                                   is_link=False, size="size4", caption="caption5"))
 
-        args, kw = m.GetPopenArgs()
-        
-        self.assertListEquals( [ "/path/to/my/script",
-                                 "file1", "0", "size4", "title2", "caption5" ],
-                               args)
-        self.assertDictEquals( { "NAME": "file1", "IS_LINK": "0", "SIZE": "size4",
-                                "TITLE": "title2", "CAPTION": "caption5" },
-                               kw["env"])
+        m.SetPopenValues(0, '<img src"toto"><blah><tt>boo</tt>')
+
+        self.assertEquals('<img src"toto"><blah><tt>boo</tt>',
+             m._ExternalGenRigUrl(filename="file1", title="title2",
+                                  is_link=True, size="size4", caption="caption5"))
 
 
 

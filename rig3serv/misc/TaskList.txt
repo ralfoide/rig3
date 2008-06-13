@@ -1,6 +1,5 @@
 ---- TODO ----
 
-20080218 Engine:   Call custom script for on-the-fly image generation + pref
 20080124 Engine:   Ability to have a different rig_base per source
 20080218 Template: Custom page header per category
 20080219 Engine:   Generate Atom feed
@@ -41,6 +40,7 @@
 
 ---- Done Version 0.3 ----
 
+20080612 Engine:   Call custom script for on-the-fly image generation + pref
 20080429 Template: Support for a plain HTML template (mostly for printing) 
 20080330 Izu:      Support for [rigimglink] tag
 20080330 Izu:      Final support for [s:images] section 
