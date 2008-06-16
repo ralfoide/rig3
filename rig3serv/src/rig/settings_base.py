@@ -46,7 +46,7 @@ class SettingsBase(object):
     def Items(self, site_name):
         """
         Returns all the variables defined for the given site name.
-        This returns them as a dictionar { var: value }.
+        This returns them as a dictionary { var: value }.
         
         By contrast, the default ConfigParser.items() returns them as a
         list of tuples.

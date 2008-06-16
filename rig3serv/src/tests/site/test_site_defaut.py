@@ -220,7 +220,7 @@ class SiteDefaultTest(RigTestCase):
                                         [ "index.izu" ]))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
-        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen())
+        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen(SiteDefault._ENTRY_HTML))
         self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
     
     def testGenerateItems_Html(self):
@@ -232,7 +232,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
-                               item.content_gen())
+                               item.content_gen(SiteDefault._ENTRY_HTML))
         self.assertListEquals([ "videos" ], item.categories, sort=True)
 
     def testImgPattern(self):
@@ -337,28 +337,33 @@ class SiteDefaultTest(RigTestCase):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         
         m._GenerateIndexPage("", "", [], [], [], [])
-        if False:
-            # TODO: can't work because of last_gen_ts == today
-            self.assertDictEquals(
-                  { 'index.html': {
-                       'max_page': 1,
-                       'prev_url': None,
-                       'rig_base': 'http://example.com/photos/index.php',
-                       'header_img_url': '',
-                       'entries': [],
-                       'next_url': None,
-                       'last_content_ts': None,
-                       'rig3_version': '0.1.0.155',
-                       'title': 'All Items',
-                       'base_url': 'http://www.example.com',
-                       'source_dir': '/home/raphael/workspace/rig3serv/testdata/album',
-                       'public_name': 'Test Album',
-                       'theme': 'default',
-                       'curr_page': 1,
-                       'all_categories': [],
-                       'dest_dir': '/tmp/tmpcH-IgP',
-                       'last_gen_ts': datetime.datetime(2007, 11, 18, 21, 53, 32) } },
-                  m._fill_template_params)
+        params = m._fill_template_params
+
+        for key in [  "rig_img_url",
+                      "rig_thumb_url",
+                      "source_list",
+                      "header_img_height",
+                      "tracking_code",
+                      "header_img_url", 
+                      "rig_album_url",
+                      "img_gen_script",
+                      "entries",
+                      "cat_include",
+                      "last_content_ts",
+                      "rig_img_size",
+                      "month_pages",
+                      "rig3_version",
+                      "rig_base",
+                      "title",
+                      "rel_base_url",
+                      "base_url",
+                      "public_name",
+                      "theme",
+                      "all_categories",
+                      "dest_dir",
+                      "cat_exclude",
+                      "last_gen_ts" ]:
+            self.assertTrue(key in params["index.html"][0], "Missing [%s] in %s" % (key, params))
 
     def testAcceptCategories(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -482,7 +487,7 @@ class SiteDefaultTest(RigTestCase):
             # x % 12 => we'll generate 12 month pages
             si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
                           permalink="item",
-                          content_gen=lambda x: "content",
+                          content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -502,7 +507,7 @@ class SiteDefaultTest(RigTestCase):
             # x % 7 => we'll generate 7 month pages
             si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
                           permalink="item",
-                          content_gen=lambda x: "content",
+                          content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -520,7 +525,7 @@ class SiteDefaultTest(RigTestCase):
             # x % 5 => we'll generate 5 month pages
             si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
                           permalink="item",
-                          content_gen=lambda x: "content",
+                          content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
@@ -550,7 +555,7 @@ class SiteDefaultTest(RigTestCase):
             # so each category ends up in the same month.
             si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
                           permalink="item",
-                          content_gen=lambda x: "content",
+                          content_gen=lambda t, x: "content",
                           categories=[ cats[x % 3] ])
             items.append(si)
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()

@@ -3,16 +3,21 @@
 # that's an issue for generated content, which should not be in the checked out dir
 
 [serve]
-sites = rig3_live
+sites = rig3_live, rig3_atom_live
 
 [DEFAULT]
-theme = default
-
-[rig3_live]
-public_name = Rig3 Live
 sources     = dir:album, file:album
 dest_dir    = live_dest
 base_url    =
-tracking_code = <i>tracking code here</i>
 cat_filter  = !exclude-me
 rig_base    = http://rig.base.url/photos/index.php
+
+[rig3_live]
+theme = default
+public_name = Rig3 Live
+tracking_code = <i>tracking code here</i>
+
+[rig3_atom_live]
+theme       = atom
+public_name = Rig3 Live Feed
+

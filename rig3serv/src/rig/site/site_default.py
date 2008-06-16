@@ -14,6 +14,7 @@ import re
 import os
 import cgi
 import zlib
+import time
 import errno
 import urllib
 import operator
@@ -57,6 +58,10 @@ class SiteDefault(SiteBase):
                 "-": _RATING_GOOD,
                 "+": _RATING_EXCELLENT }
 
+    _INDEX_HTML = "index.html"
+    _ENTRY_HTML = "entry.html"
+    
+
     def __init__(self, log, dry_run, settings):
         super(SiteDefault, self).__init__(log, dry_run, settings)
 
@@ -73,6 +78,12 @@ class SiteDefault(SiteBase):
         
     def GeneratePages(self, categories, items):
         """
+        Generates several pages:
+        - Index page (max N last entries)
+        - Month pages (all entries per month)
+        - Categorie pages (all entries per category)
+
+        Input:
         - categories: list of categories accumulated from each entry
         - items: list of SiteItem
         """
@@ -160,14 +171,14 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(keywords))
+                entries.append(j.content_gen(SiteDefault._ENTRY_HTML, keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += self._ITEMS_PER_PAGE
 
             keywords["entries"] = entries
             keywords["last_content_ts"] = older_date
             
-            content = self._FillTemplate("index.html", **keywords)
+            content = self._FillTemplate(SiteDefault._INDEX_HTML, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
 
     def _GenerateMonthPages(self, path, rel_base,
@@ -251,7 +262,7 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(keywords))
+                entries.append(j.content_gen(SiteDefault._ENTRY_HTML, keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
 
             keywords["entries"] = entries
@@ -368,13 +379,14 @@ class SiteDefault(SiteBase):
         keywords["title"] = title
         keywords["sections"] = dict(sections)
         keywords["date"] = date
+        keywords["date_iso"] = datetime.utcfromtimestamp(time.mktime(time.gmtime(time.mktime( date.timetuple() )))).isoformat() + "Z"
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
         permalink_url, permalink_name = self._Permalink(date.year, date.month, title)
         keywords["permalink_url"] = permalink_url
         keywords["permalink_name"] = permalink_name
 
-        def _generate_content(_keywords, _img_params, _extra_keywords=None):
+        def _generate_content(_template, _keywords, _img_params, _extra_keywords=None):
             # we need to make sure we can't contaminate the caller's dictionaries
             # so we just duplicate them here. Also we make sure not to use any
             # variables which are declared in the outer method.
@@ -389,12 +401,13 @@ class SiteDefault(SiteBase):
                 html_img = self._GenerateImages(_img_params["rel_dir"], _img_params["all_files"])
                 if html_img:
                     _keywords["sections"]["images"] = html_img
-            return self._FillTemplate("entry.html", **_keywords)
+            return self._FillTemplate(_template, **_keywords)
 
         return SiteItem(date,
                         permalink_url,
                         categories=cats,
-                        content_gen=lambda extra=None: _generate_content(keywords, img_params, extra))
+                        content_gen=lambda template, extra=None: \
+                            _generate_content(template, keywords, img_params, extra))
 
     def _GenerateImages(self, source_dir, all_files):
         """
