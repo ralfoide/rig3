@@ -11,14 +11,12 @@ rig.site.SiteXyz(rig.site_base.SiteBase).
 
 from rig.site.site_default import SiteDefault
 from rig.site.site_plain import SitePlain
-from rig.site.site_atom import SiteAtom
 from rig.site.site_ralf import SiteRalf
 from rig.site.site_magic import SiteMagic
 
 THEMES = {
     "default": SiteDefault,
     "plain":   SitePlain,
-    "atom":    SiteAtom,
     "ralf":    SiteRalf,
     "magic":   SiteMagic
 }

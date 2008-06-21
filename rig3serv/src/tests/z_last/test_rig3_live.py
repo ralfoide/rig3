@@ -48,6 +48,7 @@ class Rig3LiveTest(RigTestCase):
         self.m.Close()
 
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
+        self.assertTrue(os.path.exists(os.path.join(d, "atom.xml")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
 
         f = file(os.path.join(d, "index.html"), "r")

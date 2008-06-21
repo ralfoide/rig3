@@ -337,32 +337,9 @@ different category filter.
 10- Atom Feed
 ----------------------
 
-To generate an atom feed, you need to configure a section with a specific theme.
-
-Here's an example of configuration.rc file:
-
- [serve]
- sites = html_pages, atom_feed
-
- [DEFAULT]
- sources     = dir:myalbum, file:myalbum
- dest_dir    = some_dest_dir
- rig_base    = http://rig.base.url/photos/index.php
-
- [html_pages]
- theme = default
- public_name = My Photoblog
- tracking_code = <i>tracking code here</i>
-
- [atom_feed]
- theme       = atom
- public_name = My Atom Feed
-
-
-In this example, we define most of the parameters in the DEFAULT section so that
-they can be inherited by both sections, "html_pages" and "atom_feed".
-To generate the feed, the site must use theme=atom.
-
+To generate an atom feed, there's nothing to do.
+An "atom.xml" is automatically generated along with the "index.html" that lists the
+most recent items for every category pages. Both files contain the same items.
 
 
 

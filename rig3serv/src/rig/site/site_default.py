@@ -58,8 +58,10 @@ class SiteDefault(SiteBase):
                 "-": _RATING_GOOD,
                 "+": _RATING_EXCELLENT }
 
-    _INDEX_HTML = "index.html"
-    _ENTRY_HTML = "entry.html"
+    _TEMPLATE_HTML_INDEX = "index.html"    # template for main HTML page
+    _TEMPLATE_HTML_ENTRY = "entry.html"    # template for individual entries in HTML page
+    _TEMPLATE_ATOM_FEED  = "feed.xml"      # template for atom feed
+    _TEMPLATE_ATOM_ENTRY = "entry.html"    # template for individual entries in atom feed 
     
 
     def __init__(self, log, dry_run, settings):
@@ -98,6 +100,7 @@ class SiteDefault(SiteBase):
         month_pages = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
         self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
+        self._GenerateAtomFeed ("", "", None, categories, items, month_pages, max_num_pages=1)
 
         # Only generate per-category months pages if we have more than one category
         if categories:
@@ -105,7 +108,9 @@ class SiteDefault(SiteBase):
                 month_pages = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
                                                categories, items)
                 self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
-                                                categories, items, month_pages, max_num_pages=1)
+                                        categories, items, month_pages, max_num_pages=1)
+                self._GenerateAtomFeed ([ "cat", c ], "../../", [ c ],
+                                        categories, items, month_pages, max_num_pages=1)
 
     def _GenerateIndexPage(self, path, rel_base,
                                 category_filter, all_categories,
@@ -129,9 +134,6 @@ class SiteDefault(SiteBase):
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
-        base_url = "/".join(path)
-        if base_url:
-            base_url += "/"
         base_path = ""
         if path:
             base_path = os.path.join(*path)
@@ -155,7 +157,6 @@ class SiteDefault(SiteBase):
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
-            url = base_url + filename
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
@@ -171,15 +172,83 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(SiteDefault._ENTRY_HTML, keywords))
+                entries.append(j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += self._ITEMS_PER_PAGE
 
             keywords["entries"] = entries
             keywords["last_content_ts"] = older_date
             
-            content = self._FillTemplate(SiteDefault._INDEX_HTML, **keywords)
+            content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+
+    def _GenerateAtomFeed(self, path, rel_base,
+                                category_filter, all_categories,
+                                items, month_pages,
+                                max_num_pages=None):
+        """
+        Generates atom feed with most-recent items which match the category_filter list.
+
+        SiteItems are not re-ordered, it's up to the caller to order the items
+        by decreasing date order.
+
+        - path: A list of sub-directories/sub-path indicating where the files are
+            being created. If the list is empty, the files will be created in the root.
+            This is used also to generate the proper urls.
+        - category_filter: list of categories to use for this page (acts as a filter)
+            or None to accept all categories (even those with no categories)
+        - all_categories: list of all categories (used for template to create links)
+        - items: list of SiteItem. Items MUST be sorted by decreasing date order.
+        - month_pages: list(tuple(url, date)) for each month page generated for the
+            same entries. Can be an empty list but not None. MUST be sorted in
+            decreasing date order.
+        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
+        """
+        base_path = ""
+        if path:
+            base_path = os.path.join(*path)
+            self._MkDestDir(base_path)
+
+        # filter relevant items (or all of them if there's no category_filter)
+        if category_filter is None:
+            relevant_items = items
+        else:
+            relevant_items = []
+            for i in items:
+                for c in i.categories:
+                    if c in category_filter:
+                        relevant_items.append(i)
+                        break
+
+        filename = "atom.xml"
+
+        keywords = self._settings.AsDict()
+        keywords["title"] = "All Items"
+        keywords["rel_base_url"] = rel_base
+        keywords["last_gen_ts"] = datetime.today()
+        keywords["month_pages"] = month_pages
+        keywords["all_categories"] = all_categories
+        version = Version()
+        keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
+                                              version.SvnRevision())
+
+        entries = []
+        older_date = None
+        for i in relevant_items:
+            # SiteItem.content_gen is a lambda that generates the content
+            entries.append(i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords))
+            older_date = (older_date is None) and i.date or max(older_date, i.date)
+
+        keywords["entries"] = entries
+        keywords["last_content_ts"] = older_date
+
+        # Converts last_content_ts to UTC and prints its ISO8601
+        keywords["last_content_iso"] = datetime.utcfromtimestamp(
+                             time.mktime(time.gmtime(time.mktime(
+                                 keywords["last_gen_ts"].timetuple() )))).isoformat() + "Z"
+        
+        content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
+        self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
 
     def _GenerateMonthPages(self, path, rel_base,
                                 category_filter, all_categories,
@@ -204,9 +273,6 @@ class SiteDefault(SiteBase):
         """
         month_pages = []
 
-        base_url = "/".join(path)
-        if base_url:
-            base_url += "/"
         base_path = ""
         if path:
             base_path = os.path.join(*path)
@@ -246,7 +312,6 @@ class SiteDefault(SiteBase):
         for p in month_pages:
             filename = p[0]
             month_key = p[1]
-            url = base_url + filename
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
@@ -262,7 +327,7 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(SiteDefault._ENTRY_HTML, keywords))
+                entries.append(j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
 
             keywords["entries"] = entries

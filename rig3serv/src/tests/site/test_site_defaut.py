@@ -220,7 +220,7 @@ class SiteDefaultTest(RigTestCase):
                                         [ "index.izu" ]))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
-        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen(SiteDefault._ENTRY_HTML))
+        self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY))
         self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
     
     def testGenerateItems_Html(self):
@@ -232,7 +232,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
-                               item.content_gen(SiteDefault._ENTRY_HTML))
+                               item.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY))
         self.assertListEquals([ "videos" ], item.categories, sort=True)
 
     def testImgPattern(self):
@@ -478,7 +478,7 @@ class SiteDefaultTest(RigTestCase):
 
         # printing an empty list of items only generates an index page
         m.GeneratePages(categories=[], items=[])
-        self.assertListEquals([ "index.html" ], m.GetWriteFileData(m._LEAFNAME))
+        self.assertListEquals([ "index.html", "atom.xml" ], m.GetWriteFileData(m._LEAFNAME))
         
         # printing 3 times + 1 the number of items per page generates 4 pages
         items = []
@@ -496,7 +496,7 @@ class SiteDefaultTest(RigTestCase):
           [ "2000-12.html", "2000-11.html", "2000-10.html", "2000-09.html",
             "2000-08.html", "2000-07.html", "2000-06.html", "2000-05.html",
             "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html" ],
+            "index.html", "atom.xml" ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # print items with only one category, this does not generate
@@ -515,7 +515,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals(
           [ "2000-07.html", "2000-06.html", "2000-05.html",
             "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html" ],
+            "index.html", "atom.xml" ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # with two categories, we get category pages too
@@ -532,19 +532,21 @@ class SiteDefaultTest(RigTestCase):
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-05.html", "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html",
+            "index.html", "atom.xml",
             os.path.join("cat", "first", "2000-05.html"),
             os.path.join("cat", "first", "2000-04.html"),
             os.path.join("cat", "first", "2000-03.html"),
             os.path.join("cat", "first", "2000-02.html"),
             os.path.join("cat", "first", "2000-01.html"),
             os.path.join("cat", "first", "index.html"),
+            os.path.join("cat", "first", "atom.xml"),
             os.path.join("cat", "second", "2000-05.html"),
             os.path.join("cat", "second", "2000-04.html"),
             os.path.join("cat", "second", "2000-03.html"),
             os.path.join("cat", "second", "2000-02.html"),
             os.path.join("cat", "second", "2000-01.html"),
-            os.path.join("cat", "second", "index.html") ],
+            os.path.join("cat", "second", "index.html"),
+            os.path.join("cat", "second", "atom.xml") ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # more categories: 4 main pages but each category has only 2 pages
@@ -562,13 +564,16 @@ class SiteDefaultTest(RigTestCase):
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html", 
+            "index.html", "atom.xml", 
             os.path.join("cat", "first", "2000-01.html"),
             os.path.join("cat", "first", "index.html"),
+            os.path.join("cat", "first", "atom.xml"),
             os.path.join("cat", "second", "2000-02.html"),
             os.path.join("cat", "second", "index.html"),
+            os.path.join("cat", "second", "atom.xml"),
             os.path.join("cat", "three", "2000-03.html"),
-            os.path.join("cat", "three", "index.html") ],
+            os.path.join("cat", "three", "index.html"),
+            os.path.join("cat", "three", "atom.xml") ],
           m.GetWriteFileData(m._LEAFNAME))
 
 
