@@ -93,6 +93,28 @@ class TagHtml(Tag):
 
 
 #------------------------
+class TagXml(Tag):
+    """
+    Tag that represents an expression expansion with xml encoding.
+    Template syntax:
+      [[xml python_expression]]
+      
+    Note: this is implemented exactly like the [[html]] tag. The difference
+    is purely semantic.
+    """
+    def __init__(self):
+        super(TagXml, self).__init__(tag="xml", has_content=False)
+    
+    def Generate(self, tag_node, context):
+        try:
+            result = eval(tag_node.Parameters(), dict(context))
+            result = cgi.escape(str(result))
+        except Exception, e:
+            raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
+        return result
+
+
+#------------------------
 class TagUrl(Tag):
     """
     Tag that represents an expression expansion with url encoding
@@ -174,7 +196,7 @@ class TagIf(Tag):
         return ""
 
 #------------------------
-ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagUrl]
+ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagXml, TagUrl]
 
 #------------------------
 # Local Variables:

@@ -236,16 +236,18 @@ class SiteDefault(SiteBase):
         older_date = None
         for i in relevant_items:
             # SiteItem.content_gen is a lambda that generates the content
-            entries.append(i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords))
+            content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
+            title = "??"
+            publish_iso = self._DateToIso(i.date)
+            updated_iso = publish_iso  # TODO get update date from source file or dir
+            id = "tbd" # TODO some kind of hash
+            entries.append( { "id": id, "title": title, "content": content,
+                              "updated_iso": updated_iso, "publish_iso": publish_iso } )            
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
         keywords["entries"] = entries
         keywords["last_content_ts"] = older_date
-
-        # Converts last_content_ts to UTC and prints its ISO8601
-        keywords["last_content_iso"] = datetime.utcfromtimestamp(
-                             time.mktime(time.gmtime(time.mktime(
-                                 keywords["last_gen_ts"].timetuple() )))).isoformat() + "Z"
+        keywords["last_content_iso"] = self._DateToIso(keywords["last_gen_ts"])
         
         content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
         self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
@@ -444,7 +446,7 @@ class SiteDefault(SiteBase):
         keywords["title"] = title
         keywords["sections"] = dict(sections)
         keywords["date"] = date
-        keywords["date_iso"] = datetime.utcfromtimestamp(time.mktime(time.gmtime(time.mktime( date.timetuple() )))).isoformat() + "Z"
+        keywords["date_iso"] = self._DateToIso(date)
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
         permalink_url, permalink_name = self._Permalink(date.year, date.month, title)
@@ -469,6 +471,7 @@ class SiteDefault(SiteBase):
             return self._FillTemplate(_template, **_keywords)
 
         return SiteItem(date,
+                        title,
                         permalink_url,
                         categories=cats,
                         content_gen=lambda template, extra=None: \
@@ -596,6 +599,9 @@ class SiteDefault(SiteBase):
         return url
 
     # Utilities, overridable for unit tests
+
+    def _DateToIso(self, date):
+        return datetime.utcfromtimestamp(time.mktime(time.gmtime(time.mktime( date.timetuple() )))).isoformat() + "Z"
 
     def _RigAlbumLink(self, settings, album):
         if not settings.rig_base:

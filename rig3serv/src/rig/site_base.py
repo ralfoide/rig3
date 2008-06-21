@@ -47,10 +47,12 @@ class SiteItem(object):
     - list of categories (list of string)
     - content_gen: A method (lambda) that generates the data of the entry
     - date (datetime)
+    - title (string)
     - permalink: (string) The permalink URL relative from the base site.
     """
-    def __init__(self, date, permalink, content_gen, categories=None):
+    def __init__(self, date, title, permalink, content_gen, categories=None):
         self.date = date
+        self.title = title
         self.content_gen = content_gen
         self.categories = categories or []
         self.permalink = permalink

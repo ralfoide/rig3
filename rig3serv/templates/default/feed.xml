@@ -29,7 +29,13 @@ Note: below we make sure there's no \n before the xml tag
 <generator uri="http://code.google.com/p/rig3/" version="[[raw rig3_version]]">Rig3</generator>
 
 [[for entry in entries]]
-  [[raw entry]]
+<entry>
+  <id>[[raw entry["id"] ]]</id>
+  <published>[[raw entry["publish_iso"] ]]</published>
+  <updated>[[raw entry["updated_iso"] ]]</updated>
+  <title type='text'>[[raw entry["title"] ]]</title>
+  <content type='html'>[[xml entry["content"] ]]</content>
+</entry>
 [[end]]
 
 </feed>
