@@ -141,7 +141,7 @@ def _UrlEncode(m):
         host = urllib.quote(host, ".:@")
     path = m.group("path") or ""
     if path:
-        path = "/" + urllib.quote(path, "/")
+        path = "/" + urllib.quote(path, "/#")
     return "%s%s%s" % (proto, host, path)
 
 
