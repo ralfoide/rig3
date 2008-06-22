@@ -134,6 +134,9 @@ class SiteDefault(SiteBase):
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
         base_path = ""
         if path:
             base_path = os.path.join(*path)
@@ -160,6 +163,7 @@ class SiteDefault(SiteBase):
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
+            keywords["curr_url"] = keywords.get("base_url", "") + base_url
             keywords["rel_base_url"] = rel_base
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories
@@ -204,6 +208,9 @@ class SiteDefault(SiteBase):
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
         base_path = ""
         if path:
             base_path = os.path.join(*path)
@@ -223,6 +230,10 @@ class SiteDefault(SiteBase):
         filename = "atom.xml"
 
         keywords = self._settings.AsDict()
+
+        curr_url = keywords.get("base_url", "") + base_url
+        keywords["curr_url"] = curr_url
+
         keywords["title"] = "All Items"
         keywords["rel_base_url"] = rel_base
         keywords["last_gen_ts"] = datetime.today()
@@ -232,17 +243,21 @@ class SiteDefault(SiteBase):
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
 
+        
         entries = []
         older_date = None
         for i in relevant_items:
             # SiteItem.content_gen is a lambda that generates the content
             content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
-            title = "??"
-            publish_iso = self._DateToIso(i.date)
-            updated_iso = publish_iso  # TODO get update date from source file or dir
-            id = "tbd" # TODO some kind of hash
-            entries.append( { "id": id, "title": title, "content": content,
-                              "updated_iso": updated_iso, "publish_iso": publish_iso } )            
+            categories = i.categories
+            title = i.title
+            updated_iso = self._DateToIso(i.date)
+            id = self._AtomId(curr_url, i.date, title)
+            entries.append( { "id": id,
+                              "title": title,
+                              "content": content,
+                              "categories": categories,
+                              "updated_iso": updated_iso } )            
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
         keywords["entries"] = entries
@@ -251,6 +266,12 @@ class SiteDefault(SiteBase):
         
         content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
         self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+    
+    def _AtomId(self, curr_url, date, title):
+        name = self._SimpleFileName(title)
+        return "%s%04d-%02d/%s" % (curr_url,
+                                     date.year, date.month,
+                                     name)
 
     def _GenerateMonthPages(self, path, rel_base,
                                 category_filter, all_categories,
@@ -275,6 +296,9 @@ class SiteDefault(SiteBase):
         """
         month_pages = []
 
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
         base_path = ""
         if path:
             base_path = os.path.join(*path)
@@ -317,6 +341,7 @@ class SiteDefault(SiteBase):
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"
+            keywords["curr_url"] = keywords.get("base_url", "") + base_url
             keywords["rel_base_url"] = rel_base
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories

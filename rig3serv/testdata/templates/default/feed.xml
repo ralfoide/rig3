@@ -30,11 +30,12 @@ Note: below we make sure there's no \n before the xml tag
 
 [[for entry in entries]]
 <entry>
-  <id>[[raw entry["id"] ]]</id>
-  <published>[[raw entry["publish_iso"] ]]</published>
-  <updated>[[raw entry["updated_iso"] ]]</updated>
-  <title type='text'>[[raw entry["title"] ]]</title>
-  <content type='html'>[[xml entry["content"] ]]</content>
+  <title type="text">[[xml entry["title"] ]]</title>
+  <id>[[url entry["id"] ]]</id>
+  [[if "link" in entry]]<link href="[[url entry["link"] ]]" />[[end]]
+  [[for cat in entry["categories"] ]]<category term="[[xml cat]]" />[[end]]
+  <updated>[[xml entry["updated_iso"] ]]</updated>
+  <content type="html">[[xml entry["content"] ]]</content>
 </entry>
 [[end]]
 

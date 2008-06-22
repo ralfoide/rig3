@@ -1,7 +1,5 @@
 ---- TODO ----
 
-20080621 Engine:   Generate id/updated values in Atom <entry>
-
 20080124 Engine:   Ability to have a different rig_base per source
 20080218 Template: Custom page header per category
 
@@ -41,6 +39,7 @@
 
 ---- Done Version 0.3 ----
 
+20080621 Engine:   Generate id value in Atom <entry>
 20080621 Engine:   Generate Atom <entry> tags
 20080621 Engine:   Generate Atom feed (merge back with html generation)
 20080615 Engine:   Generate Atom feed (using a specific theme, experimental)
