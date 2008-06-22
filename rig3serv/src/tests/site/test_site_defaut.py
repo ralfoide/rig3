@@ -125,11 +125,11 @@ class SiteDefaultTest(RigTestCase):
         keywords["last_content_ts"] = datetime(2001, 3, 14, 15, 9, 2)
         keywords["rig3_version"] = "3.1.4.15"
 
-        html = m._FillTemplate("index.html", **keywords)
+        html = m._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
         self.assertIsInstance(str, html)
-        self.assertTrue("index.html" in m._fill_template_params)
-        self.assertTrue(1, len(m._fill_template_params["index.html"]))
-        self.assertDictEquals(keywords, m._fill_template_params["index.html"][0])
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
+        self.assertDictEquals(keywords, m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
         self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
         self.assertHtmlEquals(
             r"""<html lang="en-US">
@@ -151,11 +151,11 @@ class SiteDefaultTest(RigTestCase):
         keywords["title"] = "MyTitle"
         keywords["sections"] = { "en": "Main <b>Text Content</b> as HTML",
                                  "images": "<a href='page_url'><img src='image_url'/></a>" }
-        html = m._FillTemplate("entry.html", **keywords)
+        html = m._FillTemplate(SiteDefault._TEMPLATE_HTML_ENTRY, **keywords)
         self.assertIsInstance(str, html)
-        self.assertTrue("entry.html" in m._fill_template_params)
-        self.assertTrue(1, len(m._fill_template_params["entry.html"]))
-        self.assertDictEquals(keywords, m._fill_template_params["entry.html"][0])
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_ENTRY in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_ENTRY]))
+        self.assertDictEquals(keywords, m._fill_template_params[SiteDefault._TEMPLATE_HTML_ENTRY][0])
         self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
         self.assertHtmlEquals(
             r"""<div class="entry">
@@ -363,7 +363,7 @@ class SiteDefaultTest(RigTestCase):
                       "dest_dir",
                       "cat_exclude",
                       "last_gen_ts" ]:
-            self.assertTrue(key in params["index.html"][0], "Missing [%s] in %s" % (key, params))
+            self.assertTrue(key in params[SiteDefault._TEMPLATE_HTML_INDEX][0], "Missing [%s] in %s" % (key, params))
 
     def testAcceptCategories(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()

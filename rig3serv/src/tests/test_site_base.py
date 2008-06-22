@@ -15,6 +15,7 @@ from tests.rig_test_case import RigTestCase
 
 from rig.site_base import SiteBase
 from rig.site_base import DEFAULT_THEME
+from rig.site_default import SiteDefault
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
@@ -100,8 +101,8 @@ class SiteBaseTest(RigTestCase):
         # the templates dir should contain at least the "default" sub-dir
         # with at least the entry.xml and index.xml files
         self.assertTrue(os.path.exists(os.path.join(td, "default")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "index.html")))
-        self.assertTrue(os.path.exists(os.path.join(td, "default", "entry.html")))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", SiteDefault._TEMPLATE_HTML_INDEX)))
+        self.assertTrue(os.path.exists(os.path.join(td, "default", SiteDefault._TEMPLATE_HTML_ENTRY)))
 
     def testCopyMedia(self):
         m = MockSiteBase(self, self.Log(), False, self.s)

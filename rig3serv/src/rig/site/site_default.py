@@ -58,10 +58,11 @@ class SiteDefault(SiteBase):
                 "-": _RATING_GOOD,
                 "+": _RATING_EXCELLENT }
 
-    _TEMPLATE_HTML_INDEX = "index.html"    # template for main HTML page
-    _TEMPLATE_HTML_ENTRY = "entry.html"    # template for individual entries in HTML page
-    _TEMPLATE_ATOM_FEED  = "feed.xml"      # template for atom feed
-    _TEMPLATE_ATOM_ENTRY = "entry.html"    # template for individual entries in atom feed 
+    _TEMPLATE_HTML_INDEX = "html_index.html"    # template for main HTML page
+    _TEMPLATE_HTML_MONTH = "html_month.html"    # template for month HTML page
+    _TEMPLATE_HTML_ENTRY = "html_entry.html"    # template for individual entries in HTML page
+    _TEMPLATE_ATOM_FEED  = "atom_feed.xml"      # template for atom feed
+    _TEMPLATE_ATOM_ENTRY = "atom_entry.xml"     # template for individual entries in atom feed 
     
 
     def __init__(self, log, dry_run, settings):
@@ -360,7 +361,7 @@ class SiteDefault(SiteBase):
             keywords["entries"] = entries
             keywords["last_content_ts"] = older_date
 
-            content = self._FillTemplate("month.html", **keywords)
+            content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_MONTH, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
         return month_pages
 
