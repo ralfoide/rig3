@@ -15,12 +15,12 @@ Parameters:
 - permalink_url: string, the permalink URL relative to the base URL
 ]]
 [[if "en" in sections]]
-[[if "fr" in sections]]<img src="[[url base_url]]media/flag_usa.gif" />[[end]]
+[[if "fr" in sections]]<img src="[[url base_url + "media/flag_usa.gif"]]" />[[end]]
 [[xml sections["en"] ]]
 [[end]]
 
 [[if "fr" in sections]]
-<img src="[[url base_url]]media/flag_fr.gif" />
+<img src="[[url base_url + "media/flag_fr.gif"]]" />
 [[xml sections["fr"] ]]
 [[end]]
 

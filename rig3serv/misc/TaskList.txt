@@ -39,6 +39,7 @@
 
 ---- Done Version 0.3 ----
 
+20080622 Engine:   Fix [[url]] tag in template and all occurrences in templates
 20080622 Engine:   Separate <entry> and <content> in atom generator
 20080621 Engine:   Generate id value in Atom <entry>
 20080621 Engine:   Generate Atom <entry> tags

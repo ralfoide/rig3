@@ -21,19 +21,19 @@ TODO:
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>[[html public_name]] - [[html title]]</title>
-  <link rel="stylesheet" type="text/css" href="[[url rel_base_url]]media/style.css" />
+  <link rel="stylesheet" type="text/css" href="[[url rel_base_url + "media/style.css"]]" />
 </head>
 <body>
 
 <div class="header"
-style="height: [[html header_img_height]]px; width: 100%; background: no-repeat top center scroll url([[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]][[url rel_base_url]]media/top_banner.jpg[[end]]) ">
+style="height: [[html header_img_height]]px; width: 100%; background: no-repeat top center scroll url([[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]][[url rel_base_url + "media/top_banner.jpg"]][[end]]) ">
 </div>
 
 <div class="blog-name">[[html public_name]]</div>
 
 <div class="categories">
 <a href="[[url rel_base_url]]">All</a>
-[[for cat in all_categories]] | <a href="[[url rel_base_url]]cat/[[url cat]]/">[[html cat.capitalize()]]</a>
+[[for cat in all_categories]] | <a href="[[url rel_base_url + "cat/" + cat]]/">[[html cat.capitalize()]]</a>
 [[end]]
 </div>
 

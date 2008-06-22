@@ -30,13 +30,13 @@ Parameters:
 
 [[if "en" in sections]]
 <table class="content en"><tr>
-[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url]]media/flag_usa.gif" /></td>[[end]]
+[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url + "media/flag_usa.gif"]]" /></td>[[end]]
 <td>[[raw sections["en"] ]]</td></tr></table>
 [[end]]
 
 [[if "fr" in sections]]
 <table class="content fr"><tr><td class="flag">
-<td class="flag"><img src="[[url rel_base_url]]media/flag_fr.gif" /></td>
+<td class="flag"><img src="[[url rel_base_url + "media/flag_fr.gif"]]" /></td>
 <td>[[raw sections["fr"] ]]</td></tr></table>
 [[end]]
 

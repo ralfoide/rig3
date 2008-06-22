@@ -16,7 +16,7 @@ Parameters:
 ]]
 <entry>
   <title type="html">[[xml title]]</title>
-  <link rel="alternate" type="text/html" href="[[url base_url]][[url permalink_url]]"/>
+  <link rel="alternate" type="text/html" href="[[url base_url + permalink_url]]"/>
   <id>[[xml atom_id]]</id>
   <updated>[[xml date_iso]]</updated>
 [[if "author" in tags]]

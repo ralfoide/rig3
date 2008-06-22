@@ -70,12 +70,17 @@ class TagTest(RigTestCase):
         self.assertFalse(m.HasContent())
 
         n = NodeTag(m, "s", content=None)
-        self.assertEquals("some-string", m.Generate(n, { "s": "some-string" }))
+        self.assertEquals("some-string",   m.Generate(n, { "s": "some-string" }))
         self.assertEquals("some%20string", m.Generate(n, { "s": "some string" }))
-        self.assertEquals("http://alfray.com/path/1",
-                          m.Generate(n, { "s": "http://alfray.com/path/1" }))
-        self.assertEquals("https://ralf%20oide:pass@alf%3Fray.com:80/cgi%3Fa%3D1%26b%3D2",
-                          m.Generate(n, { "s": "https://ralf oide:pass@alf?ray.com:80/cgi?a=1&b=2" }))
+        self.assertEquals("local#anchor",  m.Generate(n, { "s": "local#anchor" }))
+        self.assertEquals("http://example.com:8888",
+                          m.Generate(n, { "s": "http://example.com:8888" }))
+        self.assertEquals("http://example.com/path/1",
+                          m.Generate(n, { "s": "http://example.com/path/1" }))
+        self.assertEquals("http://example.com/path/1#anchor",
+                          m.Generate(n, { "s": "http://example.com/path/1#anchor" }))
+        self.assertEquals("https://user%20name:pass@ex%3Fample.com:80/cgi%3Fa%3D1%26b%3D2",
+                          m.Generate(n, { "s": "https://user name:pass@ex?ample.com:80/cgi?a=1&b=2" }))
 
     def testTagIf(self):
         m = TagIf()

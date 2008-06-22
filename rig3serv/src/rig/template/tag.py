@@ -13,7 +13,7 @@ import cgi
 import urllib
 
 _RE_FIRST_WORD = re.compile(r"\s*(\w+)\s+(.*)")
-_RE_URL = re.compile(r"(?:(?P<proto>[a-z]+)://)?(?P<host>[^/]+)(?:/(?P<path>.*))?")
+_RE_URL = re.compile(r"(?:(?P<proto>[a-z]+)://(?P<host>[^/#]+))?(?P<path>.*)")
 
 #------------------------
 class Tag(object):
@@ -141,7 +141,7 @@ def _UrlEncode(m):
         host = urllib.quote(host, ".:@")
     path = m.group("path") or ""
     if path:
-        path = "/" + urllib.quote(path, "/#")
+        path = urllib.quote(path, "/#")
     return "%s%s%s" % (proto, host, path)
 
 
