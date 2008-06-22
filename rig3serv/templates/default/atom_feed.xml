@@ -1,4 +1,4 @@
-[[# Main index template.
+[[# Template for atom feed.
 Expected parameters:
 - title: string, Web page title
 - entries: dict, generated content & data for each entry:
@@ -34,15 +34,6 @@ Note: below we make sure there's no \n before the xml tag
 
 <generator uri="http://code.google.com/p/rig3/" version="[[xml rig3_version]]">Rig3</generator>
 
-[[for entry in entries]]
-<entry>
-  <title type="text">[[xml entry["title"] ]]</title>
-  <id>[[url entry["id"] ]]</id>
-  [[if "link" in entry]]<link href="[[url entry["link"] ]]" />[[end]]
-  [[for cat in entry["categories"] ]]<category term="[[xml cat]]" />[[end]]
-  <updated>[[xml entry["updated_iso"] ]]</updated>
-  <content type="html">[[xml entry["content"] ]]</content>
-</entry>
-[[end]]
+[[for entry in entries]][[raw entry]][[end]]
 
 </feed>

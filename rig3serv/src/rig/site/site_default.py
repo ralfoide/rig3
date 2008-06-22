@@ -58,11 +58,12 @@ class SiteDefault(SiteBase):
                 "-": _RATING_GOOD,
                 "+": _RATING_EXCELLENT }
 
-    _TEMPLATE_HTML_INDEX = "html_index.html"    # template for main HTML page
-    _TEMPLATE_HTML_MONTH = "html_month.html"    # template for month HTML page
-    _TEMPLATE_HTML_ENTRY = "html_entry.html"    # template for individual entries in HTML page
-    _TEMPLATE_ATOM_FEED  = "atom_feed.xml"      # template for atom feed
-    _TEMPLATE_ATOM_ENTRY = "atom_entry.xml"     # template for individual entries in atom feed 
+    _TEMPLATE_HTML_INDEX   = "html_index.html"    # template for main HTML page
+    _TEMPLATE_HTML_MONTH   = "html_month.html"    # template for month HTML page
+    _TEMPLATE_HTML_ENTRY   = "html_entry.html"    # template for individual entries in HTML page
+    _TEMPLATE_ATOM_FEED    = "atom_feed.xml"      # template for atom feed
+    _TEMPLATE_ATOM_ENTRY   = "atom_entry.xml"     # template for individual entries in atom feed 
+    _TEMPLATE_ATOM_CONTENT = "atom_content.xml"   # template for content of atom entry 
     
 
     def __init__(self, log, dry_run, settings):
@@ -248,23 +249,20 @@ class SiteDefault(SiteBase):
         entries = []
         older_date = None
         for i in relevant_items:
-            # SiteItem.content_gen is a lambda that generates the content
-            content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
-            categories = i.categories
-            title = i.title
-            updated_iso = self._DateToIso(i.date)
-            id = self._AtomId(curr_url, i.date, title)
-            entries.append( { "id": id,
-                              "title": title,
-                              "content": content,
-                              "categories": categories,
-                              "updated_iso": updated_iso } )            
+            # Generate the content of the post first
+            content = i.content_gen(SiteDefault._TEMPLATE_ATOM_CONTENT, keywords)
+            keywords["atom_id"] = self._AtomId(curr_url, i.date, i.title)
+            keywords["content"] = content
+            # Then generate the <entry> for the post
+            entry = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
+            entries.append(entry)            
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
         keywords["entries"] = entries
         keywords["last_content_ts"] = older_date
         keywords["last_content_iso"] = self._DateToIso(keywords["last_gen_ts"])
         
+        # Finally generate the whole feed
         content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
         self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
     

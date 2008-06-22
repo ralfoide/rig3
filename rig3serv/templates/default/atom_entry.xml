@@ -1,6 +1,6 @@
-[[# Entry template.
+[[# Ttemplate for the entry tag of an atom feed
 
-The generated entry should be a piece of HTML, not a full document.
+The generated entry should be a piece of XML, not a full document.
 
 Parameters:
 - date: item date (timestamp)
@@ -15,36 +15,21 @@ Parameters:
 - permalink_url: string, the permalink URL relative to the base URL
 ]]
 <entry>
-  <title type="html">[[html title]]</title>
-  <link rel="alternate" type="text/html" href="[[raw permalink_url]]"/>
-  <id>[[url permalink_name]]</id>
-  <published>[[html date_iso]]
-  </published>
+  <title type="html">[[xml title]]</title>
+  <link rel="alternate" type="text/html" href="[[url permalink_url]]"/>
+  <id>[[url atom_id]]</id>
+  <updated>[[xml date_iso]]</updated>
 [[if "author" in tags]]
-  <author><name>[[html tags["author"].capitalize() ]]</name></author>
+  <author><name>[[xml tags["author"].capitalize() ]]</name></author>
 [[end]]
 [[if categories]]
   [[for cat in categories]]
-  <category term="[[raw cat]]" label="[[html cat.capitalize]]"/>
+  <category term="[[xml cat]]" label="[[xml cat.capitalize()]]"/>
   [[end]]
 [[end]]
-  <content type="html" xml:lang="en" [[if base_url]] xml:base="[[raw base_url]]" [[end]] >
 
-[[if "en" in sections]]
-[[if "fr" in sections]]<img src="[[url base_url]]media/flag_usa.gif" />[[end]]
-[[xml sections["en"] ]]
-[[end]]
+<content type="html" xml:lang="en" [[if base_url]] xml:base="[[raw base_url]]" [[end]] >
+[[xml content]]
+</content>
 
-[[if "fr" in sections]]
-<img src="[[url base_url]]media/flag_fr.gif" />
-[[xml sections["fr"] ]]
-[[end]]
-
-[[if "html" in sections]][[xml sections["html"] ]][[end]]
-
-[[if "images" in sections]]
-[[xml sections["images"] ]]
-[[end]]
-
-  </content>
 </entry>
