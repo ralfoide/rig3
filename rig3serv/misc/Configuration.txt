@@ -85,19 +85,26 @@ The following variables have default values:
 - header_img_url=185, the height of the header_img in pixels.
 - rig_img_size=512, the default size of a [rigimg] tag in Izumi
 - tracking_code="", a raw html piece for google analytics or similar
-- link_to_rig_album: False. Should images link to the rig album?
-- link_to_rig_img: True. Should images link to the corresponding rig image?
-- permalinks: True. Boolean, true if should have permalinks
-- toc: False. Boolean, true if we want a TOC at the top of the index
-- rss: True. Boolean, generate an RSS feed.
+- num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
+- num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
+
 
 The following optional variables are described in more details below:
 
 - cat_filter: None or list of category names (strings, case-insensitive) to accept.
-- sources: List of source directories (i.e. where posts & entries are read from.)
+- source_list: List of source directories (i.e. where posts & entries are read from.)
 - rig_img_url: string format with <album> and <img> parameters
 - rig_album_url: string format with <album> parameter
 - img_gen_script: String. When not empty, script called for each album image used
+
+
+The following variables are not implemented yet, planned for a future version:
+
+- link_to_rig_album: False. Should images link to the rig album? [TODO]
+- link_to_rig_img: True. Should images link to the corresponding rig image? [TODO]
+- permalinks: True. Boolean, true if should have permalinks [TODO]
+- toc: False. Boolean, true if we want a TOC at the top of the index [TODO]
+- atom: True. Boolean, false to disable the atom feed generation [TODO]
 
 
 ----------------------

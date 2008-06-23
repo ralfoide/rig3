@@ -26,6 +26,8 @@ from rig.source_item import SourceDir, SourceFile
 from rig.parser.dir_parser import RelFile
 from rig.version import Version
 from rig.sites_settings import SiteSettings
+from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
+
 
 #------------------------
 class SiteDefault(SiteBase):
@@ -42,9 +44,8 @@ class SiteDefault(SiteBase):
     _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
-    _ITEMS_PER_PAGE = 20      # TODO make a site.rc pref
-    _MANGLED_NAME_LENGTH = 50 # TODO make a site.rc pref
-    
+    _MANGLED_NAME_LENGTH = 50    # TODO make a site.rc pref
+
     _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
     
@@ -102,7 +103,7 @@ class SiteDefault(SiteBase):
         month_pages = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
         self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
-        self._GenerateAtomFeed ("", "", None, categories, items, month_pages, max_num_pages=1)
+        self._GenerateAtomFeed ("", "", None, categories, items, month_pages)
 
         # Only generate per-category months pages if we have more than one category
         if categories:
@@ -112,7 +113,7 @@ class SiteDefault(SiteBase):
                 self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
                                         categories, items, month_pages, max_num_pages=1)
                 self._GenerateAtomFeed ([ "cat", c ], "../../", [ c ],
-                                        categories, items, month_pages, max_num_pages=1)
+                                        categories, items, month_pages)
 
     def _GenerateIndexPage(self, path, rel_base,
                                 category_filter, all_categories,
@@ -155,8 +156,12 @@ class SiteDefault(SiteBase):
                         relevant_items.append(i)
                         break
 
+        num_item_page = self._settings.num_item_page
+        if num_item_page < 1:
+            num_item_page = DEFAULT_ITEMS_PER_PAGE
+
         n = len(relevant_items)
-        np = n / self._ITEMS_PER_PAGE
+        np = n / num_item_page
         if max_num_pages > 0:
             np = min(np, max_num_pages - 1)
         i = 0
@@ -176,11 +181,11 @@ class SiteDefault(SiteBase):
 
             entries = []
             older_date = None
-            for j in relevant_items[i:i + self._ITEMS_PER_PAGE]:
+            for j in relevant_items[i:i + num_item_page]:
                 # SiteItem.content_gen is a lambda that generates the content
                 entries.append(j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords))
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
-            i += self._ITEMS_PER_PAGE
+            i += num_item_page
 
             keywords["entries"] = entries
             keywords["last_content_ts"] = older_date
@@ -190,8 +195,7 @@ class SiteDefault(SiteBase):
 
     def _GenerateAtomFeed(self, path, rel_base,
                                 category_filter, all_categories,
-                                items, month_pages,
-                                max_num_pages=None):
+                                items, month_pages):
         """
         Generates atom feed with most-recent items which match the category_filter list.
 
@@ -228,6 +232,9 @@ class SiteDefault(SiteBase):
                     if c in category_filter:
                         relevant_items.append(i)
                         break
+
+        if self._settings.num_item_atom > 0:
+            relevant_items = relevant_items[:self._settings.num_item_atom]
 
         filename = "atom.xml"
 

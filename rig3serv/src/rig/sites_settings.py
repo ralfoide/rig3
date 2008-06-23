@@ -17,6 +17,9 @@ from rig.site_base import DEFAULT_THEME
 
 _CAT_FILTER_SEP = re.compile("[, \t\f]")
 
+DEFAULT_ITEMS_PER_PAGE = 20  # Default for settings.num_item_index and settings.num_item_atom
+
+
 #------------------------
 class SiteSettings(object):
     """
@@ -45,6 +48,8 @@ class SiteSettings(object):
                    CAT_NOTAG to include all non-tagged.
                    Note that the values in the dictionnary are irrelevant, only keys matter.
     - img_gen_script (string): An optional script to execute to generate images
+    - num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
+    - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
     """
     CAT_ALL = "*"
     CAT_NOTAG = "$"
@@ -66,7 +71,9 @@ class SiteSettings(object):
                  tracking_code="",
                  cat_exclude=None,
                  cat_include=None,
-                 img_gen_script=""):
+                 img_gen_script="",
+                 num_item_page=DEFAULT_ITEMS_PER_PAGE,
+                 num_item_atom=DEFAULT_ITEMS_PER_PAGE):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -83,6 +90,8 @@ class SiteSettings(object):
         self.cat_exclude = cat_exclude
         self.cat_include = cat_include
         self.img_gen_script = img_gen_script
+        self.num_item_page = num_item_page
+        self.num_item_atom = num_item_atom
 
     def AsDict(self):
         """

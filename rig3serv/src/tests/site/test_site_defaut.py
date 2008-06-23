@@ -20,6 +20,7 @@ from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
 from rig.source_item import SourceDir
 from rig.sites_settings import SiteSettings, SitesSettings
+from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
 #------------------------
 class MockSiteDefault(SiteDefault):
@@ -483,7 +484,7 @@ class SiteDefaultTest(RigTestCase):
         # printing 3 times + 1 the number of items per page generates 4 pages
         items = []
         cats = []
-        for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 1):
+        for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 1):
             # x % 12 => we'll generate 12 month pages
             si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
@@ -504,7 +505,7 @@ class SiteDefaultTest(RigTestCase):
         # category indexes.
         items = []
         cats = [ "first" ]
-        for x in xrange(0, m._ITEMS_PER_PAGE + 1):
+        for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
             # x % 7 => we'll generate 7 month pages
             si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
@@ -523,7 +524,7 @@ class SiteDefaultTest(RigTestCase):
         # with two categories, we get category pages too
         items = []
         cats = [ "first", "second" ]
-        for x in xrange(0, m._ITEMS_PER_PAGE + 1):
+        for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
             # x % 5 => we'll generate 5 month pages
             si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
@@ -555,7 +556,7 @@ class SiteDefaultTest(RigTestCase):
         # more categories: 4 main pages but each category has only 2 pages
         items = []
         cats = [ "first", "second", "three" ]
-        for x in xrange(0, m._ITEMS_PER_PAGE * 3 + 3):
+        for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 3):
             # x % 3 => we'll generate 3 month pages and we have 3 categories
             # so each category ends up in the same month.
             si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
