@@ -92,7 +92,7 @@ The following variables have default values:
 The following optional variables are described in more details below:
 
 - cat_filter: None or list of category names (strings, case-insensitive) to accept.
-- source_list: List of source directories (i.e. where posts & entries are read from.)
+- sources: List of source directories (i.e. where posts & entries are read from.)
 - rig_img_url: string format with <album> and <img> parameters
 - rig_album_url: string format with <album> parameter
 - img_gen_script: String. When not empty, script called for each album image used

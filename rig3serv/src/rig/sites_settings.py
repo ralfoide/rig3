@@ -167,10 +167,10 @@ class SitesSettings(SettingsBase):
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use.
         """
-        re_def = re.compile(r"^\s*(?P<type>[a-z]+?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
-        type_class = { "dir": SourceDirReader, "dirs": SourceDirReader,
+        re_def = re.compile(r"^\s*(?P<type>[a-z_]+?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
+        type_class = { "dir":  SourceDirReader,  "dirs":  SourceDirReader,
                        "file": SourceFileReader, "files": SourceFileReader }
-        source_settings_keys= SourceSettings().KnownKeys()
+        source_settings_keys = SourceSettings().KnownKeys()
         for k, value in vars.iteritems():
             if k.startswith("sources"):
                 curr_source_settings = SourceSettings()
@@ -188,13 +188,13 @@ class SitesSettings(SettingsBase):
                         assert path.endswith('"')
                         path = path[1:-1]
                     if type == "all":
-                        for t in ["dirs", "files"]:  # TODO: add support for , "items"]:
+                        for t in ["dirs", "files"]:  # TODO: add support for "izu items"
                             settings.source_list.append(type_class[t](self._log, settings, path,
                                                                       source_settings=curr_source_settings))
                     elif type in type_class:
                         settings.source_list.append(type_class[type](self._log, settings, path,
                                                                       source_settings=curr_source_settings))
-                    elif type in source_settings:
+                    elif type in source_settings_keys:
                         curr_source_settings.__dict__[type] = path
                     else:
                         self._log.Error("Unknown source type '%s' in '%s'",

@@ -93,6 +93,31 @@ class SitesSettingsTest(RigTestCase):
             s.source_list,
             sort=True)
 
+    def testOverrideSourcesSettings(self):
+        log = self.Log()
+
+        s = SiteSettings()
+        self.m._ProcessSources(s, { "sources": "file:/my/path1, rig_base:http://some/url" })
+        self.assertListEquals(
+            [ SourceFileReader(log, s, "/my/path1") ],
+            s.source_list)
+        self.assertDictEquals( { "rig_base": "http://some/url" },
+            s.source_list[0]._source_settings.OverrideDict())
+
+        s = SiteSettings()
+        self.m._ProcessSources(s, { "sources": "dir:/my/path1,file:/my/path2, rig_base:http://some/url, file:/my/path3" })
+        self.assertListEquals(
+            [ SourceDirReader (log, s, "/my/path1"),
+              SourceFileReader(log, s, "/my/path2"),
+              SourceFileReader(log, s, "/my/path3") ],
+            s.source_list)
+        self.assertDictEquals( { "rig_base": "http://some/url" },
+            s.source_list[0]._source_settings.OverrideDict())
+        self.assertDictEquals( { "rig_base": "http://some/url" },
+            s.source_list[1]._source_settings.OverrideDict())
+        self.assertDictEquals( { "rig_base": "http://some/url" },
+            s.source_list[2]._source_settings.OverrideDict())
+
     def testProcessCatFilter(self):
         s = SiteSettings()
         self.assertEquals(None, s.cat_include)
