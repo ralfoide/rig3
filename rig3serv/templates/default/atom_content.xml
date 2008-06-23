@@ -16,16 +16,16 @@ Parameters:
 ]]
 [[if "en" in sections]]
 [[if "fr" in sections]]<img src="[[url base_url + "media/flag_usa.gif"]]" />[[end]]
-[[xml sections["en"] ]]
+[[raw sections["en"] ]]
 [[end]]
 
 [[if "fr" in sections]]
 <img src="[[url base_url + "media/flag_fr.gif"]]" />
-[[xml sections["fr"] ]]
+[[raw sections["fr"] ]]
 [[end]]
 
-[[if "html" in sections]][[xml sections["html"] ]][[end]]
+[[if "html" in sections]][[raw sections["html"] ]][[end]]
 
 [[if "images" in sections]]
-[[xml sections["images"] ]]
+[[raw sections["images"] ]]
 [[end]]

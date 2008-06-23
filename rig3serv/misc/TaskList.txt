@@ -30,15 +30,14 @@
 20071006 Tests:    UTs for Generate index page, per theme
 20071006 Tests:    UTs for Generate categories pages, per theme
 
-20071123 Engine:   Site settings, rss
 20071215 Engine:   Investigate PIL support (for resizing, for header_img guess, etc.)
 
 20080215 Prefs:    Disable raw HTML by default
-20080219 Engine:   Generate RSS feed
 
 
 ---- Done Version 0.3 ----
 
+20080622 Engine:   Fix double XML encoding in content of atom entry
 20080622 Engine:   Limit atom feed to settings.num_item_atom (20 per default)
 20080622 Engine:   Fix [[url]] tag in template and all occurrences in templates
 20080622 Engine:   Separate <entry> and <content> in atom generator
