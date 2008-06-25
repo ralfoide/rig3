@@ -37,6 +37,7 @@ class Template(object):
     def __init__(self, log, file=None, source=None):
         self._log = log
         self._nodes = None
+        self._filename = None
         self._filters = {}
         self.__InitTags()
         self.__InitFileSource(file, source)
@@ -48,7 +49,9 @@ class Template(object):
         template.
         """
         if self._nodes:
-            return self._nodes.Generate(self._log, keywords)
+            k = dict(keywords)
+            k["template_filename"] = self._filename
+            return self._nodes.Generate(self._log, k)
         else:
             return ""
 
@@ -71,10 +74,10 @@ class Template(object):
                     try:
                         return f.name
                     except AttributeError:
-                        return "file"
+                        return "<file>"
                 return self._Parse(_file_name(_file), _file.read())
         elif source is not None:
-            return self._Parse("source", source)
+            return self._Parse("<source>", source)
         raise TypeError("Template: missing file or source parameters")
 
     def _ParseFile(self, filename):
@@ -92,6 +95,7 @@ class Template(object):
         """
         Parses a source string for the given filename.
         """
+        self._filename = filename
         buffer = Buffer(os.path.basename(filename), source, 0)
         self._nodes = self._GetNodeList(buffer, end_expected=False)
         return self

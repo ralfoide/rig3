@@ -8,6 +8,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 import re
 import cgi
 import urllib
@@ -212,6 +213,14 @@ class TagInsert(Tag):
         path = eval(tag_node.Parameters(), dict(context))
         
         if not not path:
+            # if there's a template_filename setting in the context
+            # (set by Template.Generate()) and we can match a relative
+            # file, try to do so. Otherwise use as an absolute path.
+            if "template_filename" in context:
+                full = os.path.join(os.path.dirname(context["template_filename"]), path)
+                if os.path.exists(full) and os.path.isfile(full):
+                    path = full
+            
             from rig.template.template import Template
             template = Template(log, file=path)
             result = template.Generate(dict(context))

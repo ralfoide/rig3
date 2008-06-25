@@ -59,7 +59,7 @@ class TemplateTest(RigTestCase):
         """
         m = MockParse(self.Log(), file=None, source="something")
         self.assertEquals("something", m.source)
-        self.assertEquals("source", m.filename)
+        self.assertEquals("<source>", m.filename)
 
         filename = os.path.join(self.getTestDataPath(), "simple.html")
         m = MockParse(self.Log(), file=filename, source=None)
@@ -70,7 +70,7 @@ class TemplateTest(RigTestCase):
         buf = StringIO.StringIO("template from StringIO")
         m = MockParse(self.Log(), file=buf, source=None)
         self.assertEquals("template from StringIO", m.source)
-        self.assertEquals("file", m.filename)
+        self.assertEquals("<file>", m.filename)
 
     def testTags(self):
         m = MockParse(self.Log(), file=None, source="something")

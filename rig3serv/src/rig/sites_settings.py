@@ -50,6 +50,7 @@ class SiteSettings(object):
     - img_gen_script (string): An optional script to execute to generate images
     - num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
     - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
+    - html_header (string): Path to HTML header. Default is "html_header.html"
     """
     CAT_ALL = "*"
     CAT_NOTAG = "$"
@@ -73,7 +74,8 @@ class SiteSettings(object):
                  cat_include=None,
                  img_gen_script="",
                  num_item_page=DEFAULT_ITEMS_PER_PAGE,
-                 num_item_atom=DEFAULT_ITEMS_PER_PAGE):
+                 num_item_atom=DEFAULT_ITEMS_PER_PAGE,
+                 html_header="html_header.html"):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -92,6 +94,7 @@ class SiteSettings(object):
         self.img_gen_script = img_gen_script
         self.num_item_page = num_item_page
         self.num_item_atom = num_item_atom
+        self.html_header = html_header
 
     def AsDict(self):
         """
