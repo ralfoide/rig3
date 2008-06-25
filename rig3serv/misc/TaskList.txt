@@ -1,6 +1,9 @@
 ---- TODO ----
 
-20080218 Template: Custom page header per category
+20080218 Template: Custom page header per site
+20080622 Engine:   Reverse posts order per category
+20080622 Template: Give entries as { content, title, date }
+
 
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
@@ -36,6 +39,7 @@
 
 ---- Done Version 0.3 ----
 
+20080624 Template: Support for [[insert path-to-template]] tag 
 20080622 Engine:   Ability to have a different rig_base per source (w/ basic UT)
 20080622 Engine:   Fix double XML encoding in content of atom entry
 20080622 Engine:   Limit atom feed to settings.num_item_atom (20 per default)

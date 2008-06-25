@@ -32,7 +32,7 @@ class Tag(object):
     def HasContent(self):
         return self._has_content
 
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         """
         Generates content for the tag node for the given context.
         Returns a string with the generated content.
@@ -50,7 +50,7 @@ class TagComment(Tag):
     def __init__(self):
         super(TagComment, self).__init__(tag="#", has_content=False)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         return ""
 
 
@@ -64,7 +64,7 @@ class TagRaw(Tag):
     def __init__(self):
         super(TagRaw, self).__init__(tag="raw", has_content=False)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
             result = str(result)
@@ -83,7 +83,7 @@ class TagHtml(Tag):
     def __init__(self):
         super(TagHtml, self).__init__(tag="html", has_content=False)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
             result = cgi.escape(str(result))
@@ -105,7 +105,7 @@ class TagXml(Tag):
     def __init__(self):
         super(TagXml, self).__init__(tag="xml", has_content=False)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
             result = cgi.escape(str(result))
@@ -124,7 +124,7 @@ class TagUrl(Tag):
     def __init__(self):
         super(TagUrl, self).__init__(tag="url", has_content=False)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
             result = _RE_URL.sub(_UrlEncode, str(result))
@@ -155,7 +155,7 @@ class TagFor(Tag):
     def __init__(self):
         super(TagFor, self).__init__(tag="for", has_content=True)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         params = tag_node.Parameters()
         
         matches = _RE_FIRST_WORD.match(params)
@@ -173,7 +173,7 @@ class TagFor(Tag):
         for value in result:
             d = dict(context)  # clone context before udpating it
             d[var] = value
-            s += content.Generate(d)
+            s += content.Generate(log, d)
 
         return s
 
@@ -189,14 +189,38 @@ class TagIf(Tag):
     def __init__(self):
         super(TagIf, self).__init__(tag="if", has_content=True)
     
-    def Generate(self, tag_node, context):
+    def Generate(self, log, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
         if not not result:
-            return tag_node.Content().Generate(context)
+            return tag_node.Content().Generate(log, context)
         return ""
 
+
 #------------------------
-ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagXml, TagUrl]
+class TagInsert(Tag):
+    """
+    Tag that represents a template insertion. The expression must
+    evaluate to the path of the template to use.
+    
+    Template syntax:
+      [[insert python_expression]]
+    """
+    def __init__(self):
+        super(TagInsert, self).__init__(tag="insert", has_content=False)
+    
+    def Generate(self, log, tag_node, context):
+        path = eval(tag_node.Parameters(), dict(context))
+        
+        if not not path:
+            from rig.template.template import Template
+            template = Template(log, file=path)
+            result = template.Generate(dict(context))
+            return result
+        return ""
+
+
+#------------------------
+ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagXml, TagUrl, TagInsert]
 
 #------------------------
 # Local Variables:

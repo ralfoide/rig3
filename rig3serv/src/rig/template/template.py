@@ -48,7 +48,7 @@ class Template(object):
         template.
         """
         if self._nodes:
-            return self._nodes.Generate(keywords)
+            return self._nodes.Generate(self._log, keywords)
         else:
             return ""
 
