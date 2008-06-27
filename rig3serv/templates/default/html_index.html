@@ -29,12 +29,6 @@ TODO:
 
 [[insert html_header]]
 
-<div class="rig_version">
-[[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
-Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
-<a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
-</div>
-
 [[for html_entry in entries]]
   [[raw html_entry.content]]
 [[end]]

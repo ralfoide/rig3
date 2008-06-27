@@ -27,3 +27,10 @@ style="height: [[html header_img_height]]px; width: 100%; background: no-repeat 
 <a href="[[url rel_base_url]]">All</a>
 [[for cat in all_categories]] | <a href="[[url rel_base_url + "cat/" + cat]]/">[[html cat.capitalize()]]</a>[[end]]
 </div>
+
+<div class="rig_version">
+[[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
+Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
+<a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
+</div>
+
