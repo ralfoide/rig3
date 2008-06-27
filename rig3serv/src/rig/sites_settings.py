@@ -211,6 +211,14 @@ class SitesSettings(SettingsBase):
         """
         Processes a "cat_filter" variable from the settings and builds the
         corresponding cat_exclude and cat_include lists in the site's defaults.
+        """
+        s.cat_include, s.cat_exclude = self._ProcessFilter(
+                                   "cat_filter", vars.get("cat_filter", None))
+
+    def _ProcessFilter(self, name, words):
+        """
+        Processes a "filter" variable from the settings and builds the
+        corresponding cat_exclude and cat_include lists in the site's defaults.
         
         Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
         The "all" exclusion trumps everything else.
@@ -219,43 +227,41 @@ class SitesSettings(SettingsBase):
         _ALL = SiteSettings.CAT_ALL
         _NOTAG = SiteSettings.CAT_NOTAG
         _EXCLUDE = SiteSettings.CAT_EXCLUDE
-        s.cat_exclude = {}
-        s.cat_include = {}
-        words = vars.get("cat_filter", None)
+        cat_exclude = {}
+        cat_include = {}
         if words:
             # split on whitespace or comma
             # categories are case insensitive
             words = _CAT_FILTER_SEP.split(words.lower())
         if not words:
-            s.cat_include = None
-            s.cat_exclude = None
-            return
+            return (None, None)
         for word in words:
             if not word:
                 continue
-            if word.startswith(_EXCLUDE) and s.cat_exclude != _ALL:
+            if word.startswith(_EXCLUDE) and cat_exclude != _ALL:
                 exc = word[1:]
                 if not exc or exc == _EXCLUDE:
-                    self._log.Error("Invalid 'cat_filter' word '%s'. Valid exclude "
+                    self._log.Error("Invalid '%s' word '%s'. Valid exclude "
                                     "patterns are !* (exclude all), !$ (exclude non-tagged) "
-                                    "or !word (exclude 'word')", word)
+                                    "or !word (exclude 'word')", name, word)
                     continue
                 if exc == _ALL:
                     # Shortcut for a site that excludes everything... we're done!
-                    s.cat_exclude = exc
-                    s.cat_include = None
-                    return
+                    cat_exclude = exc
+                    cat_include = None
+                    return (cat_include, cat_exclude)
                 else:
-                    s.cat_exclude[exc] = True
-            elif s.cat_include != _ALL:
+                    cat_exclude[exc] = True
+            elif cat_include != _ALL:
                 if word == _ALL:
-                    s.cat_include = word
+                    cat_include = word
                 else:
-                    s.cat_include[word] = True
-        if not s.cat_include or s.cat_include == _ALL:
-            s.cat_include = None
-        if not s.cat_exclude:
-            s.cat_exclude = None
+                    cat_include[word] = True
+        if not cat_include or cat_include == _ALL:
+            cat_include = None
+        if not cat_exclude:
+            cat_exclude = None
+        return (cat_include, cat_exclude)
 
 #------------------------
 # Local Variables:
