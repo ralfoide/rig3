@@ -16,7 +16,7 @@ from rig.parser.dir_parser import RelDir, RelFile
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
 from rig.source_reader import SourceReaderBase, SourceDirReader, SourceFileReader
-from rig.source_item import SourceDir, SourceFile
+from rig.source_item import SourceDir, SourceFile, SourceSettings
 
 #------------------------
 class SourceReaderBaseTest(RigTestCase):
@@ -34,8 +34,8 @@ class SourceReaderBaseTest(RigTestCase):
 
 #------------------------
 class MockSourceDirReader(SourceDirReader):
-    def __init__(self, log, settings, path):
-        super(MockSourceDirReader, self).__init__(log, settings, path)
+    def __init__(self, log, settings, path, source_settings=None):
+        super(MockSourceDirReader, self).__init__(log, settings, path, source_settings)
         self.update_needed_requests = []
         self._dir_time_stamp = 1
 
@@ -98,12 +98,28 @@ class SourceDirReaderTest(RigTestCase):
                         RelDir(self.path, "2007-10-07_Folder 1"),
                         [ "T12896_tiny_jpeg.jpg", "index.izu" ] ) ], 
             p)
+    
+    def testSourceSettings(self):
+        # default reader does not have any custom source settings
+        p = self.m.Parse(self._tempdir)
+        for item in p:
+            self.assertEquals(None, item.source_settings)
+        
+        # Now add a custom source settings to the reader. It gets
+        # propagated to all items.
+        sourceset = SourceSettings(rig_base="http://other/base/")
+        m = MockSourceDirReader(self.Log(), self.s, self.path, sourceset)
+        p = m.Parse(self._tempdir)
+        for item in p:
+            self.assertNotEquals(None, item.source_settings)
+            self.assertSame(sourceset, item.source_settings)
+            self.assertEquals("http://other/base/", item.source_settings.rig_base)
 
 
 #------------------------
 class MockSourceFileReader(SourceFileReader):
-    def __init__(self, log, settings, path):
-        super(MockSourceFileReader, self).__init__(log, settings, path)
+    def __init__(self, log, settings, path, source_settings=None):
+        super(MockSourceFileReader, self).__init__(log, settings, path, source_settings)
         self.update_needed_requests = []
         self._file_time_stamp = 1
 
@@ -164,6 +180,23 @@ class SourceFileReaderTest(RigTestCase):
                          RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu"))),
             ],
             p)
+    
+    def testSourceSettings(self):
+        # default reader does not have any custom source settings
+        p = self.m.Parse(self._tempdir)
+        for item in p:
+            self.assertEquals(None, item.source_settings)
+
+        # Now add a custom source settings to the reader. It gets
+        # propagated to all items.
+        sourceset = SourceSettings(rig_base="http://other/base/")
+        m = MockSourceFileReader(self.Log(), self.s, self.path, sourceset)
+        p = m.Parse(self._tempdir)
+        for item in p:
+            self.assertNotEquals(None, item.source_settings)
+            self.assertSame(sourceset, item.source_settings)
+            self.assertEquals("http://other/base/", item.source_settings.rig_base)
+
 
 
 #------------------------

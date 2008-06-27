@@ -122,7 +122,7 @@ class SourceDirReader(SourceReaderBase):
                                source_dir.rel_curr, dest_dir.rel_curr)
                 if self._UpdateNeeded(source_dir, dest_dir, all_files):
                     date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_path))
-                    item = SourceDir(date, source_dir, all_files)
+                    item = SourceDir(date, source_dir, all_files, self._source_settings)
                     items.append(item)
         return items
 
@@ -227,7 +227,7 @@ class SourceFileReader(SourceReaderBase):
                                        os.path.join(source_dir.rel_curr, file))
                     if self._UpdateNeeded(rel_file, dest_dir):
                         date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
-                        item = SourceFile(date, rel_file)
+                        item = SourceFile(date, rel_file, self._source_settings)
                         items.append(item)
         return items
 

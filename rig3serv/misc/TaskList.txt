@@ -1,5 +1,6 @@
 ---- TODO ----
 
+20080623 Engine:   Fix rig_base not propagated by SourceReaders 
 20080218 Template: Custom page header per site
 20080622 Engine:   Reverse posts order per category
 20080622 Template: Give entries as { content, title, date }
