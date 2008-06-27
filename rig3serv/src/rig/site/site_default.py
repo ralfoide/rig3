@@ -30,6 +30,13 @@ from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
 
 #------------------------
+class ContentEntry(object):
+    def __init__(self, content, title, date):
+        self.content = content
+        self.title = title
+        self.date = date
+
+#------------------------
 class SiteDefault(SiteBase):
     """
     Describes how to generate the content of a site using the "default" theme.
@@ -183,7 +190,9 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in relevant_items[i:i + num_item_page]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords))
+                content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
+                entry = ContentEntry(content, j.title, j.date)
+                entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += num_item_page
 
@@ -261,7 +270,8 @@ class SiteDefault(SiteBase):
             keywords["atom_id"] = self._AtomId(curr_url, i.date, i.title)
             keywords["content"] = content
             # Then generate the <entry> for the post
-            entry = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
+            content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
+            entry = ContentEntry(content, i.title, i.date)
             entries.append(entry)            
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
@@ -360,7 +370,9 @@ class SiteDefault(SiteBase):
             older_date = None
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
-                entries.append(j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords))
+                content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
+                entry = ContentEntry(content, j.title, j.date)
+                entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
 
             keywords["entries"] = entries

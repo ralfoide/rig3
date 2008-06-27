@@ -34,6 +34,6 @@ Note: below we make sure there's no \n before the xml tag
 
 <generator uri="http://code.google.com/p/rig3/" version="[[xml rig3_version]]">Rig3</generator>
 
-[[for entry in entries]][[raw entry]][[end]]
+[[for entry in entries]][[raw entry.content]][[end]]
 
 </feed>

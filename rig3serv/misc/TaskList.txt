@@ -1,9 +1,7 @@
 ---- TODO ----
 
-20080623 Engine:   Fix rig_base not propagated by SourceReaders 
 20080218 Template: Custom page header per site
 20080622 Engine:   Reverse posts order per category
-20080622 Template: Give entries as { content, title, date }
 
 
 20071225 Engine:   Site settings, Disable auto-image insertion
@@ -40,6 +38,8 @@
 
 ---- Done Version 0.3 ----
 
+20080626 Template: Give entries as { content, title, date }
+20080626 Engine:   Fix rig_base not propagated by SourceReaders 
 20080624 Template: Support for [[insert path-to-template]] tag 
 20080622 Engine:   Ability to have a different rig_base per source (w/ basic UT)
 20080622 Engine:   Fix double XML encoding in content of atom entry
