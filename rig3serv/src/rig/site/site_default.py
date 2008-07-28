@@ -178,7 +178,21 @@ class SiteDefault(SiteBase):
         if num_item_page < 1:
             num_item_page = DEFAULT_ITEMS_PER_PAGE
 
+        keywords = self._settings.AsDict()
+        keywords["title"] = "All Items"
+        keywords["curr_url"] = keywords.get("base_url", "") + base_url
+        keywords["rel_base_url"] = rel_base
+        keywords["last_gen_ts"] = datetime.today()
+        keywords["all_categories"] = all_categories
+        keywords["curr_category"] = curr_category
+        keywords["month_pages"] = month_pages
+        keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
+        keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
+                                              version.SvnRevision())
+
+        pages = []
+        all_entries = []
 
         n = len(relevant_items)
         np = n / num_item_page
@@ -187,18 +201,6 @@ class SiteDefault(SiteBase):
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
-
-            keywords = self._settings.AsDict()
-            keywords["title"] = "All Items"
-            keywords["curr_url"] = keywords.get("base_url", "") + base_url
-            keywords["rel_base_url"] = rel_base
-            keywords["last_gen_ts"] = datetime.today()
-            keywords["all_categories"] = all_categories
-            keywords["curr_category"] = curr_category
-            keywords["month_pages"] = month_pages
-            keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
-            keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
-                                                  version.SvnRevision())
 
             entries = []
             older_date = None
@@ -209,9 +211,16 @@ class SiteDefault(SiteBase):
                 entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += num_item_page
+            
+            pages.append((filename, entries, older_date))
+            all_entries.extend(entries)
 
-            keywords["entries"] = entries
-            keywords["last_content_ts"] = older_date
+        keywords["all_entries"] = all_entries
+            
+        for page in pages:
+            filename = page[0]
+            keywords["entries"] = page[1]
+            keywords["last_content_ts"] = page[2]
             
             content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
@@ -360,7 +369,10 @@ class SiteDefault(SiteBase):
             by_months[key].append(i)
         relevant_items = None
         keys = by_months.keys()
-        keys.sort(reverse=True)
+        
+        # The "natural" sort is to do a reverse sort.
+        # If this category is reversed, use an incrementing sort.
+        keys.sort(reverse=not curr_category in self._settings.reverse_categories)
 
         np = len(keys)
         for n in xrange(0, np):
@@ -370,23 +382,25 @@ class SiteDefault(SiteBase):
             filename = self._MonthPageName(year, month)
             month_pages.append(MonthPageItem(filename, month_key))
 
+        keywords = self._settings.AsDict()
+        keywords["title"] = "All Items"
+        keywords["curr_url"] = keywords.get("base_url", "") + base_url
+        keywords["rel_base_url"] = rel_base
+        keywords["last_gen_ts"] = datetime.today()
+        keywords["all_categories"] = all_categories
+        keywords["curr_category"] = curr_category
+        keywords["month_pages"] = month_pages
+        keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
+        keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
+                                              version.SvnRevision())
+
+        pages = []
+        all_entries = []
             
         for p in month_pages:
             filename = p.url
             month_key = p.date
-
-            keywords = self._settings.AsDict()
-            keywords["title"] = "All Items"
-            keywords["curr_url"] = keywords.get("base_url", "") + base_url
-            keywords["rel_base_url"] = rel_base
-            keywords["last_gen_ts"] = datetime.today()
-            keywords["all_categories"] = all_categories
-            keywords["curr_category"] = curr_category
-            keywords["month_pages"] = month_pages
-            keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
-            keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
-                                                  version.SvnRevision())
 
             entries = []
             older_date = None
@@ -396,12 +410,20 @@ class SiteDefault(SiteBase):
                 entry = ContentEntry(content, j.title, j.date, j.permalink)
                 entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
+                
+            pages.append((filename, entries, older_date))
+            all_entries.extend(entries)
+            
+        keywords["all_entries"]= all_entries
 
-            keywords["entries"] = entries
-            keywords["last_content_ts"] = older_date
+        for page in pages:
+            filename = page[0]
+            keywords["entries"] = page[1]
+            keywords["last_content_ts"] = page[2]
 
             content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_MONTH, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+
         return month_pages
 
     def _MonthPageName(self, year, month):

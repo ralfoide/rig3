@@ -2,6 +2,8 @@
 Expected parameters:
 - title: string, Web page title
 - entries: object(content: string, title: string, date: datetime, permalink: string), generated HTML for each entry.
+  - entries is the list of items displayed in the current page,
+  - all_entries lists those for all pages.
 - rel_base_url: string, Relative url to base of site. May be empty or like ../../
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)

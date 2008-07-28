@@ -5,6 +5,8 @@ The generated entry should be a piece of HTML, not a full document.
 Expected parameters:
 - title: string, Web page title
 - entries: object(content: string, title: string, date: datetime, permalink: string), generated HTML for each entry.
+  - entries is the list of items displayed in the current page,
+  - all_entries lists those for all pages.
 - rel_base_url: string, Relative url to base of site. May be empty or like ../../
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
@@ -28,7 +30,7 @@ TODO:
 <div class="toc">
 <div class="toc title">Table of Content for [[html curr_category]]:</div>
 <ul>
-[[for html_entry in entries]]
+[[for html_entry in all_entries]]
   <li> <a href="[[html html_entry.permalink]]">[[html html_entry.date.strftime("%Y/%m/%d")]]: [[html html_entry.title]]</a></li>
 [[end]]
 </ul>
