@@ -51,6 +51,10 @@ class SiteSettings(object):
     - num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
     - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
     - html_header (string): Path to HTML header. Default is "html_header.html"
+    - toc_categories: A list of categories for which to insert a TOC to their pages.
+                    Default is none of them.
+    - reverse_categories: A list of categories to display in reverse date order (i.e. incremental).
+                    Default is to display in decrementing date.
     """
     CAT_ALL = "*"
     CAT_NOTAG = "$"
@@ -75,7 +79,9 @@ class SiteSettings(object):
                  img_gen_script="",
                  num_item_page=DEFAULT_ITEMS_PER_PAGE,
                  num_item_atom=DEFAULT_ITEMS_PER_PAGE,
-                 html_header="html_header.html"):
+                 html_header="html_header.html",
+                 toc_categories=[],
+                 reverse_categories=[]):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -95,6 +101,8 @@ class SiteSettings(object):
         self.num_item_page = num_item_page
         self.num_item_atom = num_item_atom
         self.html_header = html_header
+        self.reverse_categories = reverse_categories
+        self.toc_categories = toc_categories
 
     def AsDict(self):
         """
@@ -138,6 +146,7 @@ class SitesSettings(SettingsBase):
         self._ProcessDefaults(s, vars)
         self._ProcessSources(s, vars)
         self._ProcessCatFilter(s, vars)
+        self._ReformatLists(s)
         return s
 
     def _ProcessDefaults(self, settings, vars):
@@ -262,6 +271,27 @@ class SitesSettings(SettingsBase):
         if not cat_exclude:
             cat_exclude = None
         return (cat_include, cat_exclude)
+
+    def _ReformatLists(self, s):
+        """
+        Some variables are lists. Transform the string, which was read from
+        the pref file, to an actual python list of strings.
+        """
+        s.toc_categories = self._SplitCatList(s.toc_categories)
+        s.reverse_categories = self._SplitCatList(s.reverse_categories)
+
+    def _SplitCatList(self, string):
+        """
+        Transform the input string into a list of strings.
+        If the input is none or empty, returns an empty list.
+        
+        List word separators are whitespace and comma.
+        The words are made all lower case (for category names).
+        """
+        a = []
+        if string:
+            a = [w for w in _CAT_FILTER_SEP.split(string.strip().lower()) if w]
+        return a
 
 #------------------------
 # Local Variables:

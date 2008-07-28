@@ -1,9 +1,5 @@
 ---- TODO ----
 
-20080218 Template: Custom page header per site
-20080622 Engine:   Reverse posts order per category
-
-
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
 
@@ -12,8 +8,6 @@
 20071225 Template: Placeholder ralf theme (deriving from default)
 20071225 Engine:   Site settings, Override integrated dir/file regexp filters
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
-20071123 Engine:   Site settings, permalinks
-20071123 Engine:   Site settings, toc
 
 20071226 Tests:    UTs for SiteRalf / SiteMagic
 
@@ -21,15 +15,12 @@
 20071123 Izu:      Multi-level List <ul>
 20071123 Izu:      Multi-level blockquotes
 
-20071115 Template: Generate pages for category (need UT, polish)
 20071112 Engine:   Reduce verbosity in error mode to really just errors
 20071112 Engine:   Reduce verbosity in normal mode to really summary
 
 20070830 Tests:    Check update vs dest dirs, UT
 20071006 Izu:      Full Izumi-to-Html converter, UT
 20071006 Engine:   Rig-Thumbnail-to-URL converter (w/ prefs), UT
-20071006 Tests:    UTs for Generate index page, per theme
-20071006 Tests:    UTs for Generate categories pages, per theme
 
 20071215 Engine:   Investigate PIL support (for resizing, for header_img guess, etc.)
 
@@ -38,6 +29,9 @@
 
 ---- Done Version 0.3 ----
 
+20080727 Engine:   Added settings toc_categories and reverse_categories, use in site default
+20080727 Template: Added html_toc, used by html_index with toc_categories
+20080727 Template: Give entries as { content, title, date, permalink }
 20080626 Template: Give entries as { content, title, date }
 20080626 Engine:   Fix rig_base not propagated by SourceReaders 
 20080624 Template: Support for [[insert path-to-template]] tag 

@@ -1,7 +1,11 @@
-[[# Main index template.
+[[# HTML header for generated pages.
+
+The generated entry should be a piece of HTML, not a full document.
+This is inserted in html_index after <body> and before any other content.
+
 Expected parameters:
 - title: string, Web page title
-- entries: object(content: string, title: string, date: datetime), generated HTML for each entry.
+- entries: object(content: string, title: string, date: datetime, permalink: string), generated HTML for each entry.
 - rel_base_url: string, Relative url to base of site. May be empty or like ../../
 - last_gen_ts: the DateTime of when this page was generated
 - last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
@@ -10,6 +14,8 @@ Expected parameters:
 - tracking_code: Raw HTML for stats tracking (e.g. Google Analytics' tracking code) as defined per site-prefs.
 - month_pages: list((string,date)), URLs+date to the month pages in decreasing order.
 - alt_header: path to alternate HTML header (receives the same parameters)
+- all_categories: list of all categories
+- curr_category: name of current category (part of the categories list or empty for "all")
 
 No assumption is done on the actual data for an entry. It could be the entry
 itself, some SHTML entity or just about any textual thing.

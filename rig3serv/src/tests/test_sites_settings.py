@@ -160,8 +160,8 @@ class SitesSettingsTest(RigTestCase):
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "abc !def $ foo !$ !bfg !foo" })
-        self.assertEquals({ "abc": True, SiteSettings.CAT_NOTAG: True, "foo": True }, s.cat_include)
-        self.assertEquals({ "def": True, SiteSettings.CAT_NOTAG: True, "bfg": True, "foo": True }, s.cat_exclude)
+        self.assertDictEquals({ "abc": True, SiteSettings.CAT_NOTAG: True, "foo": True }, s.cat_include)
+        self.assertDictEquals({ "def": True, SiteSettings.CAT_NOTAG: True, "bfg": True, "foo": True }, s.cat_exclude)
 
         s = SiteSettings()
         self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
@@ -181,6 +181,30 @@ class SitesSettingsTest(RigTestCase):
                                 "e": True, "f": True, "g": True, "h": True,
                                 "i": True, "j": True, }, s.cat_include)
         self.assertEquals(None, s.cat_exclude)
+
+    def testSplitCatList(self):
+        sites_set = SitesSettings(self.Log())
+        self.assertListEquals([], sites_set._SplitCatList(None))
+        self.assertListEquals([], sites_set._SplitCatList(""))
+        self.assertListEquals([], sites_set._SplitCatList(" \t \f   "))
+
+        self.assertListEquals(["cat1", "cat3", "foo", "blah", "temp"],
+                              sites_set._SplitCatList(" cat1, cat3 foo\t blah \ttemp,  "))
+
+    def testReformatLists(self):
+        sites_set = SitesSettings(self.Log())
+        
+        s = SiteSettings()
+        sites_set._ReformatLists(s)
+        self.assertListEquals([], s.toc_categories)
+        self.assertListEquals([], s.reverse_categories)
+
+        s = SiteSettings()
+        s.toc_categories = "mountain top hip hop"
+        s.reverse_categories = "bikes hikes trikes"
+        sites_set._ReformatLists(s)
+        self.assertListEquals(["mountain", "top", "hip", "hop"], s.toc_categories)
+        self.assertListEquals(["bikes", "hikes", "trikes"], s.reverse_categories)
 
 
 #------------------------

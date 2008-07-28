@@ -1,4 +1,7 @@
-[[# Main index template.
+[[# HTML template for TOC
+
+The generated entry should be a piece of HTML, not a full document.
+
 Expected parameters:
 - title: string, Web page title
 - entries: object(content: string, title: string, date: datetime, permalink: string), generated HTML for each entry.
@@ -10,8 +13,8 @@ Expected parameters:
 - tracking_code: Raw HTML for stats tracking (e.g. Google Analytics' tracking code) as defined per site-prefs.
 - month_pages: list((string,date)), URLs+date to the month pages in decreasing order.
 - alt_header: path to alternate HTML header (receives the same parameters)
-- all_categories: list of all categories
-- curr_category: name of current category (part of the categories list or empty for "all")
+- categories: list of all categories
+- curr_category: name of current category (part of the categories list)
 - toc_categories: list of all categories that require a toc display
 
 No assumption is done on the actual data for an entry. It could be the entry
@@ -21,28 +24,12 @@ TODO:
 - layout: header, footer, associated links
 
 ]]
-<html lang="en-US">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>[[html public_name]] - [[html title]]</title>
-  <link rel="stylesheet" type="text/css" href="[[url rel_base_url + "media/style.css"]]" />
-  <link rel="alternate" type="application/atom+xml" title="[[url title]] - Atom" href="atom.xml" />
-</head>
-<body>
 
-[[insert html_header]]
-
-[[if curr_category in toc_categories]] [[insert html_toc]] [[end]]
-
+<div class="toc">
+<div class="toc title">Table of Content for [[html curr_category]]:</div>
+<ul>
 [[for html_entry in entries]]
-  [[raw html_entry.content]]
+  <li> <a href="[[html html_entry.permalink]]">[[html html_entry.date.strftime("%Y/%m/%d")]]: [[html html_entry.title]]</a></li>
 [[end]]
-
-<hr width="80%"/>
-[[if month_pages]]
-More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
-<br/>[[end]]
-<p/>
-[[raw tracking_code]]
-</body>
-</html>
+</ul>
+</div>

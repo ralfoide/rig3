@@ -25,23 +25,9 @@ TODO:
 </head>
 <body>
 
-<div class="header"
-style="height: [[html header_img_height]]px; width: 100%; background: no-repeat top center scroll url([[if header_img_url]][[url header_img_url]][[end]][[if not header_img_url]][[url rel_base_url + "media/top_banner.jpg"]][[end]]) ">
-</div>
+[[insert html_header]]
 
-<div class="blog-name">[[html public_name]]</div>
-
-<div class="categories">
-<a href="[[url rel_base_url]]">All</a>
-[[for cat in all_categories]] | <a href="[[url rel_base_url + "cat/" + cat]]/">[[html cat.capitalize()]]</a>
-[[end]]
-</div>
-
-<div class="rig_version">
-[[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
-Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
-<a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
-</div>
+[[if curr_category in toc_categories]] [[insert html_toc]] [[end]]
 
 [[for html_entry in entries]]
   [[raw html_entry.content]]

@@ -31,10 +31,11 @@ from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
 #------------------------
 class ContentEntry(object):
-    def __init__(self, content, title, date):
+    def __init__(self, content, title, date, permalink):
         self.content = content
         self.title = title
         self.date = date
+        self.permalink = permalink
 
 #------------------------
 class SiteDefault(SiteBase):
@@ -69,6 +70,7 @@ class SiteDefault(SiteBase):
     _TEMPLATE_HTML_INDEX   = "html_index.html"    # template for main HTML page
     _TEMPLATE_HTML_MONTH   = "html_month.html"    # template for month HTML page
     _TEMPLATE_HTML_ENTRY   = "html_entry.html"    # template for individual entries in HTML page
+    _TEMPLATE_HTML_TOC     = "html_toc.html"      # template for HTML TOC
     _TEMPLATE_ATOM_FEED    = "atom_feed.xml"      # template for atom feed
     _TEMPLATE_ATOM_ENTRY   = "atom_entry.xml"     # template for individual entries in atom feed 
     _TEMPLATE_ATOM_CONTENT = "atom_content.xml"   # template for content of atom entry 
@@ -115,19 +117,19 @@ class SiteDefault(SiteBase):
         # Only generate per-category months pages if we have more than one category
         if categories:
             for c in categories:
-                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", [ c ],
+                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", c,
                                                categories, items)
-                self._GenerateIndexPage([ "cat", c ], "../../", [ c ],
+                self._GenerateIndexPage([ "cat", c ], "../../", c,
                                         categories, items, month_pages, max_num_pages=1)
-                self._GenerateAtomFeed ([ "cat", c ], "../../", [ c ],
+                self._GenerateAtomFeed ([ "cat", c ], "../../", c,
                                         categories, items, month_pages)
 
     def _GenerateIndexPage(self, path, rel_base,
-                                category_filter, all_categories,
+                                curr_category, all_categories,
                                 items, month_pages,
                                 max_num_pages=None):
         """
-        Generates most-recent pages with items that match the category_filter list.
+        Generates most-recent pages with items that match the curr_category.
 
         SiteItems are not re-ordered, it's up to the caller to order the items
         by decreasing date order.
@@ -135,7 +137,7 @@ class SiteDefault(SiteBase):
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
             This is used also to generate the proper urls.
-        - category_filter: list of categories to use for this page (acts as a filter)
+        - curr_category: current category to use for this page (acts as a filter)
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
@@ -152,20 +154,26 @@ class SiteDefault(SiteBase):
             base_path = os.path.join(*path)
             self._MkDestDir(base_path)
 
-        # filter relevant items (or all of them if there's no category_filter)
-        if category_filter is None:
+        # filter relevant items (or all of them if there's no curr_category)
+        if curr_category is None:
             relevant_items = items
         else:
             relevant_items = []
             for i in items:
                 for c in i.categories:
-                    if c in category_filter:
+                    if c == curr_category:
                         relevant_items.append(i)
                         break
+
+        if curr_category in self._settings.reverse_categories:
+            # sort by increasing date (thus reverse the name "decreaseing date" order)
+            relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
         num_item_page = self._settings.num_item_page
         if num_item_page < 1:
             num_item_page = DEFAULT_ITEMS_PER_PAGE
+
+        version = Version()
 
         n = len(relevant_items)
         np = n / num_item_page
@@ -181,8 +189,9 @@ class SiteDefault(SiteBase):
             keywords["rel_base_url"] = rel_base
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories
+            keywords["curr_category"] = curr_category
             keywords["month_pages"] = month_pages
-            version = Version()
+            keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
 
@@ -191,7 +200,7 @@ class SiteDefault(SiteBase):
             for j in relevant_items[i:i + num_item_page]:
                 # SiteItem.content_gen is a lambda that generates the content
                 content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
-                entry = ContentEntry(content, j.title, j.date)
+                entry = ContentEntry(content, j.title, j.date, j.permalink)
                 entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += num_item_page
@@ -203,10 +212,10 @@ class SiteDefault(SiteBase):
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
 
     def _GenerateAtomFeed(self, path, rel_base,
-                                category_filter, all_categories,
+                                curr_category, all_categories,
                                 items, month_pages):
         """
-        Generates atom feed with most-recent items which match the category_filter list.
+        Generates atom feed with most-recent items which match the curr_category.
 
         SiteItems are not re-ordered, it's up to the caller to order the items
         by decreasing date order.
@@ -214,7 +223,7 @@ class SiteDefault(SiteBase):
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
             This is used also to generate the proper urls.
-        - category_filter: list of categories to use for this page (acts as a filter)
+        - curr_category: current category to use for this page (acts as a filter)
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
@@ -231,14 +240,14 @@ class SiteDefault(SiteBase):
             base_path = os.path.join(*path)
             self._MkDestDir(base_path)
 
-        # filter relevant items (or all of them if there's no category_filter)
-        if category_filter is None:
+        # filter relevant items (or all of them if there's no curr_category)
+        if curr_category is None:
             relevant_items = items
         else:
             relevant_items = []
             for i in items:
                 for c in i.categories:
-                    if c in category_filter:
+                    if c == curr_category:
                         relevant_items.append(i)
                         break
 
@@ -257,6 +266,7 @@ class SiteDefault(SiteBase):
         keywords["last_gen_ts"] = datetime.today()
         keywords["month_pages"] = month_pages
         keywords["all_categories"] = all_categories
+        keywords["curr_category"] = curr_category
         version = Version()
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
@@ -271,7 +281,7 @@ class SiteDefault(SiteBase):
             keywords["content"] = content
             # Then generate the <entry> for the post
             content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
-            entry = ContentEntry(content, i.title, i.date)
+            entry = ContentEntry(content, i.title, i.date, i.permalink)
             entries.append(entry)            
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
@@ -290,10 +300,10 @@ class SiteDefault(SiteBase):
                                      name)
 
     def _GenerateMonthPages(self, path, rel_base,
-                                category_filter, all_categories,
+                                curr_category, all_categories,
                                 items, max_num_pages=None):
         """
-        Generates months pages with items that match the category_filter list.
+        Generates months pages with items that match the curr_category.
         
         SiteItems are not re-ordered, it's up to the caller to re-order the
         items by decreasing date order.
@@ -301,7 +311,7 @@ class SiteDefault(SiteBase):
         - path: A list of sub-directories/sub-path indicating where the files are
             being created. If the list is empty, the files will be created in the root.
             This is used also to generate the proper urls.
-        - category_filter: list of categories to use for this page (acts as a filter)
+        - curr_category: current category to use for this page (acts as a filter)
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
@@ -320,16 +330,20 @@ class SiteDefault(SiteBase):
             base_path = os.path.join(*path)
             self._MkDestDir(base_path)
 
-        # filter relevant items (or all of them if there's no category_filter)
-        if category_filter is None:
+        # filter relevant items (or all of them if there's no curr_category)
+        if curr_category is None:
             relevant_items = items
         else:
             relevant_items = []
             for i in items:
                 for c in i.categories:
-                    if c in category_filter:
+                    if c == curr_category:
                         relevant_items.append(i)
                         break
+
+        if curr_category in self._settings.reverse_categories:
+            # sort by increasing date (thus reverse the name "decreaseing date" order)
+            relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
         by_months = {}
         for i in relevant_items:
@@ -350,6 +364,8 @@ class SiteDefault(SiteBase):
             month = month_key.month
             filename = self._MonthPageName(year, month)
             month_pages.append((filename, month_key))
+
+        version = Version()
             
         for p in month_pages:
             filename = p[0]
@@ -361,8 +377,9 @@ class SiteDefault(SiteBase):
             keywords["rel_base_url"] = rel_base
             keywords["last_gen_ts"] = datetime.today()
             keywords["all_categories"] = all_categories
+            keywords["curr_category"] = curr_category
             keywords["month_pages"] = month_pages
-            version = Version()
+            keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
             keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                                   version.SvnRevision())
 
@@ -371,7 +388,7 @@ class SiteDefault(SiteBase):
             for j in by_months[month_key]:
                 # SiteItem.content_gen is a lambda that generates the content
                 content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
-                entry = ContentEntry(content, j.title, j.date)
+                entry = ContentEntry(content, j.title, j.date, j.permalink)
                 entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
 
