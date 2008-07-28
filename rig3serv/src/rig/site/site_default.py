@@ -37,6 +37,11 @@ class ContentEntry(object):
         self.date = date
         self.permalink = permalink
 
+class MonthPageItem(object):
+    def __init__(self, url, date):
+        self.url = url
+        self.date = date
+
 #------------------------
 class SiteDefault(SiteBase):
     """
@@ -141,7 +146,7 @@ class SiteDefault(SiteBase):
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
-        - month_pages: list(tuple(url, date)) for each month page generated for the
+        - month_pages: list(MonthPageItem(url, date)) for each month page generated for the
             same entries. Can be an empty list but not None. MUST be sorted in
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
@@ -227,7 +232,7 @@ class SiteDefault(SiteBase):
             or None to accept all categories (even those with no categories)
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
-        - month_pages: list(tuple(url, date)) for each month page generated for the
+        - month_pages: list(MonthPageItem(url, date)) for each month page generated for the
             same entries. Can be an empty list but not None. MUST be sorted in
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
@@ -317,7 +322,7 @@ class SiteDefault(SiteBase):
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
         - max_num_pages: How many pages to create? 0 or None to create them all.
         
-        Returns a list( tuple(string: URL, date) ) of URLs to the pages just
+        Returns a list( MonthPageItem(string: URL, date) ) of URLs to the pages just
         created with the date matching the month.
         """
         month_pages = []
@@ -363,13 +368,13 @@ class SiteDefault(SiteBase):
             year = month_key.year
             month = month_key.month
             filename = self._MonthPageName(year, month)
-            month_pages.append((filename, month_key))
+            month_pages.append(MonthPageItem(filename, month_key))
 
         version = Version()
             
         for p in month_pages:
-            filename = p[0]
-            month_key = p[1]
+            filename = p.url
+            month_key = p.date
 
             keywords = self._settings.AsDict()
             keywords["title"] = "All Items"

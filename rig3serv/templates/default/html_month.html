@@ -34,7 +34,7 @@ TODO:
 [[end]]
 <hr width="80%"/>
 [[if month_pages]]
-More pages: [[for m in month_pages]] <a href="[[url m[0] ]]">[[html m[1].strftime("%B %Y")]]</a> [[end]]
+More pages: [[for m in month_pages]] <a href="[[url m.url ]]">[[html m.date.strftime("%B %Y")]]</a> [[end]]
 <br/>[[end]]
 <p>
 [[raw tracking_code]]
