@@ -1,0 +1,77 @@
+It should be fairly easy to customize headers for rig3 pages.
+
+First, let's mention template themes.
+
+The default template is "default". This means
+rig3serv/templates/default/html_header.html is used to get the
+template for a page (either an index or a month page, for all
+categories or for specific categories.)
+
+If you want to specialize the header, you can of course change the
+default template.
+Or a better way is to have your own theme. There are two "hidden"
+themes, "magic" and "ralf" which are defined.
+I reserve "ralf" for me, I reserve "magic" for you.
+
+So just do something like this:
+$ cd rig3serv
+$ mkdir -p templates/magic
+$ cp templates/default/html_headershtml templates/magic/html_header.html
+
+This will create your own version of the header and it won't get
+obliterated next time you do an svn update.
+
+Then in your rig3.rc you just need a line like this:
+
+[section]
+theme = magic
+
+
+Now in the header itself, you have some variables you can work with:
+- "curr_category" is the name of the current category. It's going to
+be an None or an empty string for the "all" page, and a specific
+lowercase category name for others.
+- "all_categories" is the list of all known categories in your posts
+(dunno why you would want it here, but you have it so...)
+
+To customize the header, you can use the "if" tag in rig3 templates.
+The syntax would be something like this:
+
+[[if curr_category == "vacation"]] ... some html stuff ... [[end]]
+
+The "if" tag doesn't have an "else" or "elsif". You can nest them if
+you need, though.
+In this case if you need to switch the header according to N
+categories, you need N "if" tags.
+
+If what you want is customize the image in the default, header, you
+can add the [[iff]] tag anywhere in the middle of html, of course, so
+right in an <img src>, e.g.:
+
+<div class="header"
+style="height: [[html header_img_height]]px;
+         width: 100%;
+         background: no-repeat top center scroll
+    [[if curr_category == "vacation"]] url(vacation.png) [[end]]
+    [[if curr_category == "outing"]] url(outing.png) [[end]]
+    ">
+</div>
+
+Of course if you know you have an image for each category possible,
+you can simply use the variable as part of the URL, e.g.:
+
+ <img src="pix/[[url curr_category]].png">
+
+(the "url" tag means you don't trust the variable and you want
+url-encoding applied to its text, in case of.)
+
+Remember that in rig3 templates, anything after the first keyword in a
+tag is a pure python statement.
+So really you can write some interesting stuff.
+Remember how I said "curr_category" is None or empty for "all"? Then
+you can apply a default value as easily as:
+
+ <img src="pix/[[url curr_category or "default" ]].png">
+
+Hope this helps,
+R/
