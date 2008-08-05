@@ -29,6 +29,7 @@
 
 ---- Done Version 0.3 ----
 
+20080805 Fix:      Validate integers in SiteSettings + UT
 20080727 Engine:   TOC displays all entries, not just the ones from the current page
 20080727 Engine:   Added settings toc_categories and reverse_categories, use in site default
 20080727 Template: Added html_toc, used by html_index with toc_categories

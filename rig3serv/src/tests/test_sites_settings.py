@@ -206,6 +206,35 @@ class SitesSettingsTest(RigTestCase):
         self.assertListEquals(["mountain", "top", "hip", "hop"], s.toc_categories)
         self.assertListEquals(["bikes", "hikes", "trikes"], s.reverse_categories)
 
+    def testSiteSettingsTypes(self):
+        """
+        Validates that parameters in SiteSettings are of the correct type.
+        """
+        # all integer values
+        s = SiteSettings(
+                 rig_img_size=42,
+                 header_img_height=43,
+                 num_item_page=44,
+                 num_item_atom=45
+                 )
+        self.assertEquals(42, s.rig_img_size)
+        self.assertEquals(43, s.header_img_height)
+        self.assertEquals(44, s.num_item_page)
+        self.assertEquals(45, s.num_item_atom)
+
+        # integer values will fail it set to none or not an integer
+        self.assertRaises(TypeError,  SiteSettings, rig_img_size=None)
+        self.assertRaises(ValueError, SiteSettings, rig_img_size="blah")
+
+        self.assertRaises(TypeError,  SiteSettings, header_img_height=None)
+        self.assertRaises(ValueError, SiteSettings, header_img_height="blah")
+
+        self.assertRaises(TypeError,  SiteSettings, num_item_page=None)
+        self.assertRaises(ValueError, SiteSettings, num_item_page="blah")
+
+        self.assertRaises(TypeError,  SiteSettings, num_item_atom=None)
+        self.assertRaises(ValueError, SiteSettings, num_item_atom="blah")
+
 
 #------------------------
 # Local Variables:
