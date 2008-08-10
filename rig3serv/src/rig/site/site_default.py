@@ -59,7 +59,7 @@ class SiteDefault(SiteBase):
                           r"(?P<rest>.*$)")
     _MANGLED_NAME_LENGTH = 50    # TODO make a site.rc pref
 
-    _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]?\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
+    _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]{0,2}\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
     
     _RATING_BASE = -2
