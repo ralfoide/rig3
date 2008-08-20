@@ -46,12 +46,13 @@ class Rig3LiveTest(RigTestCase):
 
     def testLive(self):
         t = self._testdata
-        d = os.path.join(t, _DEST_DIR)
         rc = os.path.join(t, "z_last_rig3_live.rc")
         args = [ "rig3", "-c", rc ]
         self.m.ParseArgs(args)
         self.m.Run()
         self.m.Close()
+
+        d = os.path.join(t, _DEST_DIR)
 
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "atom.xml")))

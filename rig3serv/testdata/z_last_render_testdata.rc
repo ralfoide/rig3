@@ -3,7 +3,7 @@
 # that's an issue for generated content, which should not be in the checked out dir
 
 [serve]
-sites = test_default
+sites = test_default, test_magic
 
 [DEFAULT]
 sources     = dir:album, file:album
@@ -19,3 +19,7 @@ theme = default
 public_name = Test Default
 dest_dir    = test_dest/default
 
+[test_magic]
+theme = magic
+public_name = Test Magic
+dest_dir    = test_dest/magic

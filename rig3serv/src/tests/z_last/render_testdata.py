@@ -44,23 +44,26 @@ class RenderTestdata(RigTestCase):
         os.chdir(self._pwd)
         self.m = None
 
-    def testDefault(self):
+    def testRender(self):
         """
-        Tests using the testdata/templates/default template
+        Tests using the testdata/templates/default & magic template
         """
         t = self._testdata
-        d = os.path.join(t, _DEST_DIR, "default")
-        os.mkdir(d)
         rc = os.path.join(t, "z_last_render_testdata.rc")
         args = [ "rig3", "-c", rc ]
         self.m.ParseArgs(args)
         self.m.Run()
         self.m.Close()
 
+        d = os.path.join(t, _DEST_DIR, "default")
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "atom.xml")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
 
+        d = os.path.join(t, _DEST_DIR, "magic")
+        self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
+        self.assertTrue(os.path.exists(os.path.join(d, "atom.xml")))
+        self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
         
 
 

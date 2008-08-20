@@ -1,0 +1,49 @@
+[[# HTML header for generated pages.
+
+*** Customized version for TESTDATA/TEMPLATES/MAGIC ***
+
+The generated entry should be a piece of HTML, not a full document.
+This is inserted in html_index after <body> and before any other content.
+
+Expected parameters:
+- title: string, Web page title
+- entries: object(content: string, title: string, date: datetime, permalink: string), generated HTML for each entry.
+  - entries is the list of items displayed in the current page,
+  - all_entries lists those for all pages.
+- rel_base_url: string, Relative url to base of site. May be empty or like ../../
+- last_gen_ts: the DateTime of when this page was generated
+- last_content_ts: the DateTime of the most recent post (based on the post's date, not the filesystem)
+- rig3_version: string, a version number or SVN info for this rig3 build
+- all_categories: list(string), all categories names.
+- tracking_code: Raw HTML for stats tracking (e.g. Google Analytics' tracking code) as defined per site-prefs.
+- month_pages: list((string,date)), URLs+date to the month pages in decreasing order.
+- alt_header: path to alternate HTML header (receives the same parameters)
+- all_categories: list of all categories
+- curr_category: name of current category (part of the categories list or empty for "all")
+
+No assumption is done on the actual data for an entry. It could be the entry
+itself, some SHTML entity or just about any textual thing.
+
+TODO:
+- layout: header, footer, associated links
+
+]]
+<div class="blog-name">[[html public_name]]</div>
+
+<p/>
+[[if curr_category == "bar"]]This is the BAR category[[end]]
+[[if curr_category == "foo"]]This is the FOO category[[end]]
+[[if not curr_category in ["bar", "foo"] ]]This is neither the BAR mor FOO category, it is [[html curr_category]]!![[end]] 
+<p/>
+
+<div class="categories">
+<a href="[[url rel_base_url]]">All</a>
+[[for cat in all_categories]] | <a href="[[url rel_base_url + "cat/" + cat]]/">[[html cat.capitalize()]]</a>[[end]]
+</div>
+
+<div class="rig_version">
+[[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
+Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by
+<a href="http://code.google.com/p/rig3/">Rig3 [[html rig3_version]]</a>
+</div>
+
