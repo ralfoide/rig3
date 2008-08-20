@@ -2,8 +2,14 @@
 #-----------------------------------------------------------------------------|
 """
 Unit tests for Rig3 site generation.
-This is a "live" test that actually generates data in testdat/live_dest.
-The destination directory is excluded from svn.
+
+This is a "live" test that actually generates data in testdata/live_dest.
+
+The destination directory (testdata/live_dest) is excluded from svn.
+
+Note that the whole point here is that the templates exercised are the
+"real" ones from rig3serv/templates. So this kinds of acts as a
+"test coverage" for the templates themselves.
 
 Part of Rig3.
 License GPL.
@@ -17,7 +23,7 @@ from rig3 import Rig3
 from rig.site.site_default import SiteDefault
 
 
-_DEST_DIR = "live_dest"  # in testdat dir
+_DEST_DIR = "live_dest"  # in testdata dir
 
 #------------------------
 class Rig3LiveTest(RigTestCase):
