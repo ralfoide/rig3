@@ -15,6 +15,9 @@ from rig.template.buffer import Buffer, _WS, _EOL
 from rig.template.node import *
 from rig.template.tag import *
 
+CONTEXT_FILENAME = "__template_filename__"
+CONTEXT_DIRS     = "__template_dirs__"
+
 #------------------------
 class _TagEnd(Tag):
     """
@@ -42,15 +45,26 @@ class Template(object):
         self.__InitTags()
         self.__InitFileSource(file, source)
 
-    def Generate(self, keywords):
+    def Generate(self, keywords, template_dirs=None):
         """
         Generate the template using the parsed content and the given
-        keywords, which is a dictionaries of variables to be used by the
+        keywords, which is a dictionary of variables to be used by the
         template.
+        
+        A copy of the keywords dictionary is made so that the calling one
+        be not modified.
+        
+        template_dirs is a list(string) of directories where to look
+        for templates when using the [[insert]] tag.
         """
         if self._nodes:
+            # override keyword with our internal values
             k = dict(keywords)
-            k["template_filename"] = self._filename
+            if self._filename:
+                k[CONTEXT_FILENAME] = self._filename
+            if template_dirs:
+                k[CONTEXT_DIRS] = template_dirs
+            # generate the template
             return self._nodes.Generate(self._log, k)
         else:
             return ""

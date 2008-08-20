@@ -12,6 +12,8 @@ __author__ = "ralfoide@gmail.com"
 
 from rig.site.site_default import SiteDefault
 
+THEME="ralf"
+
 #------------------------
 class SiteRalf(SiteDefault):
     """
@@ -26,7 +28,17 @@ class SiteRalf(SiteDefault):
         Returns the relative path to "path" under the default theme's template
         directory.        
         """
-        return super(SiteRalf, self)._TemplatePath(path, theme="default")
+        target = super(SiteRalf, self)._TemplatePath(path, theme=THEME)
+        if not os.path.exists(target):
+            target = super(SiteRalf, self)._TemplatePath(path, theme="default")
+        return target
+
+    def _TemplateThemeDirs(self, **keywords):
+        """
+        Add our custom directory to the theme directories.
+        """
+        default = super(SiteMagic, self)._TemplateThemeDirs(theme="default")
+        return [ os.path.join(self._TemplateDir(), THEME) ] + default
 
 
 #------------------------

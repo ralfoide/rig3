@@ -37,6 +37,7 @@ class ContentEntry(object):
         self.date = date
         self.permalink = permalink
 
+#------------------------
 class MonthPageItem(object):
     def __init__(self, url, date):
         self.url = url
@@ -783,8 +784,9 @@ class SiteDefault(SiteBase):
         """
         assert "theme" in keywords
         template_file = self._TemplatePath(path=template, **keywords)
+        template_dirs = self._TemplateThemeDirs(**keywords)
         template = Template(self._log, file=template_file)
-        result = template.Generate(keywords)
+        result = template.Generate(keywords, template_dirs=template_dirs)
         return result
 
     def _DateAndTitleFromTitle(self, title):

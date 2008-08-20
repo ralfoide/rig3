@@ -13,7 +13,7 @@ from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
 
-from rig.site.site_default import SiteDefault
+from rig.site.site_default import SiteDefault, ContentEntry
 from rig.site_base import DEFAULT_THEME, SiteItem
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
@@ -121,7 +121,12 @@ class SiteDefaultTest(RigTestCase):
 
         keywords = self.s.AsDict()
         keywords["title"] = "MyTitle"
-        keywords["entries"] = ["entry1", "entry2"]
+        keywords["entries"] = [
+           ContentEntry("content entry1", "entry1", None, "url1"),
+           ContentEntry("content entry2", "entry2", None, "url2") ]
+        keywords["curr_category"] = ""
+        keywords["all_categories"] = []
+        keywords["toc_categories"] = []
         keywords["last_gen_ts"] = datetime(2007, 11, 12, 14, 15, 16)
         keywords["last_content_ts"] = datetime(2001, 3, 14, 15, 9, 2)
         keywords["rig3_version"] = "3.1.4.15"
@@ -136,11 +141,15 @@ class SiteDefaultTest(RigTestCase):
             r"""<html lang="en-US">
                 <head>
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <link rel="stylesheet" type="text/css" href="media/style.css" />
                 <title>Test Album - MyTitle</title>
                 </head>
                 <body>
-                entry1
-                entry2
+                (placeholder for image header)<br/>
+                blog name is Test Album<br/>
+                categories are All<br/>
+                content entry1
+                content entry2
                 <p>
                 Most recent entry: 2001-03-14 15:09:02 --
                 Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig3 3.1.4.15</a> 

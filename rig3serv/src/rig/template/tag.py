@@ -210,20 +210,41 @@ class TagInsert(Tag):
         super(TagInsert, self).__init__(tag="insert", has_content=False)
     
     def Generate(self, log, tag_node, context):
-        path = eval(tag_node.Parameters(), dict(context))
+        filename = eval(tag_node.Parameters(), dict(context))
         
-        if not not path:
-            # if there's a template_filename setting in the context
-            # (set by Template.Generate()) and we can match a relative
-            # file, try to do so. Otherwise use as an absolute path.
-            if "template_filename" in context:
-                full = os.path.join(os.path.dirname(context["template_filename"]), path)
+        if not not filename:
+            template_file = None
+
+            from rig.template.template import CONTEXT_FILENAME, CONTEXT_DIRS
+
+            # if there's a list of template directories to use in the context
+            # look for the template in there first
+            for dir in context.get(CONTEXT_DIRS, []):
+                full = os.path.join(dir, filename)
                 if os.path.exists(full) and os.path.isfile(full):
-                    path = full
-            
+                    template_file = full
+                    break
+
+            if not template_file:            
+                # if there's a template_filename setting in the context
+                # (set by Template.Generate()) and we can match a relative
+                # file, try to do so.
+                if CONTEXT_FILENAME in context:
+                    full = os.path.join(os.path.dirname(context[CONTEXT_FILENAME]), filename)
+                    if os.path.exists(full) and os.path.isfile(full):
+                        template_file = full
+
+            if not template_file:
+                # was it an absolute path (or at least relative to PWD?
+                if os.path.exists(filename) and os.path.isfile(filename):
+                    template_file = filename
+
+            if not template_file:
+                raise IOError("Template '%s' not found for [[insert]] tag" % filename)
+
             from rig.template.template import Template
-            template = Template(log, file=path)
-            result = template.Generate(dict(context))
+            template = Template(log, file=template_file)
+            result = template.Generate(context)
             return result
         return ""
 

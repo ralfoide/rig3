@@ -1,6 +1,8 @@
 # Sites config file for z_last/test_rig3_live
 # all paths are relative to the testdata dir.
 # that's an issue for generated content, which should not be in the checked out dir
+#
+# ** All paths are relative to the testdata dir **
 
 [serve]
 sites = rig3_live

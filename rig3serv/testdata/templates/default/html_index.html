@@ -25,12 +25,19 @@ Relevant links:
 <html lang="en-US">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link rel="stylesheet" type="text/css" href="media/style.css" />
   <title>[[html public_name]] - [[html title]]</title>
 </head>
 <body>
-[[for entry in entries]]
-  [[raw entry]]
+
+[[insert html_header]]
+
+[[if curr_category in toc_categories]] [[insert html_toc]] [[end]]
+
+[[for html_entry in entries]]
+  [[raw html_entry.content]]
 [[end]]
+
 <p>
 [[if last_content_ts]]Most recent entry: [[html last_content_ts.strftime("%Y-%m-%d %H:%M:%S") ]] --[[end]]
 Generated on [[html last_gen_ts.strftime("%Y-%m-%d %H:%M:%S") ]] by

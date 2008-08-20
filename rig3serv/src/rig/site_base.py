@@ -211,6 +211,24 @@ class SiteBase(object):
             theme = self._settings.theme
         return os.path.join(self._TemplateDir(), theme, path)
 
+    def _TemplateThemeDirs(self, **keywords):
+        """
+        Returns the list(str) of all possibles directories matching the
+        current theme.
+        The theme name is looked for the keyword or in the current settings.
+        
+        In the base version, this is the same as the path used by
+        _TemplatePath. However derived implementations can add their own
+        custom template path to the list.
+        
+        This never returns None or an empty list.
+        """
+        if keywords and "theme" in keywords:
+            theme = keywords["theme"]
+        else:
+            theme = self._settings.theme
+        return [ os.path.join(self._TemplateDir(), theme) ]
+
     # Utilities, overridable for unit tests
 
     def _GollectCategories(self, site_items):
@@ -230,8 +248,16 @@ class SiteBase(object):
         return categories
 
     def _TemplateDir(self):
-        f = __file__
-        return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
+        """
+        Returns the template dir from the site settings.
+        If it doesn't exist, returns the path to the the implicit "templates"
+        directory relative to this source file.
+        """
+        if self._settings.template_dir:
+            return self._settings.template_dir
+        else:
+            f = __file__
+            return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
 
     def _MkDestDir(self, rel_dir):
         """

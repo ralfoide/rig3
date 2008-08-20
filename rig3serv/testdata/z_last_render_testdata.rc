@@ -1,15 +1,18 @@
-# Sites config file for z_last/test_rig3_live
+# Sites config file for z_last/render_testdata
 # all paths are relative to the testdata dir.
 # that's an issue for generated content, which should not be in the checked out dir
+#
+# ** All paths are relative to the testdata dir **
 
 [serve]
 sites = test_default, test_magic
 
 [DEFAULT]
-sources     = dir:album, file:album
-base_url    =
-cat_filter  = !exclude-me
-rig_base    = http://rig.base.url/photos/index.php
+sources      = dir:album, file:album
+base_url     =
+template_dir = templates
+cat_filter   = !exclude-me
+rig_base     = http://rig.base.url/photos/index.php
 tracking_code = <i>tracking code here</i>
 toc_categories = bar
 reverse_categories = bar

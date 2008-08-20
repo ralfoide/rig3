@@ -28,6 +28,7 @@ class SiteSettings(object):
     - source_list (list SourceBase): List of SourceBase reeaders
     - dest_dir (str): Path of where to generate content. Can be relative or absolute.
     - theme (str): Name of the theme to use, must match a directory in templates.
+    - template_dir (str): Path of the templates directory. Can be relative or absolute.
     - base_url (str): URL where the site will be published, in case templates wants to use that.
       Will be used as-is, so you probably want to terminate it with a / separator.
     - rig_base(string): An http:// URL for the base of your RIG album.
@@ -65,6 +66,7 @@ class SiteSettings(object):
                  source_list=None,
                  dest_dir=None,
                  theme=DEFAULT_THEME,
+                 template_dir=None,
                  base_url=None,
                  rig_base=None,
                  rig_album_url="%(rig_base)s?album=%(album)s",
@@ -86,6 +88,7 @@ class SiteSettings(object):
         self.source_list = source_list or []
         self.dest_dir = dest_dir
         self.theme = theme
+        self.template_dir = template_dir
         self.base_url = base_url
         self.rig_base = rig_base
         self.rig_album_url = rig_album_url
