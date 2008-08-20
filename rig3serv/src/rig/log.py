@@ -115,10 +115,21 @@ class Log(object):
 
     def Close(self):
         """
-        Shutdown the logger.
+        Close the logger by flushing and closing all of its handlers.
         """
         if self._logger:
-            logging.shutdown()
+            # There is no logger.close() method. There is however an
+            # handler.close() method so we close each hangler individually
+            # as we remove them.
+            logger= self._logger
+            for handler in logger.handlers:
+                logger.removeHandler(handler)
+                handler.flush()
+                handler.close()
+
+            # Do not invoke logging.shutdown() here. It behaves badly in
+            # unit tests. Besides the logging module has its own atexit
+            # handling to cope with it.
             self._logger = None
 
     def SetLevel(self, level):
