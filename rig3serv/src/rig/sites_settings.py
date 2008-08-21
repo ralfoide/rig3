@@ -21,6 +21,135 @@ DEFAULT_ITEMS_PER_PAGE = 20  # Default for settings.num_item_index and settings.
 
 
 #------------------------
+class IncludeExclude(object):
+    ALL = "*"
+    NOTAG = "$"
+    EXCLUDE = "!"
+
+    def __init__(self, include=None, exclude=None):
+        self._include = include
+        self._exclude = exclude
+    
+    def Matches(self, cats):
+        """
+        For the given list of categories that apply to a post, check if they
+        match against the current include/exclude list: if one is excluded,
+        the whole thing is rejected. They must all be included for it to match.
+        
+        Returns true if it matches.
+        """
+        # First apply exclusions... the first match makes the test fail
+        exc = self._exclude
+        if exc == IncludeExclude.ALL:
+            return False  # everything is excluded
+        elif exc:
+            if not cats and IncludeExclude.NOTAG in exc:
+                return False  # exclude posts with no tags
+            for cat in cats:
+                if cat in exc:
+                    return False  # some word is excluded
+
+        # Then process inclusions... one of them must be there.
+        inc = self._include
+        if not inc or inc == IncludeExclude.ALL:
+            return True  # default is to match everything
+        if not cats and IncludeExclude.NOTAG in inc:
+            return True  # include posts with no tags
+        for cat in cats:
+            if cat in inc:
+                return True  # some word is included
+        return False  # no inclusion worked
+
+    def Filter(self, all_cats):
+        """
+        For a given list of all possible categories, start with those that
+        can be included, then removes what needs to be excluded.
+        
+        Returns a list(str) of all what matches. The list can be empty but
+        not none. 
+        """
+        exc = self._exclude
+        if exc == IncludeExclude.ALL:
+            return [] # everything is excluded
+
+        inc = self._include
+        if not inc or inc == IncludeExclude.ALL or IncludeExclude.NOTAG in inc:
+            # default is to accept everything
+            result = list(all_cats)
+        else:
+            # apply inclusions
+            result = [c for c in all_cats if c in inc]
+
+        if exc:
+            result = [c for c in result if not c in exc]
+
+        return result
+
+    def __contains__(self, cat):
+        return cat in self.Filter([ cat ])
+
+    def Set(self, name, words):
+        """
+        Processes a "filter" variable from the settings and builds the
+        corresponding include/exclude list in the site's defaults.
+        
+        Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
+        The "all" exclusion trumps everything else.
+        The "all" inclusion trumps all other inclusions.
+        """
+        _ALL = IncludeExclude.ALL
+        _NOTAG = IncludeExclude.NOTAG
+        _EXCLUDE = IncludeExclude.EXCLUDE
+        default_exclude = self._exclude
+        default_include = self._include
+        cat_exclude = {}
+        cat_include = {}
+        if words:
+            # split on whitespace or comma
+            # categories are case insensitive
+            words = _CAT_FILTER_SEP.split(words.lower())
+        if not words:
+            return (None, None)
+        for word in words:
+            if not word:
+                continue
+            if word.startswith(_EXCLUDE) and cat_exclude != _ALL:
+                exc = word[1:]
+                if not exc or exc == _EXCLUDE:
+                    self._log.Error("Invalid '%s' word '%s'. Valid exclude "
+                                    "patterns are !* (exclude all), !$ (exclude non-tagged) "
+                                    "or !word (exclude 'word')", name, word)
+                    continue
+                if exc == _ALL:
+                    # Shortcut for a site that excludes everything... we're done!
+                    self._exclude = exc
+                    self._include = None
+                    return
+                else:
+                    cat_exclude[exc] = True
+            elif cat_include != _ALL:
+                if word == _ALL:
+                    cat_include = word
+                else:
+                    cat_include[word] = True
+
+        # reset defaults
+        if not cat_include:
+            if default_include == _ALL:
+                cat_include = _ALL
+            else:
+                cat_include = None
+        if not cat_exclude:
+            if not cat_include and default_exclude == _ALL:
+                cat_exclude = _ALL
+            else:
+                cat_exclude = None
+        
+        self._exclude = cat_exclude
+        self._include = cat_include
+
+
+#------------------------
 class SiteSettings(object):
     """
     Settings for one site with defaults:
@@ -42,25 +171,18 @@ class SiteSettings(object):
     - header_img_url (str): Full URL for the header image. If not present, the default one from
       the theme will be used.
     - header_img_height (int): The height of the header_img. Default is 185.
-    - cat_exclude: A dict of category words to exclude. Empty or None to exclude nothing,
-                   CAT_ALL to exclude everything, CAT_NOTAG to exclude all non-tagged.
-                   Note that the values in the dictionnary are irrelevant, only keys matter.
-    - cat_include: A dict of category words to include. Empty or None or CAT_ALL to include all,
-                   CAT_NOTAG to include all non-tagged.
-                   Note that the values in the dictionnary are irrelevant, only keys matter.
+    - cat_filter(IncludeExclude): An inclusion-exclusion list.
     - img_gen_script (string): An optional script to execute to generate images
     - num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
     - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
     - html_header (string): Path to HTML header. Default is "html_header.html"
-    - toc_categories: A list of categories for which to insert a TOC to their pages.
+    - toc_categories(IncludeExclude): An inclusion-exclusion list of categories for
+                    which to insert a TOC to their pages.
                     Default is none of them.
-    - reverse_categories: A list of categories to display in reverse date order (i.e. incremental).
+    - reverse_categories(IncludeExclude): An inclusion-exclusion list of categories
+                    to display in reverse date order (i.e. incremental).
                     Default is to display in decrementing date.
     """
-    CAT_ALL = "*"
-    CAT_NOTAG = "$"
-    CAT_EXCLUDE = "!"
-
     def __init__(self,
                  public_name="",
                  source_list=None,
@@ -76,14 +198,13 @@ class SiteSettings(object):
                  header_img_url="",
                  header_img_height=185,
                  tracking_code="",
-                 cat_exclude=None,
-                 cat_include=None,
+                 cat_filter=IncludeExclude(IncludeExclude.ALL, None),
                  img_gen_script="",
                  num_item_page=DEFAULT_ITEMS_PER_PAGE,
                  num_item_atom=DEFAULT_ITEMS_PER_PAGE,
                  html_header="html_header.html",
-                 toc_categories=[],
-                 reverse_categories=[]):
+                 toc_categories=IncludeExclude(None, IncludeExclude.ALL),
+                 reverse_categories=IncludeExclude(None, IncludeExclude.ALL)):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -98,8 +219,7 @@ class SiteSettings(object):
         self.header_img_url = header_img_url
         self.header_img_height = int(header_img_height)
         self.tracking_code = tracking_code
-        self.cat_exclude = cat_exclude
-        self.cat_include = cat_include
+        self.cat_filter = cat_filter
         self.img_gen_script = img_gen_script
         self.num_item_page = int(num_item_page)
         self.num_item_atom = int(num_item_atom)
@@ -148,8 +268,6 @@ class SitesSettings(SettingsBase):
         vars = self.Items(site_name)
         self._ProcessDefaults(s, vars)
         self._ProcessSources(s, vars)
-        self._ProcessCatFilter(s, vars)
-        self._ReformatLists(s)
         return s
 
     def _ProcessDefaults(self, settings, vars):
@@ -169,7 +287,10 @@ class SitesSettings(SettingsBase):
         """
         for k in settings.__dict__.iterkeys():
             try:
-                settings.__dict__[k] = vars[k]
+                if isinstance(settings.__dict__[k], IncludeExclude):
+                    settings.__dict__[k].Set(k, vars[k])
+                else:
+                    settings.__dict__[k] = vars[k]
             except KeyError:
                 pass  # preserve defaults from SiteSettings.__init__
 
@@ -219,82 +340,6 @@ class SitesSettings(SettingsBase):
                        settings.public_name,
                        ",".join([repr(s) for s in settings.source_list]))
 
-    def _ProcessCatFilter(self, s, vars):
-        """
-        Processes a "cat_filter" variable from the settings and builds the
-        corresponding cat_exclude and cat_include lists in the site's defaults.
-        """
-        s.cat_include, s.cat_exclude = self._ProcessFilter(
-                                   "cat_filter", vars.get("cat_filter", None))
-
-    def _ProcessFilter(self, name, words):
-        """
-        Processes a "filter" variable from the settings and builds the
-        corresponding cat_exclude and cat_include lists in the site's defaults.
-        
-        Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
-        The "all" exclusion trumps everything else.
-        The "all" inclusion trumps all other inclusions.
-        """
-        _ALL = SiteSettings.CAT_ALL
-        _NOTAG = SiteSettings.CAT_NOTAG
-        _EXCLUDE = SiteSettings.CAT_EXCLUDE
-        cat_exclude = {}
-        cat_include = {}
-        if words:
-            # split on whitespace or comma
-            # categories are case insensitive
-            words = _CAT_FILTER_SEP.split(words.lower())
-        if not words:
-            return (None, None)
-        for word in words:
-            if not word:
-                continue
-            if word.startswith(_EXCLUDE) and cat_exclude != _ALL:
-                exc = word[1:]
-                if not exc or exc == _EXCLUDE:
-                    self._log.Error("Invalid '%s' word '%s'. Valid exclude "
-                                    "patterns are !* (exclude all), !$ (exclude non-tagged) "
-                                    "or !word (exclude 'word')", name, word)
-                    continue
-                if exc == _ALL:
-                    # Shortcut for a site that excludes everything... we're done!
-                    cat_exclude = exc
-                    cat_include = None
-                    return (cat_include, cat_exclude)
-                else:
-                    cat_exclude[exc] = True
-            elif cat_include != _ALL:
-                if word == _ALL:
-                    cat_include = word
-                else:
-                    cat_include[word] = True
-        if not cat_include or cat_include == _ALL:
-            cat_include = None
-        if not cat_exclude:
-            cat_exclude = None
-        return (cat_include, cat_exclude)
-
-    def _ReformatLists(self, s):
-        """
-        Some variables are lists. Transform the string, which was read from
-        the pref file, to an actual python list of strings.
-        """
-        s.toc_categories = self._SplitCatList(s.toc_categories)
-        s.reverse_categories = self._SplitCatList(s.reverse_categories)
-
-    def _SplitCatList(self, string):
-        """
-        Transform the input string into a list of strings.
-        If the input is none or empty, returns an empty list.
-        
-        List word separators are whitespace and comma.
-        The words are made all lower case (for category names).
-        """
-        a = []
-        if string:
-            a = [w for w in _CAT_FILTER_SEP.split(string.strip().lower()) if w]
-        return a
 
 #------------------------
 # Local Variables:

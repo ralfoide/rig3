@@ -1,5 +1,7 @@
 ---- TODO ----
 
+20080820 Engine:   Toc setting to allow exclusions
+
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
 
@@ -8,8 +10,6 @@
 20071225 Template: Placeholder ralf theme (deriving from default)
 20071225 Engine:   Site settings, Override integrated dir/file regexp filters
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
-
-20071226 Tests:    UTs for SiteRalf / SiteMagic
 
 20071123 Engine:   Source izu-blog files
 20071123 Izu:      Multi-level List <ul>

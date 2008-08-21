@@ -14,7 +14,73 @@ from tests.rig_test_case import RigTestCase
 
 import rig3
 from rig.source_reader import SourceDirReader, SourceFileReader
-from rig.sites_settings import SitesSettings, SiteSettings
+from rig.sites_settings import SitesSettings, SiteSettings, IncludeExclude
+
+#------------------------
+class IncludeExcludeTest(RigTestCase):
+    def testProcessIncludeExclude(self):
+        s = IncludeExclude()
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "inc" })
+        self.assertDictEquals({ "inc": True }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "*" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "$" })
+        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!exc" })
+        self.assertEquals(None, s.cat_include)
+        self.assertDictEquals({ "exc": True }, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!*" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "!$" })
+        self.assertEquals(None, s.cat_include)
+        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "abc !def $ foo !$ !bfg !foo" })
+        self.assertDictEquals({ "abc": True, SiteSettings.CAT_NOTAG: True, "foo": True }, s.cat_include)
+        self.assertDictEquals({ "def": True, SiteSettings.CAT_NOTAG: True, "bfg": True, "foo": True }, s.cat_exclude)
+
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
+        self.assertEquals(None, s.cat_include)
+        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
+        
+        # category names are case-insenstive, they are internally all lower-case
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "foo Foo FooBar Bar bAr bar" })
+        self.assertDictEquals({ "foo": True, "bar": True, "foobar": True }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
+
+        # categories can be comma-separated or whitespace separated
+        s = IncludeExclude()
+        self.m._ProcessCatFilter(s, { "cat_filter": "   a,b c d\te,f,,g  h\t\ti , \t j " })
+        self.assertDictEquals({ "a": True, "b": True, "c": True, "d": True,
+                                "e": True, "f": True, "g": True, "h": True,
+                                "i": True, "j": True, }, s.cat_include)
+        self.assertEquals(None, s.cat_exclude)
 
 #------------------------
 class SitesSettingsTest(RigTestCase):
@@ -117,79 +183,6 @@ class SitesSettingsTest(RigTestCase):
             s.source_list[1]._source_settings.OverrideDict())
         self.assertDictEquals( { "rig_base": "http://some/url" },
             s.source_list[2]._source_settings.OverrideDict())
-
-    def testProcessCatFilter(self):
-        s = SiteSettings()
-        self.assertEquals(None, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "" })
-        self.assertEquals(None, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "inc" })
-        self.assertDictEquals({ "inc": True }, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "*" })
-        self.assertEquals(None, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "$" })
-        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "!exc" })
-        self.assertEquals(None, s.cat_include)
-        self.assertDictEquals({ "exc": True }, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "!*" })
-        self.assertEquals(None, s.cat_include)
-        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "!$" })
-        self.assertEquals(None, s.cat_include)
-        self.assertDictEquals({ SiteSettings.CAT_NOTAG: True }, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "abc !def $ foo !$ !bfg !foo" })
-        self.assertDictEquals({ "abc": True, SiteSettings.CAT_NOTAG: True, "foo": True }, s.cat_include)
-        self.assertDictEquals({ "def": True, SiteSettings.CAT_NOTAG: True, "bfg": True, "foo": True }, s.cat_exclude)
-
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "abc * def $ !foo !* !$ !bfg" })
-        self.assertEquals(None, s.cat_include)
-        self.assertEquals(SiteSettings.CAT_ALL, s.cat_exclude)
-        
-        # category names are case-insenstive, they are internally all lower-case
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "foo Foo FooBar Bar bAr bar" })
-        self.assertDictEquals({ "foo": True, "bar": True, "foobar": True }, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-        # categories can be comma-separated or whitespace separated
-        s = SiteSettings()
-        self.m._ProcessCatFilter(s, { "cat_filter": "   a,b c d\te,f,,g  h\t\ti , \t j " })
-        self.assertDictEquals({ "a": True, "b": True, "c": True, "d": True,
-                                "e": True, "f": True, "g": True, "h": True,
-                                "i": True, "j": True, }, s.cat_include)
-        self.assertEquals(None, s.cat_exclude)
-
-    def testSplitCatList(self):
-        sites_set = SitesSettings(self.Log())
-        self.assertListEquals([], sites_set._SplitCatList(None))
-        self.assertListEquals([], sites_set._SplitCatList(""))
-        self.assertListEquals([], sites_set._SplitCatList(" \t \f   "))
-
-        self.assertListEquals(["cat1", "cat3", "foo", "blah", "temp"],
-                              sites_set._SplitCatList(" cat1, cat3 foo\t blah \ttemp,  "))
 
     def testReformatLists(self):
         sites_set = SitesSettings(self.Log())

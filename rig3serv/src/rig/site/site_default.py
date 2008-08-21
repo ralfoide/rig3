@@ -186,6 +186,7 @@ class SiteDefault(SiteBase):
         keywords["last_gen_ts"] = datetime.today()
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
+        keywords["toc_categories"] = self._settings.toc_categories.Filter(all_categories)
         keywords["month_pages"] = month_pages
         keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
@@ -390,6 +391,7 @@ class SiteDefault(SiteBase):
         keywords["last_gen_ts"] = datetime.today()
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
+        keywords["toc_categories"] = self._settings.toc_categories.Filter(all_categories)
         keywords["month_pages"] = month_pages
         keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
@@ -517,7 +519,7 @@ class SiteDefault(SiteBase):
 
         # Are item categories accepted on this site?
         cats = tags.get("cat", {}).keys()
-        if not self._AcceptCategories(cats, self._settings):
+        if not self._settings.cat_filter.Matches(cats):
             return None
         cats.sort()
 
@@ -824,42 +826,6 @@ class SiteDefault(SiteBase):
             # this your title or adjust the regexps for your site.
             self._log.Exception("Failed to extract date from title '%s': %s", title, str(e))
             raise
-
-    def _AcceptCategories(self, cats, _settings):
-        """
-        This applies the category filters (includes & excludes) from the site's settings
-        to the given list of categories of a given post.
-        
-        Parameters:
-        - cats(list): A list of tag. List can be empty but not None.
-        - settings(SiteSettings): A site's settings. Only cat_include and cat_exclude matter.
-
-        Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
-        
-        Returns true if the post should be accepted, and false if the post should
-        be filtered out.
-        """
-        # First apply exclusions... the first match makes the test fail
-        exc = _settings.cat_exclude
-        if exc == SiteSettings.CAT_ALL:
-            return False  # everything is excluded
-        elif exc:
-            if not cats and SiteSettings.CAT_NOTAG in exc:
-                return False  # exclude posts with no tags
-            for cat in cats:
-                if cat in exc:
-                    return False  # some word is excluded
-
-        # Then process inclusions... one of them must be there.
-        inc = _settings.cat_include
-        if not inc:
-            return True  # default is to match everything
-        if not cats and SiteSettings.CAT_NOTAG in inc:
-            return True  # include posts with no tags
-        for cat in cats:
-            if cat in inc:
-                return True  # some word is included
-        return False  # no inclusion worked
 
 #------------------------
 # Local Variables:
