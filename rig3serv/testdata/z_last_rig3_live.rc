@@ -18,5 +18,5 @@ rig_base    = http://rig.base.url/photos/index.php
 theme = default
 public_name = Rig3 Live
 tracking_code = <i>tracking code here</i>
-toc_categories = bar
+toc_categories = !foo
 reverse_categories = bar

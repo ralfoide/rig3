@@ -358,7 +358,6 @@ class SiteDefaultTest(RigTestCase):
                       "rig_album_url",
                       "img_gen_script",
                       "entries",
-                      "cat_include",
                       "last_content_ts",
                       "rig_img_size",
                       "month_pages",
@@ -371,86 +370,10 @@ class SiteDefaultTest(RigTestCase):
                       "theme",
                       "all_categories",
                       "dest_dir",
-                      "cat_exclude",
+                      "cat_filter",
+                      "toc_categories",
                       "last_gen_ts" ]:
             self.assertTrue(key in params[SiteDefault._TEMPLATE_HTML_INDEX][0], "Missing [%s] in %s" % (key, params))
-
-    def testAcceptCategories(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        y = SitesSettings(self.Log())
-
-        # default is accept all
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "" })
-        self.assertTrue(m._AcceptCategories([], s))
-        self.assertTrue(m._AcceptCategories([ "toto" ], s))
-        self.assertTrue(m._AcceptCategories([ "foobar" ], s))
-        self.assertTrue(m._AcceptCategories([ "foo" ], s))
-        self.assertTrue(m._AcceptCategories([ "bar" ], s))
-        self.assertTrue(m._AcceptCategories([ "foo", "bar" ], s))
-
-        # exclude no-tags
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "!$" })
-        self.assertFalse(m._AcceptCategories([], s))
-        self.assertTrue (m._AcceptCategories([ "toto" ], s))
-        self.assertTrue (m._AcceptCategories([ "foobar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo" ], s))
-        self.assertTrue (m._AcceptCategories([ "bar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo", "bar" ], s))
-
-        # inclusion is an "OR" operation: at least one must match
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "foo bar" })
-        self.assertFalse(m._AcceptCategories([], s))
-        self.assertFalse(m._AcceptCategories([ "toto" ], s))
-        self.assertFalse(m._AcceptCategories([ "foobar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo" ], s))
-        self.assertTrue (m._AcceptCategories([ "bar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo", "bar" ], s))
-        self.assertTrue (m._AcceptCategories([ "toto", "bar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo", "tata" ], s))
-
-        # accept no-tags
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "foo bar $" })
-        self.assertTrue (m._AcceptCategories([], s))
-        self.assertFalse(m._AcceptCategories([ "toto" ], s))
-        self.assertFalse(m._AcceptCategories([ "foobar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo" ], s))
-        self.assertTrue (m._AcceptCategories([ "bar" ], s))
-        self.assertTrue (m._AcceptCategories([ "foo", "bar" ], s))
-
-        # exclude all
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "foo bar !*" })
-        self.assertFalse(m._AcceptCategories([], s))
-        self.assertFalse(m._AcceptCategories([ "toto" ], s))
-        self.assertFalse(m._AcceptCategories([ "foobar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo" ], s))
-        self.assertFalse(m._AcceptCategories([ "bar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo", "bar" ], s))
-
-        # exclusion takes precedence
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "foo bar !foo" })
-        self.assertFalse(m._AcceptCategories([], s))
-        self.assertFalse(m._AcceptCategories([ "toto" ], s))
-        self.assertFalse(m._AcceptCategories([ "foobar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo" ], s))
-        self.assertTrue (m._AcceptCategories([ "bar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo", "bar" ], s))
-
-        # only exclusion
-        s = SiteSettings()
-        y._ProcessCatFilter(s, { "cat_filter": "!foo !bar" })
-        self.assertTrue (m._AcceptCategories([], s))
-        self.assertTrue (m._AcceptCategories([ "toto" ], s))
-        self.assertTrue (m._AcceptCategories([ "foobar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo" ], s))
-        self.assertFalse(m._AcceptCategories([ "toto", "foo" ], s))
-        self.assertFalse(m._AcceptCategories([ "bar" ], s))
-        self.assertFalse(m._AcceptCategories([ "foo", "bar" ], s))
 
     def testRigAlbumLink(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
