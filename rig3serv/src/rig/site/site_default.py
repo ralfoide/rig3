@@ -211,11 +211,10 @@ class SiteDefault(SiteBase):
                 content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
                 entry = ContentEntry(content, j.title, j.date, j.permalink)
                 entries.append(entry)
+                all_entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             i += num_item_page
-            
             pages.append((filename, entries, older_date))
-            all_entries.extend(entries)
 
         keywords["all_entries"] = all_entries
             
@@ -412,12 +411,11 @@ class SiteDefault(SiteBase):
                 content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
                 entry = ContentEntry(content, j.title, j.date, j.permalink)
                 entries.append(entry)
+                all_entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
-                
             pages.append((filename, entries, older_date))
-            all_entries.extend(entries)
             
-        keywords["all_entries"]= all_entries
+        keywords["all_entries"] = all_entries
 
         for page in pages:
             filename = page[0]
