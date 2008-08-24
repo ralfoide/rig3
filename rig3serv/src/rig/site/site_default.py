@@ -198,8 +198,6 @@ class SiteDefault(SiteBase):
 
         n = len(relevant_items)
         np = n / num_item_page
-        if max_num_pages > 0:
-            np = min(np, max_num_pages - 1)
         i = 0
         for p in xrange(0, np + 1):
             filename = "index%s.html" % (p > 0 and p or "")
@@ -217,6 +215,9 @@ class SiteDefault(SiteBase):
             pages.append((filename, entries, older_date))
 
         keywords["all_entries"] = all_entries
+
+        if max_num_pages > 0:
+            pages = pages[0:max_num_pages]
             
         for page in pages:
             filename = page[0]

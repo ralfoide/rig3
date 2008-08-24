@@ -433,6 +433,17 @@ class SiteDefaultTest(RigTestCase):
             "index.html", "atom.xml" ],
           m.GetWriteFileData(m._LEAFNAME))
 
+        # check that "all_entries" in index & month pages contain the full list
+        # of items, not just the ones for the page (i.e. all_entries != entries)
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_MONTH in m._fill_template_params)
+        for keywords in m._fill_template_params[SiteDefault._TEMPLATE_HTML_MONTH]:
+            self.assertEquals(len(items), len(keywords["all_entries"]))
+
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        for keywords in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]:
+            self.assertEquals(len(items), len(keywords["all_entries"]))
+        
+
         # print items with only one category, this does not generate
         # category indexes.
         items = []

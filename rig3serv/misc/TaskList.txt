@@ -27,6 +27,7 @@
 
 ---- Done Version 0.3 ----
 
+20080823 Fix:      Toc displays all entries in index
 20080821 Engine:   Toc setting to allow exclusions
 20080820 Fix:      Fixed template inheritance and support it in [[insert]] tag
 20080820 Tests:    Render using test data, with customized theme
