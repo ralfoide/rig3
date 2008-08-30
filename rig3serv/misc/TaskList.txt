@@ -27,6 +27,7 @@
 
 ---- Done Version 0.3 ----
 
+20080830 Template: Added .content.html css style; add comments to CSS file.
 20080823 Fix:      Toc displays all entries in index
 20080821 Engine:   Toc setting to allow exclusions
 20080820 Fix:      Fixed template inheritance and support it in [[insert]] tag

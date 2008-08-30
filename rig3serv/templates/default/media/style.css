@@ -6,11 +6,13 @@ Receives the following template variables:
 - public_name: the blog's name
 ]]
 
+/* The body of the HTML page */
 body {
 	color: #29303B;
 	background: #F3F6ED url([[raw base_url]]media/content_bg.gif) repeat;
 }
 
+/* Title header at the top */
 .header {
 	text-align: center;
 	width: 100%;
@@ -24,6 +26,7 @@ body {
 	/* border: #fc9 1px solid; */
 }
 
+/* Rectangle with the blog name */
 .blog-name {
 	text-align: center;
 	width: 100%;
@@ -43,13 +46,9 @@ body {
 	margin-bottom: 0.5em;
 }
 
+/* Blog entry rectangle */
 .entry {
 	padding-bottom: 1em; 
-  /* margin-left: 1em; --TEST removed */
-}
-
-.izu {
-  display: inline;
 }
 
 .entry table.deco {
@@ -77,12 +76,10 @@ body {
   border-bottom: 2px solid #050;
   border-right:  2px solid #050;
   -moz-border-radius-bottomleft: 10px;
-  /* -moz-border-radius-bottomright: 10px; */
 }
 
 .entry table.deco td.left-bottom {
   border-radius-bottomleft: 10px;
-  /* border-radius-bottomright: 10px; */
 }
 
 .entry table.deco td.right-bottom {
@@ -107,12 +104,11 @@ body {
   border-bottom: 2px solid #050;
 
   -moz-border-radius-topright: 10px;
-  /* -moz-border-radius-bottomright: 10px; */
 }
 
+/* Blog item title rectangle */
 .entry .title {
   border-radius-topright: 10px;
-  /* border-radius-bottomright: 10px; */
 }
 
 .entry .title a:link {
@@ -135,26 +131,41 @@ body {
 	font-weight: normal;
 }
 
+/* Common rules to all content styles (customized below) */
 .content {
 	padding-bottom: 1em;
 }
 
+/* Images in actual content */
 .content.image {
 	text-align: center;
 	width: 100%;
 }
 
+/* Header for content (e.g. "by Xyz in categories blah") */
 .content.intro {
 	font-size: smaller;
 	padding-left: 1em;
 	padding-bottom: 0.5em;
 }
 
+/* Content that comes from an HTML file */
+.content.html {
+    margin-left: 1em;
+}
+
+/* Content that comes from an IZU file. */
+.content .izu {
+    display: inline;
+}
+
+/* Image table, auto-generated from directories */
 .image-table {
 	text-align: center;
 	width: 100%;
 }
 
+/* Flag for language-specific IZU content, e.g. .content.en or .content.fr */
 table.content td.flag {
 	vertical-align: top;
 }

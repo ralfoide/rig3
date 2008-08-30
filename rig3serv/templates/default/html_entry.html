@@ -40,7 +40,11 @@ Parameters:
 <td>[[raw sections["fr"] ]]</td></tr></table>
 [[end]]
 
-[[if "html" in sections]][[raw sections["html"] ]][[end]]
+[[if "html" in sections]]
+<div class="content html">
+[[raw sections["html"] ]]
+</div>
+[[end]]
 
 [[if "images" in sections]]
 <div class="content images">
