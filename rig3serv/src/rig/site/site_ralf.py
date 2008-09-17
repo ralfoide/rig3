@@ -10,6 +10,7 @@ License GPL.
 """
 __author__ = "ralfoide@gmail.com"
 
+import os
 from rig.site.site_default import SiteDefault
 
 THEME="ralf"
@@ -37,7 +38,7 @@ class SiteRalf(SiteDefault):
         """
         Add our custom directory to the theme directories.
         """
-        default = super(SiteMagic, self)._TemplateThemeDirs(theme="default")
+        default = super(SiteRalf, self)._TemplateThemeDirs(theme="default")
         return [ os.path.join(self._TemplateDir(), THEME) ] + default
 
 
