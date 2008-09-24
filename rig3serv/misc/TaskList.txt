@@ -1,5 +1,10 @@
 ---- TODO ----
 
+20080907 Bug:      "reverse_categories = !kw1,!kw2" not working (MM#2)
+20080907 Bug:      Atom feed for category says "All items" (MM#3)
+20080907 Bug:      izu rigimg not working properly (MM#4)
+20080922 Bug:      Replace _ by space in post titles (MM#5)
+
 20071225 Engine:   Site settings, Disable auto-image insertion
 20071225 Engine:   Site settings, Hidden categories
 
