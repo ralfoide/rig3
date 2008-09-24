@@ -797,34 +797,41 @@ class SiteDefault(SiteBase):
         - a tuple (datetime, title)
         - or (None, original title)
         """
+        dt = None
+        ti = title
         m = self._DATE_YMD.match(title)
-        if not m:
-            return (None, title)
-        try:
-            return (datetime(int(m.group("year" ) or 0),
-                             int(m.group("month") or 0),
-                             int(m.group("day"  ) or 0),
-                             int(m.group("hour" ) or 0),
-                             int(m.group("min"  ) or 0),
-                             int(m.group("sec"  ) or 0)),
-                    (m.group("rest") or "").strip().strip("_"))
-        except ValueError, e:
-            self._log.Warn("Failed to extract date from title '%s': %s", title, str(e))
+
+        if m:
+            ti = (m.group("rest") or "")
+            try:
+                dt = datetime(int(m.group("year" ) or 0),
+                              int(m.group("month") or 0),
+                              int(m.group("day"  ) or 0),
+                              int(m.group("hour" ) or 0),
+                              int(m.group("min"  ) or 0),
+                              int(m.group("sec"  ) or 0))
+            except ValueError, e:
+                self._log.Warn("Failed to extract date from title '%s': %s", title, str(e))
         
-        # Fall back, trying again without the time part
-        try:
-            return (datetime(int(m.group("year" ) or 0),
-                             int(m.group("month") or 0),
-                             int(m.group("day"  ) or 0),
-                             0,
-                             0,
-                             0),
-                    (m.group("rest") or "").strip().strip("_"))
-        except ValueError, e:
-            # This time we don't ignore it. If you get an exception here, please
-            # this your title or adjust the regexps for your site.
-            self._log.Exception("Failed to extract date from title '%s': %s", title, str(e))
-            raise
+            # Fall back, trying again without the time part
+            try:
+                if dt is None:
+                    dt = datetime(int(m.group("year" ) or 0),
+                                  int(m.group("month") or 0),
+                                  int(m.group("day"  ) or 0),
+                                  0,
+                                  0,
+                                  0)
+            except ValueError, e:
+                # This time we don't ignore it. If you get an exception here, please
+                # check your title or adjust the regexps for your site.
+                self._log.Exception("Failed to extract date from title '%s': %s", title, str(e))
+                raise
+
+        # get the title, replacing all underscores by spaces
+        # also collapse all whitespace to single space
+        ti = re.sub("[ _\t\f\r\n]+", " ", ti)
+        return (dt, ti.strip())
 
 #------------------------
 # Local Variables:

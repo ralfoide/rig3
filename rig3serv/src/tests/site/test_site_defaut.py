@@ -202,6 +202,11 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007/10/27 12:13:14"))
         self.assertEquals((datetime(2007, 10, 27, 12, 13, 14), ""), m._DateAndTitleFromTitle("2007-10/27,12/13/14"))
 
+        self.assertEquals((None, "white space"),  m._DateAndTitleFromTitle("_white space_"))
+        self.assertEquals((None, "white space"),  m._DateAndTitleFromTitle("_white_space_"))
+        self.assertEquals((None, "white space"),  m._DateAndTitleFromTitle("  ___\twhite_\r\n\f_  __space_   \r\t\n\f___ "))
+
+
     def testDateAndTitleFromTitle_ErrorCases(self):
         m = MockSiteDefault(self, self.Log(), False, self.s)
 
