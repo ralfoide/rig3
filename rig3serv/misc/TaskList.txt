@@ -1,7 +1,6 @@
 ---- TODO ----
 
 20080907 Bug:      "reverse_categories = !kw1,!kw2" not working (MM#2)
-20080907 Bug:      Atom feed for category says "All items" (MM#3)
 20080907 Bug:      izu rigimg not working properly (MM#4)
 
 20071225 Engine:   Site settings, Disable auto-image insertion
@@ -31,6 +30,7 @@
 
 ---- Done Version 0.3 ----
 
+20080907 Bug Fix:  Atom feed for category says "All items" (MM#3) [same for html]
 20080922 Bug Fix:  Replace _ by space in post titles (MM#5)
 20080830 Template: Added .content.html css style; add comments to CSS file.
 20080823 Fix:      Toc displays all entries in index

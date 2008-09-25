@@ -180,7 +180,13 @@ class SiteDefault(SiteBase):
             num_item_page = DEFAULT_ITEMS_PER_PAGE
 
         keywords = self._settings.AsDict()
-        keywords["title"] = "All Items"
+
+        if curr_category:
+            title = curr_category.capitalize()
+        else:
+            title = "All Items"
+        keywords["title"] = title
+
         keywords["curr_url"] = keywords.get("base_url", "") + base_url
         keywords["rel_base_url"] = rel_base
         keywords["last_gen_ts"] = datetime.today()
@@ -276,8 +282,13 @@ class SiteDefault(SiteBase):
 
         curr_url = keywords.get("base_url", "") + base_url
         keywords["curr_url"] = curr_url
+        
+        if curr_category:
+            title = curr_category.capitalize()
+        else:
+            title = "All Items"
+        keywords["title"] = title
 
-        keywords["title"] = "All Items"
         keywords["rel_base_url"] = rel_base
         keywords["last_gen_ts"] = datetime.today()
         keywords["month_pages"] = month_pages
@@ -385,7 +396,13 @@ class SiteDefault(SiteBase):
             month_pages.append(MonthPageItem(filename, month_key))
 
         keywords = self._settings.AsDict()
-        keywords["title"] = "All Items"
+
+        if curr_category:
+            title = curr_category.capitalize()
+        else:
+            title = "All Items"
+        keywords["title"] = title
+
         keywords["curr_url"] = keywords.get("base_url", "") + base_url
         keywords["rel_base_url"] = rel_base
         keywords["last_gen_ts"] = datetime.today()
@@ -414,14 +431,16 @@ class SiteDefault(SiteBase):
                 entries.append(entry)
                 all_entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
-            pages.append((filename, entries, older_date))
+            pages.append((p, filename, entries, older_date))
             
         keywords["all_entries"] = all_entries
 
         for page in pages:
-            filename = page[0]
-            keywords["entries"] = page[1]
-            keywords["last_content_ts"] = page[2]
+            p = page[0]
+            filename = page[1]
+            keywords["entries"] = page[2]
+            keywords["last_content_ts"] = page[3]
+            keywords["title"] = title + " - " + p.date.strftime("%B %Y")
 
             content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_MONTH, **keywords)
             self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
