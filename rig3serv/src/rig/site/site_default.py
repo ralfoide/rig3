@@ -133,7 +133,8 @@ class SiteDefault(SiteBase):
     def _GenerateIndexPage(self, path, rel_base,
                                 curr_category, all_categories,
                                 items, month_pages,
-                                max_num_pages=None):
+                                max_num_pages=None,
+                                base_filename="index"):
         """
         Generates most-recent pages with items that match the curr_category.
 
@@ -151,6 +152,7 @@ class SiteDefault(SiteBase):
             same entries. Can be an empty list but not None. MUST be sorted in
             decreasing date order.
         - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
+        - base_filename: If you want to generate something else than indexNN.html files.
         """
         base_url = "/".join(path)
         if base_url:
@@ -172,7 +174,7 @@ class SiteDefault(SiteBase):
                         break
 
         if curr_category in self._settings.reverse_categories:
-            # sort by increasing date (thus reverse the name "decreaseing date" order)
+            # sort by increasing date (thus reverse the name "decreasing date" order)
             relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
         num_item_page = self._settings.num_item_page
@@ -206,7 +208,7 @@ class SiteDefault(SiteBase):
         np = n / num_item_page
         i = 0
         for p in xrange(0, np + 1):
-            filename = "index%s.html" % (p > 0 and p or "")
+            filename = "%s%s.html" % (base_filename, p > 0 and p or "")
 
             entries = []
             older_date = None

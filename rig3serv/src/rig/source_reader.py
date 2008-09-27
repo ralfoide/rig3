@@ -77,7 +77,7 @@ class SourceDirReader(SourceReaderBase):
     specified by the VALID_FILES regexp.
     """
 
-    DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
+    DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
     def __init__(self, log, site_settings, path, source_settings=None):
