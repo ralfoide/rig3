@@ -550,7 +550,7 @@ First, what content is generated and how?
 Currently we can read "source items" from 3 kind of sources: an item can
 originate from a directory (composed of an index and images), or a single
 file, or it can be a multi-item file (aka izumi blogs). There's a parser
-that visit the sources and generates an internal list of items. These items
+that visits the sources and generates an internal list of items. These items
 ''will'' correspond to one generated "blog item", yet that logic is isolated
 in the site generation.
 
@@ -587,11 +587,11 @@ content on disk just for the sake of being able to check its timestamp and re-re
 it; on the other hand we just generate that content in-memory and we still need
 to rewrite all the permalink pages every time.
 
-The scenario where the write the intermediary content to disk becomes actually
-more expensive: for each item that we do not regenerate, the still have to read
-store the intermediary content, plus later we'll store also the permalink page,
+The scenario where we write the intermediary content to disk becomes actually
+more expensive: for each item that we do not regenerate, we still have to read
+ant store the intermediary content, plus later we'll store also the permalink page,
 so essentially it's stored N+1 times compared to the other scheme. And although
-we don't recompute the template, we do need to read back, so the memory cost
+we don't recompute the template, we do need to read it back, so the memory cost
 is similar. Moreover, for the kind of data that I process, generating the template
 is mostly trivial and may be even cheaper than performing one more disk access.
 
@@ -607,7 +607,7 @@ content has changed at all since the next generation and short circuit the
 generation has much as we can. Ideally parsing an unchanged source should be
 as cheap as possible, so that we can run it often.
 On the destination part, this is easy, we can get the timestamp of the main
-index.html, since it's guaranted to be generated every time.
+index.html, since it's guaranteed to be generated every time.
 However on the source part, this is a bit more tricky: we still need to
 visit all the source directories and stat their files. 
 
@@ -663,7 +663,7 @@ The default site generator now generates "month pages" and "index pages".
 A month page contain all entries for a given month.
 An index page contains the N most recent entries.
 
-The index page also list all the month pages for the same category set
+The index page also lists all the month pages for the same category set
 so they need to be generated in the correct order.
 
 Another change is that entries are no longer pre-generated. They are now
@@ -735,4 +735,56 @@ In essence, you use the language syntax as a macro and the compiler as a verifie
 Isn't that what they are for after all?
 
 ----
+20080927 Revisiting Source Types, New Static Source
 
+Currently rig3 supports 3 "source" types:
+- files: A directory is given and recursively parsed for any .izu or .html file
+    that has a date in its filename. They each compose one blog entry.
+- dirs: A directory is given and recursively parsed for any sub-directory which
+    has a date in its directory name. Each sub-directory compose one blog entry.
+- blog: Also called "multi-item" .izu files. They are not implemented yet. If
+    this was implemented, it would recursively scan a directory for an .izu
+    file that contain a _serie_ of blog posts.
+
+I'm thinking of merging these 3 source readers into one. The main rule of
+specifying a base directory and reading it recursively remains unchanged.
+The parsing rules would be:
+- A sub-directory with a "date-title" name *and* that contains an "index.izu"
+  is a single blog post. Its sub-directories are not scanned.
+- Any .izu file is considered:
+    - If its first line contains "[izu:blog]", it's a multi-item blog post(s).
+    - Otherwise it's a single-item blog post.
+- Any .html file is considered as a single blog post.
+
+In all cases, the filename/directory name can contain a YYYYMMDD date, or
+the file can use an [izu:date] tag inside. If it has both, the tag overrides
+the filename.
+
+This combined source reader would be tagged as the "blog" source reader.
+
+
+I also plan to add a "static" source reader. Its purpose is not to generate
+blog entries at all. Instead, it would generate static HTML pages mirroring
+exactly the directory structure given to the reader. Izumi files would be
+converted to HTML on the fly.
+
+The purpose here is obvious: to generate the static portion of a web site
+using Izumi templates and of course retain/merge existing HTML content.
+I need that to migrate my current Izumi-based web site to Rig3 (amusingly
+Izumi started as a simple static CMS with blog generation added after the
+fact whereas rig3 started as a blog generator and now I'm adding static
+site generation to it.)
+
+There's still a few points left to resolve before I start there:
+- How will cross-linking work? At some point I'll want to generate a link
+  on the blog from the static side, and vice versa.
+- Should the current "site generator" (aka site_default.py) be considered
+  a "blog generator" and then I add a separate "static generator", or
+  should I add support for static site into the current blog site?
+  There might be enough similarities that keeping one generator is worth it
+  despite the code getting a bit too big. OTOH refactoring/splitting might
+  be non-trivial but worth it. We'll see.
+
+----
+
+One obvious point is the 
