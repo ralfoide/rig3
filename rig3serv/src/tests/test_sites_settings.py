@@ -13,7 +13,7 @@ import os
 from tests.rig_test_case import RigTestCase
 
 import rig3
-from rig.source_reader import SourceDirReader, SourceFileReader
+from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.sites_settings import SitesSettings, SiteSettings, IncludeExclude
 
 #------------------------
@@ -224,14 +224,12 @@ class SitesSettingsTest(RigTestCase):
               SourceFileReader(log, s, "/my/path2") ],
             s.source_list)
 
-        # All
+        # Blog
         s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "all:/my/path1" })
+        self.m._ProcessSources(s, { "sources": "blog:/my/path1" })
         self.assertListEquals(
-            [ SourceDirReader (log, s, "/my/path1"),
-              SourceFileReader(log, s, "/my/path1") ],
-            s.source_list,
-            sort=True)
+            [ SourceBlogReader (log, s, "/my/path1") ],
+            s.source_list)
 
     def testOverrideSourcesSettings(self):
         log = self.Log()

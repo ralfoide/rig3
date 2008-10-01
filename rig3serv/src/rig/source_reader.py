@@ -68,6 +68,113 @@ class SourceReaderBase(object):
 
 
 #------------------------
+class SourceBlogReader(SourceReaderBase):
+    """
+    Source reader for rig3 blog entries (both directory and file entries).
+    """
+
+    DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
+    DIR_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
+    FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
+
+    def __init__(self, log, site_settings, path, source_settings=None):
+        """
+        Constructs a new SourceDirReader.
+        
+        Arguments:
+        - log (Log)
+        - site_settings (SiteSettings)
+        - path (String): The base directory to read recursively 
+        - source_settings(SourceSettings): optional SourceSettings
+        """
+        super(SourceBlogReader, self).__init__(log, site_settings, path, source_settings)
+        # allow patterns to be overrided via site settings
+        self._dir_pattern     = site_settings and site_settings.blog_dir_pattern     or self.DIR_PATTERN
+        self._dir_valid_files = site_settings and site_settings.blog_dir_valid_files or self.DIR_VALID_FILES
+        self._file_pattern    = site_settings and site_settings.blog_file_pattern    or self.FILE_PATTERN
+
+    def Parse(self, dest_dir):
+        """
+        Calls the directory parser on the source vs dest directories.
+
+        Then traverses the source tree and generates new items as needed.
+        
+        An item in a RIG site is a directory that contains either an
+        index.izu and/or JPEG images.
+        
+        Parameter:
+        - dest_dir (string): Destination directory.
+        
+        Returns a list of SourceItem.
+        """
+        tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
+                                          os.path.realpath(dest_dir))
+ 
+        dir_pattern = re.compile(self._dir_pattern)
+        dir_valid_files = re.compile(self._dir_valid_files)
+        file_pattern = re.compile(self._file_pattern)
+ 
+        items = []
+        for source_dir, dest_dir, all_files in tree.TraverseDirs():
+            basename = source_dir.basename()
+            
+            if dir_pattern.search(basename):
+                # This directory looks like one entry.
+                # Only keep the "valid" files for directory entries.
+                valid_files = [f for f in all_files if dir_valid_files.search(f)]
+            
+                
+                # Only process directories that have at least one file of interest
+                if valid_files:
+                    self._log.Debug("[%s] Process '%s' to '%s'",
+                                    self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
+                                   source_dir.rel_curr, dest_dir.rel_curr)
+
+                    date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_path))
+                    item = SourceDir(date, source_dir, all_files, self._source_settings)
+                    items.append(item)
+            else:
+                # Not a directory entry, so check individual files to see if they
+                # qualify as individual entries
+                for f in all_files:
+                    if file_pattern.search(f):
+                        rel_file = RelFile(source_dir.abs_base,
+                                           os.path.join(source_dir.rel_curr, f))
+                        date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
+                        item = SourceFile(date, rel_file, self._source_settings)
+                        items.append(item)
+
+        return items
+
+    # Utilities, overridable for unit tests
+
+    def _DirTimeStamp(self, dir):
+        """
+        Returns the most recent change or modification time stamp for the
+        given directory.
+        
+        Throws OSError with e.errno==errno.ENOENT (2) when the directory
+        does not exists.
+        """
+        c = os.path.getctime(dir)
+        m = os.path.getmtime(dir)
+        return max(c, m)
+
+    def _FileTimeStamp(self, file):
+        """
+        Returns the most recent change or modification time stamp for the
+        given file.
+        
+        Throws OSError with e.errno==errno.ENOENT (2) when the file
+        does not exists.
+        """
+        c = os.path.getctime(file)
+        m = os.path.getmtime(file)
+        return max(c, m)
+
+
+
+#------------------------
 class SourceDirReader(SourceReaderBase):
     """
     Source reader for rig3 directory-based entries.
@@ -75,6 +182,8 @@ class SourceDirReader(SourceReaderBase):
     Only directories are considered as items: valid directory names must match
     the specified DIR_PATTERN regexp *and* must contain one or more of the files
     specified by the VALID_FILES regexp.
+    
+    @deprecated
     """
 
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
@@ -181,6 +290,8 @@ class SourceFileReader(SourceReaderBase):
     Source reader for file-based entries.
     
     Only files which name match the specified FILE_PATTERN regexp are considered valid.
+    
+    @deprecated
     """
 
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")

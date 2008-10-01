@@ -40,6 +40,9 @@ class RelPath(object):
                                   self.abs_base,
                                   self.rel_curr)
 
+    def basename(self):
+        return os.path.basename(self.rel_curr)
+
 # RelDir and RelFile are strictly equivalent to RelPath. The difference
 # is purely semantic.
 class RelDir(RelPath):

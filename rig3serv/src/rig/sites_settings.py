@@ -12,7 +12,7 @@ import re
 import ConfigParser
 from rig.settings_base import SettingsBase
 from rig.source_item import SourceSettings
-from rig.source_reader import SourceDirReader, SourceFileReader
+from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.site_base import DEFAULT_THEME
 
 _CAT_FILTER_SEP = re.compile("[, \t\f]")
@@ -204,7 +204,10 @@ class SiteSettings(object):
                  num_item_atom=DEFAULT_ITEMS_PER_PAGE,
                  html_header="html_header.html",
                  toc_categories=IncludeExclude(None, IncludeExclude.ALL),
-                 reverse_categories=IncludeExclude(None, IncludeExclude.ALL)):
+                 reverse_categories=IncludeExclude(None, IncludeExclude.ALL),
+                 blog_file_pattern=None,
+                 blog_dir_pattern=None,
+                 blog_dir_valid_files=None):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -226,6 +229,9 @@ class SiteSettings(object):
         self.html_header = html_header
         self.reverse_categories = reverse_categories
         self.toc_categories = toc_categories
+        self.blog_file_pattern = blog_file_pattern
+        self.blog_dir_pattern = blog_dir_pattern
+        self.blog_dir_valid_files = blog_dir_valid_files
 
     def AsDict(self):
         """
@@ -305,7 +311,9 @@ class SitesSettings(SettingsBase):
         """
         re_def = re.compile(r"^\s*(?P<type>[a-z_]+?)\s*[:=]\s*(?P<path>[^\",]+?|\"[^\"]+?\")\s*(?:$|,(?P<rest>.*))?$")
         type_class = { "dir":  SourceDirReader,  "dirs":  SourceDirReader,
-                       "file": SourceFileReader, "files": SourceFileReader }
+                       "file": SourceFileReader, "files": SourceFileReader,
+                       "blog": SourceBlogReader,
+                      }
         source_settings_keys = SourceSettings().KnownKeys()
         for k, value in vars.iteritems():
             if k.startswith("sources"):
@@ -323,13 +331,9 @@ class SitesSettings(SettingsBase):
                     if path.startswith('"'):
                         assert path.endswith('"')
                         path = path[1:-1]
-                    if type == "all":
-                        for t in ["dirs", "files"]:  # TODO: add support for "izu items"
-                            settings.source_list.append(type_class[t](self._log, settings, path,
-                                                                      source_settings=curr_source_settings))
-                    elif type in type_class:
+                    if type in type_class:
                         settings.source_list.append(type_class[type](self._log, settings, path,
-                                                                      source_settings=curr_source_settings))
+                                                                     source_settings=curr_source_settings))
                     elif type in source_settings_keys:
                         curr_source_settings.__dict__[type] = path
                     else:

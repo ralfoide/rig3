@@ -786,5 +786,36 @@ There's still a few points left to resolve before I start there:
   be non-trivial but worth it. We'll see.
 
 ----
+2008093 New "blog" source type
 
-One obvious point is the 
+I ended up implementing a "blog;" source type that will replace both
+the "dirs:" and "files:" sources types. Those will be obsoleted soon.
+
+The previous "dirs:" type had an issue: it was applying name filtering as
+early as possible. That's nice since it means less directories are visited
+but on the other hand it means you can't have accepted directories located
+inside non-accepted directories.
+
+
+The new "blog:" type works this way:
+- All directories and files are processed recursively, independent of their
+  actual filename.
+- All directories which name match the <date-title> pattern are expected to
+  be blog entries if they contain at least one "directoy valid file", i.e.
+  a file with an extension izu, jpg or html.
+- All files, wherever they are located, are expected to be blog entries if
+  their name matches <date-title> and the extension is either izu or html.
+
+This means you _could_ place file-entries inside directory-entries.
+Sounds like a mess to me but your mileage may vary...
+
+Note that with the default patterns, directories must contain an "index.izu"
+to be accepted as blog entries and by default this "index.izu" will not
+match a file-based blog entry since those must have the <date-title.izu> format.
+
+As an extra bonus the 3 regex pattern files are overridable from the settings.
+
+----
+
+
+  

@@ -15,7 +15,7 @@ from tests.rig_test_case import RigTestCase
 from rig.parser.dir_parser import RelDir, RelFile
 from rig.site_base import DEFAULT_THEME
 from rig.sites_settings import SiteSettings
-from rig.source_reader import SourceReaderBase, SourceDirReader, SourceFileReader
+from rig.source_reader import SourceReaderBase, SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.source_item import SourceDir, SourceFile, SourceSettings
 
 #------------------------
@@ -31,6 +31,89 @@ class SourceReaderBaseTest(RigTestCase):
 
     def testParse(self):
         self.assertRaises(NotImplementedError, self.m.Parse, self._tempdir)
+
+
+#------------------------
+class MockSourceBlogReader(SourceBlogReader):
+    def __init__(self, log, settings, path, source_settings=None):
+        super(MockSourceBlogReader, self).__init__(log, settings, path, source_settings)
+        self._dir_time_stamp = 1
+        self._file_time_stamp = 1
+    
+    def _DirTimeStamp(self, dir):
+        self._dir_time_stamp += 1
+        return self._dir_time_stamp
+
+    def _FileTimeStamp(self, file):
+        self._file_time_stamp += 1
+        return self._file_time_stamp
+
+
+class SourceBlogReaderTest(RigTestCase):
+
+    def setUp(self):
+        self._tempdir = self.MakeTempDir()
+        self.path = os.path.join(self.getTestDataPath(), "album")
+        source = SourceBlogReader(self.Log(), None, self.path)
+        self.s = SiteSettings(public_name="Test Album",
+                              source_list=[ source ],
+                              dest_dir=self._tempdir,
+                              theme=DEFAULT_THEME,
+                              base_url="http://www.example.com",
+                              rig_base="http://example.com/photos/")
+        self.m = MockSourceBlogReader(self.Log(), self.s, self.path)
+
+    def tearDown(self):
+        self.m = None
+
+    def testParse(self):
+        p = self.m.Parse(self._tempdir)
+        
+        self.assertListEquals(
+            [ SourceDir(datetime.fromtimestamp(2),
+                        RelDir(self.path, "2006-05_Movies"),
+                        [ "index.html" ] ), 
+              SourceDir(datetime.fromtimestamp(3),
+                        RelDir(self.path, "2006-08-05 20.00.38  Progress"),
+                        [ "index.html" ] ), 
+              SourceDir(datetime.fromtimestamp(4),
+                        RelDir(self.path, "2007-10-07 11.00_Folder 2"),
+                        [ "T12896_tiny1.jpg", "T12896_tiny2.jpg", "index.izu"] ), 
+              SourceDir(datetime.fromtimestamp(5),
+                        RelDir(self.path, "2007-10-07_Folder 1"),
+                        [ "T12896_tiny_jpeg.jpg", "index.izu" ] ),
+              SourceFile(datetime.fromtimestamp(2),
+                         RelFile(self.path, os.path.join("file_items", "2007-09-09 Izu File Item.izu"))),
+              SourceFile(datetime.fromtimestamp(3),
+                         RelFile(self.path, os.path.join("file_items", "2008-01-12 Some Html File.html"))),
+              SourceFile(datetime.fromtimestamp(4),
+                         RelFile(self.path, os.path.join("file_items", "2008-01-17 U Haz Been eZcluded.izu"))),
+              SourceFile(datetime.fromtimestamp(5),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-01 Empty Post.izu"))),
+              SourceFile(datetime.fromtimestamp(6),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2007-10-02 No Tags.izu"))),
+              SourceFile(datetime.fromtimestamp(7),
+                         RelFile(self.path, os.path.join("file_items", "sub_dir", "2008-01-02 Sub File Item.izu"))),
+            ],
+            p)
+    
+    
+    def testSourceSettings(self):
+        # default reader does not have any custom source settings
+        p = self.m.Parse(self._tempdir)
+        for item in p:
+            self.assertEquals(None, item.source_settings)
+        
+        # Now add a custom source settings to the reader. It gets
+        # propagated to all items.
+        sourceset = SourceSettings(rig_base="http://other/base/")
+        m = MockSourceBlogReader(self.Log(), self.s, self.path, sourceset)
+        p = m.Parse(self._tempdir)
+        for item in p:
+            self.assertNotEquals(None, item.source_settings)
+            self.assertSame(sourceset, item.source_settings)
+            self.assertEquals("http://other/base/", item.source_settings.rig_base)
+
 
 #------------------------
 class MockSourceDirReader(SourceDirReader):

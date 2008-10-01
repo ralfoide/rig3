@@ -8,7 +8,7 @@
 sites = rig3_live
 
 [DEFAULT]
-sources     = dir:album, file:album
+sources     = blog:album
 dest_dir    = live_dest
 base_url    =
 cat_filter  = !exclude-me
