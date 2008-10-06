@@ -12,7 +12,45 @@ import os
 from StringIO import StringIO
 
 from tests.rig_test_case import RigTestCase
-from rig.parser.dir_parser import DirParser, RelDir, _EXCLUDE
+from rig.parser.dir_parser import DirParser, RelPath, RelDir, _EXCLUDE
+
+
+#------------------------
+class RelPathTest(RigTestCase):
+    
+    def setUp(self):
+        self.m = RelPath(os.path.join("base", "dir"),
+                         os.path.join("sub", "dir", "blah"))
+    
+    def testStr(self):
+        s = str(self.m)
+        self.assertIsInstance(str, s)
+        self.assertEquals(-1, s.find("RelPath"))
+        self.assertNotEquals(-1, s.find(os.path.join("sub", "dir", "blah")))
+
+    def testRepr(self):
+        s = repr(self.m)
+        self.assertIsInstance(str, s)
+        self.assertNotEquals(-1, s.find("RelPath"))
+        self.assertNotEquals(-1, s.find(os.path.join("sub", "dir", "blah")))
+
+    def testBasename(self):
+        self.assertEquals("blah", self.m.basename())
+
+    def testDirname(self, *args):
+        p = self.m.dirname()
+        self.assertEquals(
+              RelPath(os.path.join("base", "dir"),
+                      os.path.join("sub", "dir")),
+              p)
+
+    def testJoin(self, *args):
+        p = self.m.join("foo", "bar")
+        self.assertEquals(
+              RelPath(os.path.join("base", "dir"),
+                      os.path.join("sub", "dir", "blah", "foo", "bar")),
+              p)
+
 
 #------------------------
 class MockDirParser(DirParser):

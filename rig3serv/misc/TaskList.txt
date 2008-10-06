@@ -32,6 +32,7 @@
 
 ---- Done Version 0.3 ----
 
+20081004 Engine:   Pass BASE_DIR + REL_FILE to the custom image generation script.
 20080930 Engine:   New "blog" source type
 20080930 Doc:      Design for a "blog" to replace the "dirs/files" source types
 20080907 Bug Fix:  Atom feed for category says "All items" (MM#3) [same for html]

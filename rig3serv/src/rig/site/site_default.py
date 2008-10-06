@@ -23,7 +23,7 @@ from datetime import date, datetime
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
 from rig.source_item import SourceDir, SourceFile
-from rig.parser.dir_parser import RelFile
+from rig.parser.dir_parser import RelPath
 from rig.version import Version
 from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
@@ -477,25 +477,21 @@ class SiteDefault(SiteBase):
             rel_dir = source_item.rel_dir
             all_files = source_item.all_files
             may_have_images = True
-            title = os.path.basename(rel_dir.rel_curr)
+            title = rel_dir.basename()
             if self.INDEX_IZU in all_files:
-                izu_file = os.path.join(rel_dir.abs_path, self.INDEX_IZU)
-                main_filename = RelFile(rel_dir.abs_path,
-                                        os.path.join(rel_dir.rel_curr, self.INDEX_IZU))
+                main_filename = izu_file = rel_dir.join(self.INDEX_IZU)
             elif self.INDEX_HTML in all_files:
-                html_file = os.path.join(rel_dir.abs_path, self.INDEX_HTML)
-                main_filename = RelFile(rel_dir.abs_path,
-                                        os.path.join(rel_dir.rel_curr, self.INDEX_HTML))
+                main_filename = html_file = rel_dir.join(self.INDEX_HTML)
 
         elif isinstance(source_item, SourceFile):
             rel_file = source_item.rel_file
-            title = os.path.basename(rel_file.rel_curr)
+            title = rel_file.basename()
             main_filename = rel_file
             if rel_file.rel_curr.endswith(self.EXT_IZU):
-                izu_file = rel_file.abs_path
+                izu_file = rel_file
                 title = title[:-1 * len(self.EXT_IZU)]  # remove ext from title
             elif rel_file.rel_curr.endswith(self.EXT_HTML):
-                html_file = rel_file.abs_path
+                html_file = rel_file
                 title = title[:-1 * len(self.EXT_HTML)]  # remove ext from title
 
         else:
@@ -745,6 +741,9 @@ class SiteDefault(SiteBase):
         Returns the content of a file as a string.
         Will raise an IOError if the file cannot be read.
         """
+        if isinstance(full_path, RelPath):
+            full_path = full_path.abs_path
+
         f = file(full_path)
         data = f.read()
         f.close()

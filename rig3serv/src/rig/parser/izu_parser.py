@@ -19,6 +19,7 @@ from datetime import datetime
 from StringIO import StringIO
 
 from rig.parser.utf8_accents import UTF8_ACCENTS_TO_HTML
+from rig.parser.dir_parser import RelPath
 
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[:/-]?(?P<month>\d{2})[:/-]?(?P<day>\d{2})"
                        r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
@@ -64,9 +65,10 @@ _ACCENTS_TO_HTML = {
 
 #------------------------
 class _State(object):
-    def __init__(self, _file, filename):
+    def __init__(self, _file, filename, rel_file):
         self._file = _file
         self._filename = filename
+        self._rel_file= rel_file
         self._tags = {}
         self._sections = {}
         self._section_needs_paragraph = {}
@@ -75,6 +77,9 @@ class _State(object):
 
     def Filename(self):
         return self._filename
+
+    def RelFile(self):
+        return self._rel_file
 
     def Tags(self):
         return self._tags
@@ -155,6 +160,7 @@ class IzuParser(object):
     def __init__(self, log, settings):
         self._log = log
         self._settings = settings
+        
         # custom section handlers. Unlisted sections use the "default" formatter
         self._escape_block = { "--": self._EscapeComment,
                                "html:": self._EscapeRawHtml }
@@ -168,7 +174,9 @@ class IzuParser(object):
         Parses the file 'filename' and returns an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
         
-        If source is a string, it is considered a path to be opened as read-only text.
+        If source is a string or a RelPath/RelFile, it is considered a path to
+        be opened as read-only text.
+
         Otherwise, it must be a file-like object. Use StringIO if you need to parse
         a string buffer.
         
@@ -182,17 +190,21 @@ class IzuParser(object):
         f = None
         result = None
         try:
+            rel_file = None
             if isinstance(filestream, str):
                 f = file(filestream, "rU", 1)  # 1=line buffered, universal
-                self._filename = filestream
+                filename = filestream
+            elif isinstance(filestream, RelPath):
+                filename = filestream.abs_path
+                rel_file = filestream
+                f = file(filename, "rU", 1)  # 1=line buffered, universal
             else:
                 f = filestream
-                self._filename = "<unknown stream>"
+                filename = "<unknown stream>"
             
-            state = _State(f, self._filename)
+            state = _State(f, filename, rel_file)
             self._ParseStream(state)
             result = state.Close()
-            self._filename = None
         except IOError:
             if f and f != filestream:
                 f.close()
@@ -350,7 +362,7 @@ class IzuParser(object):
                     self._tag_handlers.get(tag, self._DefaultTagHandler)(state, tag, value)
                 else:
                     # log an error and ignore
-                    self._log.Error("Invalid tag %s:%s in %s", tag, value, self._filename)
+                    self._log.Error("Invalid tag %s:%s in %s", tag, value, state.Filename())
             else:
                 break
         return line
@@ -375,7 +387,7 @@ class IzuParser(object):
                 return True, line  # loop on line
             else:
                 # log an error and ignore
-                self._log.Error("Invalid section name in %s", self._filename)
+                self._log.Error("Invalid section name in %s", state.Filename())
         return False, line  # don't loop
 
 
@@ -599,15 +611,18 @@ class IzuParser(object):
         result = ""
         filename = state.Filename()
         if filename and image_glob:
-            img_dir = os.path.dirname(filename)
-            choices = self._GlobGlob(img_dir, image_glob)
+            abs_dir = os.path.dirname(filename)
+            choices = self._GlobGlob(abs_dir, image_glob)
             if choices:
-                result = self._ExternalGenRigUrl(img_dir, choices[0], title, is_link, size, caption)
+                rel_file = state.RelFile()
+                if rel_file:
+                    rel_file = rel_file.dirname().join(choices[0])
+                result = self._ExternalGenRigUrl(rel_file, abs_dir, choices[0], title, is_link, size, caption)
                 if not result:
                     result = self._InternalGenRigUrl(choices[0], title, is_link, size, caption)
         return first + result
 
-    def _ExternalGenRigUrl(self, img_dir, filename, title, is_link, size, caption):
+    def _ExternalGenRigUrl(self, rel_file, abs_dir, filename, title, is_link, size, caption):
         """
         """
         if not self._settings:
@@ -616,21 +631,25 @@ class IzuParser(object):
         if not script:
             return None
 
-        env = { "IMG_DIR":     img_dir,
+        env = { "ABS_DIR":     abs_dir,
                 "IMG_NAME":    filename,
                 "IS_LINK":     is_link and "1"          or "0",
                 "OPT_SIZE":    size    and str(size)    or "",
                 "OPT_TITLE":   title   and str(title)   or "",
-                "OPT_CAPTION": caption and str(caption) or ""
+                "OPT_CAPTION": caption and str(caption) or "",
+                "BASE_DIR":    rel_file and rel_file.abs_base or "",
+                "REL_FILE":    rel_file and rel_file.rel_curr or ""
               }
 
         p = self._SubprocessPopen( [ script,
-                                     env["IMG_DIR"],
+                                     env["ABS_DIR"],
                                      env["IMG_NAME"],
                                      env["IS_LINK"],
                                      env["OPT_SIZE"],
                                      env["OPT_TITLE"],
                                      env["OPT_CAPTION"],
+                                     env["BASE_DIR"],
+                                     env["REL_FILE"],
                                    ],
                              executable=None,
                              stdin=None,
@@ -750,7 +769,7 @@ class IzuParser(object):
                              int(m.group("sec"  ) or 0))
                 state.Tags()[tag] = d
             except ValueError:
-                self._log.Error("Invalid tag 'izu:%s:%s' in %s", tag, value, self._filename)
+                self._log.Error("Invalid tag 'izu:%s:%s' in %s", tag, value, state.Filename())
 
 
     def _CatHandler(self, state, tag, value):

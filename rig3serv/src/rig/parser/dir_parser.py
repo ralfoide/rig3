@@ -36,12 +36,47 @@ class RelPath(object):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)
 
     def __repr__(self):
-        return "[%s %s => %s]" % (self.__class__.__name__,
-                                  self.abs_base,
-                                  self.rel_curr)
+        try:
+            return "[%s %s => %s]" % (self.__class__.__name__,
+                                      self.abs_base,
+                                      self.rel_curr)
+        except:
+            return super(RelPath, self).__repr__()
 
     def basename(self):
+        """
+        Returns the basename of the relative portion of the path, i.e.
+        the last path segment.
+        """
         return os.path.basename(self.rel_curr)
+
+    def dirname(self):
+        """
+        Returns the parent of the relative portion of the path, i.e.
+        removes the last path segment. If there's none, the rel_curr path
+        will be empty -- abs_base is never touched.
+        
+        This dies NOT modify the current object. It returns a new one
+        of the *same* type.
+        """
+        p = RelPath.__new__(self.__class__)
+        p.__init__(self.abs_base,
+                   os.path.dirname(self.rel_curr))
+        return p
+    
+    def join(self, *args):
+        """
+        Join one or more path components to the relative portion of the
+        current path and returns a new RelPath-derived object for it.
+        
+        This does NOT modify the current object. It returns a new one
+        of the *same* type.
+        """
+        p = RelPath.__new__(self.__class__)
+        p.__init__(self.abs_base,
+                   os.path.join(self.rel_curr, *args))
+        return p
+
 
 # RelDir and RelFile are strictly equivalent to RelPath. The difference
 # is purely semantic.
