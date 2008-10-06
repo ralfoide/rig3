@@ -328,25 +328,26 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), []))
+            m._GenerateImages(RelDir("base", ""), [], {}))
 
         self.assertEquals(
             None,
             m._GenerateImages(RelDir("base", ""), [ "index.izu",
                                                     "index.html",
-                                                    "image.jpeg" ]))
+                                                    "image.jpeg" ],
+                                                  {} ))
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ]))
+            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ], {}))
         
         self.assertHtmlEquals(
-            m._GetRigLink(RelDir("base", ""), None, -1),
-            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ]))
+            "See more images for " + m._GetRigLink(RelDir("base", ""), None, -1),
+            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], {}))
 
         self.assertHtmlEquals(
             '<table class="image-table"><tr><td>\n' + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
-            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ]))
+            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], {}))
 
     def testGenerateIndexPage(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()

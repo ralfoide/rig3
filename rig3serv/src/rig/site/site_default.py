@@ -571,7 +571,9 @@ class SiteDefault(SiteBase):
                 _keywords = dict(_keywords)
 
             if _img_params:
-                html_img = self._GenerateImages(_img_params["rel_dir"], _img_params["all_files"])
+                html_img = self._GenerateImages(_img_params["rel_dir"],
+                                                _img_params["all_files"],
+                                                _keywords)
                 if html_img:
                     _keywords["sections"]["images"] = html_img
             return self._FillTemplate(_template, **_keywords)
@@ -583,12 +585,14 @@ class SiteDefault(SiteBase):
                         content_gen=lambda template, extra=None: \
                             _generate_content(template, keywords, img_params, extra))
 
-    def _GenerateImages(self, source_dir, all_files):
+    def _GenerateImages(self, source_dir, all_files, keywords):
         """
         Generates a table with images.
         
         Arguments:
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
+        - all_files: List of "interesting/acceptable" files in the directory.
+        - keywords: SiteItem keywords (e.g. specific to current blog entry)
 
         Heuristics:
         - if rating+ images are present, show them with a width of 400 or 300
@@ -630,8 +634,15 @@ class SiteDefault(SiteBase):
                     entry["top_name"] = filename
                 entry["files"].append(filename)
         
+        # TODO: the heuristics below are lousy. Works for me, and even that
+        # is questionable and all these constants... pfff. Need something
+        # better. Maybe some inline-python mini-rules in the prefs?
+        
         links = []
         if num_excellent:
+            # We got some excellent-rated images.
+            # Display them all with large previews with a max size ranging
+            # from 300 to 800px depending on the number of images.
             size = 400
             if num_excellent > 2:
                 size = max(300, 800 / num_excellent)
@@ -643,6 +654,8 @@ class SiteDefault(SiteBase):
                 if entry["top_rating"] == self._RATING_EXCELLENT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], size))
         elif num_good:
+            # We got some good-rated images.
+            # Display up to 6 of them using the default preview size.
             num_col = min(num_good, 6)
             keys = images.keys()
             keys.sort()
@@ -651,6 +664,8 @@ class SiteDefault(SiteBase):
                 if entry["top_rating"] == self._RATING_GOOD:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
+            # We got some up to 6 normal-rated images.
+            # Display them using the default preview size. 
             num_col = num_normal
             keys = images.keys()
             keys.sort()
@@ -659,7 +674,14 @@ class SiteDefault(SiteBase):
                 if entry["top_rating"] == self._RATING_DEFAULT:
                     links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
         elif num_images:
-            return self._GetRigLink(source_dir, None, None)
+            # There are some images but none is considered good enough for the
+            # auto-preview. Just generate a link on the album.
+            #
+            # TODO: the static string should move to the HTML template.
+            # TODO: it would make sense to display this even for the other cases
+            #       if there were other images not shown.
+            return "See more images for " + self._GetRigLink(source_dir, None, None,
+                                                             title=keywords and keywords["title"] or None)
 
         if links:
             lines = []
@@ -676,33 +698,37 @@ class SiteDefault(SiteBase):
             return content
         return None
 
-    def _GetRigLink(self, source_dir, leafname, size):
+    def _GetRigLink(self, source_dir, leafname, size, title=None):
         """
         Generates the URL to a rig image, with a caption, that links to the given image
         (or the album if there's no image).
         Size: Max pixel size or -1 for a thumbnail.
         
+        If title is not None, it is used as the album title or image tooltip.
+        If title is None, leafname is used for the image tooltip and the
+        directory name is used for the album title.
+        
         If leafname & size are None, creates an URL to the album.
         
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
-        album_title = cgi.escape(os.path.basename(source_dir.rel_curr))
+        album_title = title or cgi.escape(os.path.basename(source_dir.rel_curr))
         album = source_dir.rel_curr
         link = self._RigAlbumLink(self._settings, album)
         if leafname:
-            title = os.path.splitext(leafname)[0]
+            tooltip = title or os.path.splitext(leafname)[0]
             link = self._RigImgLink(self._settings, album, leafname)
             img = self._RigThumbLink(self._settings, album, leafname, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
-                "title": title,
+                "title": tooltip,
                 "img": img }
         else:
             content = album_title
-        url = '<a title="%(title)s" href="%(link)s">%(content)s</a>' % {
+        html = '<a title="%(title)s" href="%(link)s">%(content)s</a>' % {
             "title": album_title,
             "link": link,
             "content": content }
-        return url
+        return html
 
     # Utilities, overridable for unit tests
 
