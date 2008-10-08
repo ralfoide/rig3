@@ -107,7 +107,7 @@ class SourceBlogReader(SourceReaderBase):
         
         Returns a list of SourceItem.
         """
-        tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
+        tree = DirParser(self._log).Parse(self.GetPath(),
                                           os.path.realpath(dest_dir))
  
         dir_pattern = re.compile(self._dir_pattern)
