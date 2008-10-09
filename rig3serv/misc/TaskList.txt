@@ -32,6 +32,7 @@
 
 ---- Done Version 0.3 ----
 
+20081008 Engine:   Add RIG_BASE in the custom image generation script, remove BASE_DIR.
 20081008 Fix:      Fix BASE_DIR in the custom image generation script.
 20081004 Engine:   Add "See more images for <album title>" in default site entry.
 20081004 Engine:   Pass BASE_DIR + REL_FILE to the custom image generation script.

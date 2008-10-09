@@ -631,25 +631,27 @@ class IzuParser(object):
         if not script:
             return None
 
+        rig_base = self._settings.rig_base
+
         env = { "ABS_DIR":     abs_dir,
+                "REL_FILE":    rel_file and rel_file.rel_curr or "",
                 "IMG_NAME":    filename,
                 "IS_LINK":     is_link and "1"          or "0",
                 "OPT_SIZE":    size    and str(size)    or "",
                 "OPT_TITLE":   title   and str(title)   or "",
                 "OPT_CAPTION": caption and str(caption) or "",
-                "BASE_DIR":    rel_file and rel_file.abs_base or "",
-                "REL_FILE":    rel_file and rel_file.rel_curr or ""
+                "RIG_BASE":    rig_base                 or ""
               }
 
         p = self._SubprocessPopen( [ script,
                                      env["ABS_DIR"],
+                                     env["REL_FILE"],
                                      env["IMG_NAME"],
                                      env["IS_LINK"],
                                      env["OPT_SIZE"],
                                      env["OPT_TITLE"],
                                      env["OPT_CAPTION"],
-                                     env["BASE_DIR"],
-                                     env["REL_FILE"],
+                                     env["RIG_BASE"],
                                    ],
                              executable=None,
                              stdin=None,

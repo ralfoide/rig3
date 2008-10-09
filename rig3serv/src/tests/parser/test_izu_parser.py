@@ -448,7 +448,8 @@ class IzuParserTest(RigTestCase):
                   rel_file=None, abs_dir=0, filename=1, title=2, is_link=False, size=4, caption=5))
 
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
 
         # error code is not 0, so nothing is done
         m.SetPopenValues(42, "blah")
@@ -462,7 +463,8 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_url(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
         m.SetPopenValues(0, "some-url")
 
         # auto generate an <img> for a url (i.e. something without "<img")
@@ -490,7 +492,8 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_env(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
@@ -501,24 +504,29 @@ class IzuParserTest(RigTestCase):
         args, kw = m.GetPopenArgs()
         
         self.assertListEquals( ( [ "/path/to/my/script",
-                                   "some/path", "file1",
+                                   "some/path",
+                                   _j_("path", "file1"),
+                                   "file1",
                                    "0", "size4", "title2", "caption5",
-                                   "some",
-                                   _j_("path", "file1") ], ),
+                                   "/pix/for/rig"
+                                 ],
+                               ),
                                args)
         self.assertDictEquals( { "ABS_DIR": "some/path",
                                  "IMG_NAME": "file1",
+                                 "REL_FILE": _j_("path", "file1"),
                                  "IS_LINK": "0",
                                  "OPT_SIZE": "size4",
                                  "OPT_TITLE": "title2",
                                  "OPT_CAPTION": "caption5",
-                                 "BASE_DIR": "some",
-                                 "REL_FILE": _j_("path", "file1") },
+                                 "RIG_BASE": "/pix/for/rig",
+                               },
                                kw["env"])
 
     def testExternalGenRigUrl_img(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
         m.SetPopenValues(0, '<img src"toto"><blah>')
 
         self.assertEquals('<img src"toto"><blah><br><tt>caption5</tt>',
@@ -538,7 +546,8 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_a(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
@@ -558,7 +567,8 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_tt(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script" })
+                          settings={ "img_gen_script": "/path/to/my/script",
+                                     "rig_base": "/pix/for/rig" })
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a><tt>boo</tt>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><tt>boo</tt>',
