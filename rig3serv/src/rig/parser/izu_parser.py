@@ -146,7 +146,7 @@ class _State(object):
         """
         # Wrap existing non-empty HTML sessions in the appropriate div
         for k, v in self._sections.iteritems():
-            if v and isinstance(v, str):
+            if v and isinstance(v, (str, unicode)):
                 self._sections[k] = '<span class="izu">%s</span>' % v
         return self._tags, self._sections
 
@@ -191,7 +191,7 @@ class IzuParser(object):
         result = None
         try:
             rel_file = None
-            if isinstance(filestream, str):
+            if isinstance(filestream, (str, unicode)):
                 f = file(filestream, "rU", 1)  # 1=line buffered, universal
                 filename = filestream
             elif isinstance(filestream, RelPath):

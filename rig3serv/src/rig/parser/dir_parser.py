@@ -161,10 +161,10 @@ class DirParser(object):
         self._sub_dirs = []
         self._rel_curr_dir = rel_curr_dir
 
-        if isinstance(dir_pattern, str):
+        if isinstance(dir_pattern, (str, unicode)):
             dir_pattern = re.compile(dir_pattern)
         
-        if isinstance(file_pattern, str):
+        if isinstance(file_pattern, (str, unicode)):
             file_pattern = re.compile(file_pattern)
         
         abs_source_curr_dir = self._abs_source_dir

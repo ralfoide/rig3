@@ -508,7 +508,7 @@ class SiteDefault(SiteBase):
             tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
 
             for k, v in sections.iteritems():
-                if isinstance(v, str):
+                if isinstance(v, (str, unicode)):
                     keywords = self._settings.AsDict()
                     if may_have_images:
                         keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)

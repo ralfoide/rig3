@@ -80,7 +80,7 @@ class Template(object):
     def __InitFileSource(self, file, source):
         _file = file
         if _file is not None:
-            if isinstance(_file, str):
+            if isinstance(_file, (str, unicode)):
                 return self._ParseFile(filename=_file)
             elif _file.read:  # does _file.read() exists?
                 def _file_name(f):

@@ -96,7 +96,7 @@ class Log(object):
         for handler in logger.handlers:
             logger.removeHandler(handler)
     
-        if isinstance(file, str):
+        if isinstance(file, (str, unicode)):
             h = logging.FileHandler(file, mode="w")
         else:
             h = logging.StreamHandler(file)
