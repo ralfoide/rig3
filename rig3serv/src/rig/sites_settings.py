@@ -154,7 +154,7 @@ class SiteSettings(object):
     """
     Settings for one site with defaults:
     - public_name (str): Site name, as published on the generated page. Free text.
-    - source_list (list SourceBase): List of SourceBase reeaders
+    - source_list (list SourceBase): List of SourceBase readers
     - dest_dir (str): Path of where to generate content. Can be relative or absolute.
     - theme (str): Name of the theme to use, must match a directory in templates.
     - template_dir (str): Path of the templates directory. Can be relative or absolute.
