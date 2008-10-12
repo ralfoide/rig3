@@ -121,6 +121,9 @@ class SiteDefaultTest(RigTestCase):
                                                                           self.s.mangled_name_len))
         self.s.mangled_name_len = 25
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof"))
+        # 0 deactivates the mangling
+        self.s.mangled_name_len = 0
+        self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof"))
 
     def testFillTemplate(self):
         m = MockSiteDefault(self, self.Log(), False, self.s)
