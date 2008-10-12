@@ -28,7 +28,6 @@ from rig.version import Version
 from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
-
 #------------------------
 class ContentEntry(object):
     def __init__(self, content, title, date, permalink):
@@ -58,7 +57,6 @@ class SiteDefault(SiteBase):
     _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
-    _MANGLED_NAME_LENGTH = 50    # TODO make a site.rc pref
 
     _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]{0,2}\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
@@ -801,7 +799,7 @@ class SiteDefault(SiteBase):
             f.close()
         return dest_file
 
-    def _SimpleFileName(self, leafname, maxlen=_MANGLED_NAME_LENGTH):
+    def _SimpleFileName(self, leafname, maxlen=0):
         """
         Sanitizes a file name or a path name to a single filename compatible
         with a URL with no need for fancy URL escaping.
@@ -812,7 +810,9 @@ class SiteDefault(SiteBase):
         """
         name = re.sub(r"[ /\\-]+", "-", leafname)
         name = re.sub(r"[^a-zA-Z0-9-]+", "_", name)
-        if len(name) > maxlen:
+        if maxlen <= 0:
+            maxlen = self._settings.mangled_name_len
+        if maxlen > 0 and len(name) > maxlen:
             # The adler32 crc is returned as an int and can thus "seem" negative
             # convert to its true long 64-bit value, always positive
             crc = zlib.adler32(leafname) & 0x0FFffFFffL

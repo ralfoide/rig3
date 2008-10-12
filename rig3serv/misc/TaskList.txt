@@ -32,6 +32,7 @@
 
 ---- Done Version 0.3 ----
 
+20081011 Engine:   New setting mangled_name_len (was hardcoded before; 0 to deactivate)
 20081011 Fix:      Fix isinstance(str/unicode) (broken UTs after python/pydev update)
 20081008 Engine:   Add RIG_BASE in the custom image generation script, remove BASE_DIR.
 20081008 Fix:      Fix BASE_DIR in the custom image generation script.

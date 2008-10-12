@@ -182,6 +182,12 @@ class SiteSettings(object):
     - reverse_categories(IncludeExclude): An inclusion-exclusion list of categories
                     to display in reverse date order (i.e. incremental).
                     Default is to display in decrementing date.
+    - blog_file_pattern (string): Regex for files valid as blog entries.
+    - blog_dir_pattern (string): Regex for directories valid as blog entries.
+    - blog_dir_valid_files (string): Regex for accepted files inside a blog directory entry.
+    - mangled_name_len (int): Max length of blog entries. Titles which are longer
+        than this length are mangled with a hash to make them unique. Set to 0
+        to deactivate.
     """
     def __init__(self,
                  public_name="",
@@ -207,7 +213,8 @@ class SiteSettings(object):
                  reverse_categories=IncludeExclude(None, IncludeExclude.ALL),
                  blog_file_pattern=None,
                  blog_dir_pattern=None,
-                 blog_dir_valid_files=None):
+                 blog_dir_valid_files=None,
+                 mangled_name_len=50):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -232,6 +239,7 @@ class SiteSettings(object):
         self.blog_file_pattern = blog_file_pattern
         self.blog_dir_pattern = blog_dir_pattern
         self.blog_dir_valid_files = blog_dir_valid_files
+        self.mangled_name_len = mangled_name_len
 
     def AsDict(self):
         """
