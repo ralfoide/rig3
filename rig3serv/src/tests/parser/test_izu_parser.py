@@ -305,6 +305,11 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n<a href="http://www.example.code">http://www.example.code</a></span>',
             self._Render("http://www.example.code"))
 
+        # Ampersand in CGI parameters is incorrectly encoded as &amp;
+        self.assertEquals(
+            '<span class="izu">\n<a href="http://www.example.code?a=1&amp;b=1">http://www.example.code?a=1&amp;b=1</a></span>',
+            self._Render("http://www.example.code?a=1&b=1"))
+
         self.assertEquals(
             '<span class="izu">\n<a href="http://www.example.code">http://www.example.code</a></span>',
             self._Render("[http://www.example.code]"))
@@ -312,6 +317,10 @@ class IzuParserTest(RigTestCase):
         self.assertEquals(
             '<span class="izu">\n<a href="http://www.example.code">this is the link\'s description</a></span>',
             self._Render("[this is the link's description|http://www.example.code]"))
+
+        self.assertEquals(
+            '<span class="izu">\n<a href="/my/blog/somepage.html?a=42#anchor">a relative URL</a></span>',
+            self._Render("[a relative URL|/my/blog/somepage.html?a=42#anchor]"))
 
     def testAutoLinkImages(self):
         self.assertEquals(

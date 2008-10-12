@@ -263,7 +263,7 @@ class IzuParser(object):
         """
         # First take care of the case of a block that opens and closes on the same line
         while line:
-            m = re.match(r"(?P<start>(?:^|.*?[^\[]))\[!(?P<name>--|html:)(?P<body>.*?)--\](?P<end>.*)$", line)
+            m = self._RE_PEB_BLOCK_SAME_LINE.match(line)
             if not m:
                 break
             start = m.group("start")
@@ -278,7 +278,7 @@ class IzuParser(object):
         # Now handle the case of a block that gets closed and another one opened
         # on the line...
         if is_block:
-            m = re.match("(?P<body>.*?)--\](?P<line>.*)$", line)
+            m = self._RE_PEB_BLOCK_CLOSE.match(line)
             if m:
                 # A block is being closed.
                 body  = m.group("body")
@@ -291,7 +291,7 @@ class IzuParser(object):
                 self._escape_block[is_block](state, line)
 
         if not is_block:
-            m = re.match("(?P<start>.*?(?:^|[^\[]))\[!(?P<name>--|html:)(?P<body>.*)$", line)
+            m = self._RE_PEB_BLOCK_OPEN.match(line)
             if m:
                 # A block has been opened, just use the start of the line
                 start  = m.group("start")
@@ -307,6 +307,10 @@ class IzuParser(object):
                     self._escape_block[name](state, body)
 
         return is_block, line
+
+    _RE_PEB_BLOCK_SAME_LINE = re.compile(r"(?P<start>(?:^|.*?[^\[]))\[!(?P<name>--|html:)(?P<body>.*?)--\](?P<end>.*)$")
+    _RE_PEB_BLOCK_CLOSE     = re.compile(r"(?P<body>.*?)--\](?P<line>.*)$")
+    _RE_PEB_BLOCK_OPEN      = re.compile(r"(?P<start>.*?(?:^|[^\[]))\[!(?P<name>--|html:)(?P<body>.*)$")
 
     def _EscapeComment(self, state, line):
         """
@@ -344,13 +348,12 @@ class IzuParser(object):
             state.CurrFormatter()(state, line)
             return
 
-
     def _ParseIzuTags(self, state, line):
         """
         Handles [izu:tag:value]
         """
         while line:
-            m = re.match("(?P<start>(?:^|.*[^\[]))\[izu:(?P<tag>[^:\]]+):(?P<value>[^\]]*)\](?P<end>.*)$", line)
+            m = self._RE_PARSE_IZU_TAG.match(line)
             if m:
                 start = m.group("start") or ""
                 end   = m.group("end") or ""
@@ -367,12 +370,14 @@ class IzuParser(object):
                 break
         return line
 
+    _RE_PARSE_IZU_TAG = re.compile(r"(?P<start>(?:^|.*[^\[]))\[izu:(?P<tag>[^:\]]+):(?P<value>[^\]]*)\](?P<end>.*)$")
+
     def _ParseIzuSection(self, state, line):
         """
         Handles [s:section_name], allowing multiple per line.
         """
         # section. Supports multile [s:section_name] per line.
-        m = re.match(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$", line)
+        m = self._RE_PARSE_IZU_SECTION.match(line)
         if m:
             start = m.group("start")
             line  = m.group("end")
@@ -389,6 +394,8 @@ class IzuParser(object):
                 # log an error and ignore
                 self._log.Error("Invalid section name in %s", state.Filename())
         return False, line  # don't loop
+
+    _RE_PARSE_IZU_SECTION = re.compile(r"(?P<start>(?:^|.*[^\[]))\[s:(?P<name>[^\]:]+)\](?P<end>.*)$")
 
 
     # --- section formatters
@@ -456,11 +463,10 @@ class IzuParser(object):
         Remove escapes at the very end: double-[ which were used
         to escape normal [ tags and same for double-underscore, double-quotes
         """
-        line = re.sub(r"\[(\[+)", r"\1", line)
-        line = re.sub(r"_(_+)", r"\1", line)
-        line = re.sub(r"'('+)", r"\1", line)
-        line = re.sub(r"=(=+)", r"\1", line)
+        line = self._RE_RMV_ESC_DOUBLE_CHAR.sub(r"\2", line)
         return line
+
+    _RE_RMV_ESC_DOUBLE_CHAR = re.compile(r"([_'=\[])(\1+)")
 
     def _ConvertAccents(self, line):
         """
@@ -492,20 +498,20 @@ class IzuParser(object):
         line = line.replace(">", "&gt;")
         line = line.replace("<", "&lt;")
 
-        # Anecdote: I rewrote these regexp from scratch and they turn to be
-        # *exactly* identical to what I wrote for Izumi 3 years ago :-)
-        # Makes you put "patents obviousness" in perspective...
-
         # Bold: __word__
-        line = re.sub(r"(^|[^_])__([^_].*?)__($|[^_])", r"\1<b>\2</b>\3", line)
+        line = self._RE_TAG_BOLD.sub(r"<b>\1</b>", line)
 
         # Italics: ''word''
-        line = re.sub(r"(^|[^'])''([^'].*?)''($|[^'])", r"\1<i>\2</i>\3", line)
+        line = self._RE_TAG_ITALIC.sub(r"<i>\1</i>", line)
 
         # Code: ==word==
-        line = re.sub(r"(^|[^=])==([^=].*?)==($|[^=])", r"\1<code>\2</code>\3", line)
+        line = self._RE_TAG_CODE.sub(r"<code>\1</code>", line)
        
         return line
+
+    _RE_TAG_BOLD   = re.compile(r"(?<!_)__([^_].*?)__(?!_)")
+    _RE_TAG_ITALIC = re.compile(r"(?<!')''([^'].*?)''(?!')")
+    _RE_TAG_CODE   = re.compile(r"(?<!=)==([^=].*?)==(?!=)")
 
     def _FormatSimpleTags(self, state, line):
         """
@@ -513,15 +519,16 @@ class IzuParser(object):
         Returns the formatted line.
         """
         # [br] generates an HTML <br> in-place
-        line = re.sub(r'(^|[^\[])\[br\]', r'\1<br>', line)
-        
         # A single forward-slash at the end of a line generates a <br> too
-        line = re.sub(r'(^|[^/])/$', r'\1<br>', line)
+        line = self._RE_TAG_BR.sub("<br>", line)
        
         # [p] generates an HTML <p/> in-place
-        line = re.sub(r'(^|[^\[])\[p\]', r'\1<p/>', line)
+        line = self._RE_TAG_P.sub(r"<p/>", line)
 
         return line
+
+    _RE_TAG_BR = re.compile(r"(?<!\[)\[br\]|(?<!/)/$")
+    _RE_TAG_P  = re.compile(r"(?<!\[)\[p\]")
 
     def _FormatLinks(self, state, line):
         """
@@ -529,39 +536,41 @@ class IzuParser(object):
         Returns the formatted line.
         """
         # -- format external links --
-        
+
         # named image link: [title|http://blah/blah.gif,jpeg,jpg,png,svg], without [[
-        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|(https?://[^\]"<>]+\.(?:gif|jpe?g|png|svg))\]',
-                      r'\1<img alt="\2" title="\2" src="\3">', line)
+        line = self._RE_LINK_NAMED_IMG.sub(r'<img alt="\1" title="\1" src="\2">', line)
 
         # unnamed image link: [http://blah/blah.gif,jpeg,jpg,png,svg], without [[
-        line = re.sub(r'(^|[^\[])\[(https?://[^\]"<>]+\.(?:gif|jpe?g|png|svg))\]',
-                      r'\1<img src="\2">', line)
+        line = self._RE_LINK_UNNAMED_IMG.sub(r'<img src="\1">', line)
 
         # named link: [name|http://blah/blah], accept ftp:// and #name, without [[
-        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|((?:https?://|ftp://|#)[^"<>]+?)\]',
-                      r'\1<a href="\3">\2</a>', line)
+        line = self._RE_LINK_NAMED_URL.sub(r'<a href="\2">\1</a>', line)
 
         # unnamed link: [http://blah/blah], accepts ftp:// and #name, without [[
-        line = re.sub(r'(^|[^\[])\[((?:https?://|ftp://|#)[^"<>]+?)\]',
-                      r'\1<a href="\2">\2</a>', line)
+        line = self._RE_LINK_UNNAMED_URL.sub(r'<a href="\1">\1</a>', line)
 
         # rig link: [name|riglink:image_glob]
-        line = re.sub(r'(^|[^\[])\[([^\|\[\]]+)\|riglink:([^"<>]+?)\]',
-            lambda m: self._ReplRigLink(state, m.group(1), m.group(2), m.group(3)), line)
+        line = self._RE_RIGLINK.sub(
+            lambda m: self._ReplRigLink(state, "", m.group(1), m.group(2)), line)
 
         # rig image: [name|rigimg:size:image_glob]
         line = self._ParseRigImage(state, line, accept_rest=True)
 
-        # unformated link: http://blah or ftp:// (link cannot contain quotes)
+        # unformatted link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
         # and must not be surrounded by brackets
         # and must not be surrounded by < >        -- RM 20041120 fixed
         # and must not be prefixed by [] or |
         # (all these exceptions to prevent processing twice links in the form <a href="http...">http...</a>
-        line = re.sub(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<]+)($|[^"\]])',
-                      r'\1<a href="\2">\2</a>\3', line)
+        line = self._RE_LINK_UNFORMATTED.sub(r'\1<a href="\2">\2</a>\3', line)
         return line
+
+    _RE_LINK_NAMED_IMG   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|(https?://[^\] "<>]+\.(?:gif|jpe?g|png|svg))\]')
+    _RE_LINK_UNNAMED_IMG = re.compile(r'(?<!\[)\[(https?://[^\]" <>]+\.(?:gif|jpe?g|png|svg))\]')
+    _RE_LINK_NAMED_URL   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|((?:https?://|ftp://|#|/)[^ "<>]+?)\]')
+    _RE_LINK_UNNAMED_URL = re.compile(r'(?<!\[)\[((?:https?://|ftp://|#)[^ "<>]+?)\]')
+    _RE_LINK_UNFORMATTED = re.compile(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<>]+)($|[^"\]])')
+    _RE_RIGLINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|riglink:([^ "<>]+?)\]')
 
     def _ParseRigImage(self, state, line, accept_rest):
         """
@@ -571,15 +580,18 @@ class IzuParser(object):
         in the line. If accept_rest is False, a pure match is done so the tag must
         start at the beginning of the line and anything after the tag is ignored.
         """
-        # griups:        1 first    .  2 title               3 islink.  4 size     5 img glob .    6 caption
-        r = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
         if accept_rest:
-            line = r.sub(lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)), line)
+            line = self._RE_RIGIMGLINK.sub(
+                       lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)),
+                       line)
         else:
-            m = r.match(line)
+            m = self._RE_RIGIMGLINK.match(line)
             if m:
                 line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
         return line
+
+    # groups:                     1 first    .  2 title               3 islink.  4 size     5 img glob .    6 caption
+    _RE_RIGIMGLINK = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
 
     def _ReplRigLink(self, state, first, title, image_glob):
         """
@@ -718,9 +730,10 @@ class IzuParser(object):
         Returns the formatted line.
         """
         # simple one-level list: "* blah"
-        line = re.sub(r'^\* (.*)$',
-                      r'<li>\1</li>', line)        
+        line = self._RE_LIST_1.sub(r"<li>\1</li>", line)
         return line
+
+    _RE_LIST_1 = re.compile(r"^\* (.*)$")
 
     def _ImagesSection(self, state, line):
         """

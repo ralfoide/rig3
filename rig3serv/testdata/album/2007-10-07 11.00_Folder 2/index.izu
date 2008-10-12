@@ -3,6 +3,11 @@
 [s:en]
 Some more content in English. Date above should override the one from the folder's name.
 
+Izu test:
+
+__bold__ ''italics'' ==code==
+
+___underline___ '''single quotes''' ===equals===
 
 [s:images]
 [Image 2 @ 128|rigimg:128:T*tiny2.jpg]
