@@ -2,6 +2,10 @@
 [s:en]
 Some content in English.
 
+HTML Link: [Link to some page|/index.html]
+
+HTML Link: [Link to rig3|http://rig3.googlecode.com]
+
 Rig link: [This is a rig link|riglink:T12896*.jpg]
 
 Rig Image: [This is a rig image|rigimg:T12896*.jpg]
