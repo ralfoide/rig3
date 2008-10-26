@@ -32,6 +32,7 @@
 
 ---- Done Version 0.3 ----
 
+20081025 Izu:      Support glob1*/glob2* patterns in rigimg/riglink
 20081011 Izu:      Optimize the regexps, support [name|/relative/url]
 20081011 Engine:   New setting mangled_name_len (was hardcoded before; 0 to deactivate)
 20081011 Fix:      Fix isinstance(str/unicode) (broken UTs after python/pydev update)

@@ -37,7 +37,7 @@ class MockIzuParser(IzuParser):
         super(MockIzuParser, self).__init__(log, settings)
 
     def _GlobGlob(self, dir, pattern):
-        return self._glob.get(pattern, [])
+        return self._glob.get(pattern, None)
 
     def SetPopenValues(self, retcode, stdout):
         self._popen_ret = retcode
@@ -338,7 +338,7 @@ class IzuParserTest(RigTestCase):
 
     def testRigLink(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
             'href="[[raw rig_img_url % '
@@ -348,7 +348,7 @@ class IzuParserTest(RigTestCase):
 
     def testRigImage(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
         
         # full tag with name, size and glob
         self.assertEquals(
@@ -420,7 +420,7 @@ class IzuParserTest(RigTestCase):
 
     def testSectionImage(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": [ "A01234 My Image.jpg" ] })
+                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
         tags, sections = self.m.RenderStringToHtml("[s:images]")
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))

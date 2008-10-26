@@ -8,6 +8,8 @@ HTML Link: [Link to rig3|http://rig3.googlecode.com]
 
 Rig link: [This is a rig link|riglink:T12896*.jpg]
 
+Rig link in sub-dir: [This is a rig link|riglink:*dir/flag*.gif] [This is a rig link|riglink:*dir\flag*.gif]
+
 Rig Image: [This is a rig image|rigimg:T12896*.jpg]
 
 Rig Image: [This is a rig image|rigimg:124:T12896*.jpg]

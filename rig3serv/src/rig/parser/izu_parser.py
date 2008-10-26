@@ -598,16 +598,16 @@ class IzuParser(object):
         Returns the replacement string for a [name|riglink:...] tag.
         
         The image_glob parameter must be a leaf name (no paths) and will be
-        located in the current Izu's file directory if possible.
+        located in the current Izu's file directory or subdirectories. if possible.
         """
         result = ""
         filename = state.Filename()
         if filename and image_glob:
-            choices = self._GlobGlob(os.path.dirname(filename), image_glob)
-            if choices:
+            choice = self._GlobGlob(os.path.dirname(filename), image_glob)
+            if choice:
                 result = '[[[if rig_base]]<a title="%(name)s" href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">%(name)s</a>[[[end]]'
                 result %= { "name": title, 
-                            "img": urllib.quote(choices[0], "/") }
+                            "img": urllib.quote(choice, "/") }
         return first + result
 
     def _ReplRigImage(self, state, first, title, is_link, size, image_glob, caption):
@@ -624,14 +624,14 @@ class IzuParser(object):
         filename = state.Filename()
         if filename and image_glob:
             abs_dir = os.path.dirname(filename)
-            choices = self._GlobGlob(abs_dir, image_glob)
-            if choices:
+            choice = self._GlobGlob(abs_dir, image_glob)
+            if choice:
                 rel_file = state.RelFile()
                 if rel_file:
-                    rel_file = rel_file.dirname().join(choices[0])
-                result = self._ExternalGenRigUrl(rel_file, abs_dir, choices[0], title, is_link, size, caption)
+                    rel_file = rel_file.dirname().join(choice)
+                result = self._ExternalGenRigUrl(rel_file, abs_dir, choice, title, is_link, size, caption)
                 if not result:
-                    result = self._InternalGenRigUrl(choices[0], title, is_link, size, caption)
+                    result = self._InternalGenRigUrl(choice, title, is_link, size, caption)
         return first + result
 
     def _ExternalGenRigUrl(self, rel_file, abs_dir, filename, title, is_link, size, caption):
@@ -802,17 +802,43 @@ class IzuParser(object):
 
     def _GlobGlob(self, dir, pattern):
         """
-        Similar to a glob.glob but works by listing the given directory
-        and applying the pattern *only* to the basename (aka leaf name).
+        Traverse a directory tree starting at directory "dir" and using
+        the glob-like pattern.
+        
+        Pattern can be composed of several path segments, each one
+        being a glob-like expression. Each segment is resolved once
+        going forward, thus making sure you can only select things in
+        the current or sub-directories. For each glob resolved, only
+        the first choice is taken into account.
         
         This is used by _ReplRigLink.
         """
-        result = []
-        for d in os.listdir(dir):
-            leaf = os.path.basename(d)
-            if fnmatch.fnmatch(leaf, pattern):
-                result.append(leaf)
-        return result
+        if isinstance(pattern, list):
+            segments = pattern
+        else:
+            segments = pattern.split(os.path.sep)
+
+        while segments:
+            segment = segments[0]
+            segments = segments[1:]
+
+            # ignore invalid segments, the root segment (None) or
+            # attemps to go backward (..)
+            if not segment or segment == "." or segment == "..":
+                continue
+
+            for d in os.listdir(dir):
+                leaf = os.path.basename(d)
+                if fnmatch.fnmatch(leaf, segment):
+
+                    if not segments:
+                        return leaf
+                    dir2 = os.path.join(dir, leaf)
+                    found = self._GlobGlob(dir2, segments)
+                    if found:
+                        return os.path.join(leaf, found)
+
+        return None
 
     def _SubprocessPopen(self, *popenargs, **kwargs):
         """
