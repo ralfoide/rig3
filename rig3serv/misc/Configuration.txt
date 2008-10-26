@@ -290,9 +290,10 @@ template specified by the variables rig_thumb_url and rig_img_url is used.
 
 Environment:
 - ABS_DIR: the current directory being processed, absolute for the filesystem.
+           This is the directory of the current post, the image could point to a sub-directory.
 - REL_FILE: the filename relative to the source "blog:" from the settings.
-- IMG_NAME: the basename of the image, without any directory (i.e. relative to ABS_DIR).
-            Note that this is the *same* basename as the one specified by REL_FILE.
+- IMG_NAME: the name of the image, relative to ABS_DIR.
+            This will contain any relative directories given to the [rigimglink] command.
 - RIG_BASE: the rig_base parameter from the settings, either the global one or
             the source-specific one.
 - IS_LINK: "1" if <a> is required, "0" otherwise.

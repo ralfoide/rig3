@@ -338,7 +338,11 @@ class IzuParserTest(RigTestCase):
 
     def testRigLink(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
+                   glob={ "A01234*.jpg": "A01234 My Image.jpg",
+                          os.path.join("pic*", "all*", "A01234*.jpg"): 
+                            os.path.join("pictures", "all my pix", "A01234 Some Image.jpg")
+                        })
+
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
             'href="[[raw rig_img_url % '
@@ -346,9 +350,21 @@ class IzuParserTest(RigTestCase):
             'This is &amp; comment</a>[[end]]</span>',
             self._Render("[This is & comment|riglink:A01234*.jpg]"))
 
+        self.assertEquals(
+            '<span class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
+            'href="[[raw rig_img_url % '
+            '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "pictures/all%20my%20pix", "img": "A01234%20Some%20Image.jpg" } ]]">'
+            'This is &amp; comment</a>[[end]]</span>',
+            self._Render("[This is & comment|riglink:" + os.path.join("pic*", "all*", "A01234*.jpg") + "]"))
+
     def testRigImage(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
+                   glob={ "A01234*.jpg": "A01234 My Image.jpg",
+                          "*dir/flag*.gif" : "mydir/flag1.gif",
+                          "*dir\\flag*.gif" : "mydir\\flag1.gif",
+                          os.path.join("pic*", "all*", "A01234*.jpg"): 
+                            os.path.join("pictures", "all my pix", "A01234 Some Image.jpg")
+                        })
         
         # full tag with name, size and glob
         self.assertEquals(
@@ -357,6 +373,14 @@ class IzuParserTest(RigTestCase):
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:256:A01234*.jpg]"))
+        
+        # full tag with name, size and sub-dir-based glob
+        self.assertEquals(
+            '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
+            'src="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "pictures/all%20my%20pix", "img": "A01234%20Some%20Image.jpg", "size": "256" } ]]">'
+            '[[end]]</span>',
+            self._Render("[This is & comment|rigimg:256:" + os.path.join("pic*", "all*", "A01234*.jpg") + "]"))
         
         # tag with name and glob, no size
         self.assertEquals(
@@ -417,6 +441,23 @@ class IzuParserTest(RigTestCase):
             '<br><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[rigimg:256:A01234*.jpg|This is a caption!]"))
+
+        # Edge case. This used to be display an invalid size. Also features both
+        # windows and unix path separators.
+        self.assertEquals(
+            '<span class="izu">\n'
+            'Here: '
+            '[[if rig_base]]<img title="caption" '
+            'src="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "mydir", "img": "flag1.gif", "size": rig_img_size } ]]">'
+            '[[end]]'
+            ' '
+            '[[if rig_base]]<img title="caption" '
+            'src="[[raw rig_thumb_url % '
+            '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "mydir", "img": "flag1.gif", "size": rig_img_size } ]]">'
+            '[[end]]'
+            '</span>',
+            self._Render("Here: [caption|rigimg:*dir/flag*.gif] [caption|rigimg:*dir\\flag*.gif]"))
 
     def testSectionImage(self):
         self.m = MockIzuParser(self.Log(),

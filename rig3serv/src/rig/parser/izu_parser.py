@@ -551,7 +551,7 @@ class IzuParser(object):
 
         # rig link: [name|riglink:image_glob]
         line = self._RE_RIGLINK.sub(
-            lambda m: self._ReplRigLink(state, "", m.group(1), m.group(2)), line)
+            lambda m: self._ReplRigLink(state, m.group(1), m.group(2)), line)
 
         # rig image: [name|rigimg:size:image_glob]
         line = self._ParseRigImage(state, line, accept_rest=True)
@@ -582,18 +582,18 @@ class IzuParser(object):
         """
         if accept_rest:
             line = self._RE_RIGIMGLINK.sub(
-                       lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)),
+                       lambda m: self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)),
                        line)
         else:
             m = self._RE_RIGIMGLINK.match(line)
             if m:
-                line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
+                line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
         return line
 
-    # groups:                     1 first    .  2 title               3 islink.  4 size     5 img glob .    6 caption
-    _RE_RIGIMGLINK = re.compile(r'(^|[^\[])\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:]*?):)?([^"<>|]+?)(?:\|([^"<>]+?))?\]')
+    # groups:                     . first  .  1 title               2 islink.  3 size     4 img glob .    5 caption
+    _RE_RIGIMGLINK = re.compile(r'(?<!\[)\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:\]]*?):)?([^"<>|]+?)(?:\|([^"<>\]]+?))?\]')
 
-    def _ReplRigLink(self, state, first, title, image_glob):
+    def _ReplRigLink(self, state, title, image_glob):
         """
         Returns the replacement string for a [name|riglink:...] tag.
         
@@ -605,12 +605,20 @@ class IzuParser(object):
         if filename and image_glob:
             choice = self._GlobGlob(os.path.dirname(filename), image_glob)
             if choice:
-                result = '[[[if rig_base]]<a title="%(name)s" href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">%(name)s</a>[[[end]]'
-                result %= { "name": title, 
-                            "img": urllib.quote(choice, "/") }
-        return first + result
+                subdir = os.path.dirname(choice)
+                filename = os.path.basename(choice)
+                album = "curr_album"
+                if subdir:
+                    if os.path.sep != "/":
+                        subdir = subdir.replace(os.path.sep, "/")
+                    album += ' + (curr_album and "/" or "") + "%s"' % urllib.quote(subdir, "/")
+                result = '[[[if rig_base]]<a title="%(name)s" href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": %(album)s, "img": "%(img)s" } ]]">%(name)s</a>[[[end]]'
+                result %= { "name":  title, 
+                            "album": album,
+                            "img":   urllib.quote(filename, "/") }
+        return result
 
-    def _ReplRigImage(self, state, first, title, is_link, size, image_glob, caption):
+    def _ReplRigImage(self, state, title, is_link, size, image_glob, caption):
         """
         Returns the replacement string for a [name|rigimg:size:image_glob|caption]
         Title and size are optional and can be empty or None. 
@@ -629,10 +637,12 @@ class IzuParser(object):
                 rel_file = state.RelFile()
                 if rel_file:
                     rel_file = rel_file.dirname().join(choice)
+                subdir = os.path.dirname(choice)
+                filename = os.path.basename(choice)
                 result = self._ExternalGenRigUrl(rel_file, abs_dir, choice, title, is_link, size, caption)
                 if not result:
-                    result = self._InternalGenRigUrl(choice, title, is_link, size, caption)
-        return first + result
+                    result = self._InternalGenRigUrl(subdir, filename, title, is_link, size, caption)
+        return result
 
     def _ExternalGenRigUrl(self, rel_file, abs_dir, filename, title, is_link, size, caption):
         """
@@ -698,29 +708,35 @@ class IzuParser(object):
         return result
         
 
-    def _InternalGenRigUrl(self, filename, title, is_link, size, caption):
+    def _InternalGenRigUrl(self, subdir, filename, title, is_link, size, caption):
         """
         Returns the replacement string for a [name|rigimg:size:image_glob|caption]
         based on the rig_img_url and rig_thumb_url variables.
         """
         result = '[[[if rig_base]]'
+        album = "curr_album"
+        if subdir:
+            if os.path.sep != "/":
+                subdir = subdir.replace(os.path.sep, "/")
+            album += ' + (curr_album and "/" or "") + "%s"' % urllib.quote(subdir, "/")
         if is_link:
             result += '<a '
             if title:
                 result += 'title="%(name)s" '
-            result += 'href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s" } ]]">'
+            result += 'href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": %(album)s, "img": "%(img)s" } ]]">'
         result += '<img '
         if title:
             result += 'title="%(name)s" '
-        result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": curr_album, "img": "%(img)s", "size": %(size)s } ]]">'
+        result += 'src="[[[raw rig_thumb_url %% { "rig_base": rig_base, "album": %(album)s, "img": "%(img)s", "size": %(size)s } ]]">'
         if is_link:
             result += '</a>'
         if caption:
             result += "<br><tt>%(caption)s</tt>"
         result += '[[[end]]'
-        result %= { "name": title,
-                    "img": urllib.quote(filename, "/"),
-                    "size": size and ('"%s"' % size) or "rig_img_size",
+        result %= { "name":    title,
+                    "album":   album,
+                    "img":     urllib.quote(filename, "/"),
+                    "size":    size and ('"%s"' % size) or "rig_img_size",
                     "caption": caption }
         return result
 
