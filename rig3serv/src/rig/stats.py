@@ -34,7 +34,7 @@ def inc(key, n=1):
     s = _MAP.get(key)
     if s is None:
         s = _MAP[key] = _stat()
-    s.count += 1
+    s.count += n
 
 #------------------------
 def display():

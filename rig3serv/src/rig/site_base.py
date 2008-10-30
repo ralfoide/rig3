@@ -152,7 +152,7 @@ class SiteBase(object):
         categories = self._GollectCategories(site_items)
 
         stats.stop("1-parse")
-        stats.inc ("1-parse", len(self._settings.source_list))
+        stats.inc ("1-parse", len(site_items))
 
         self._log.Info("[%s] Found %d site_items, %d categories",
                self._settings.public_name,
