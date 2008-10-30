@@ -457,7 +457,7 @@ class IzuParserTest(RigTestCase):
             '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "mydir", "img": "flag1.gif", "size": rig_img_size } ]]">'
             '[[end]]'
             '</span>',
-            self._Render("Here: [caption|rigimg:*dir/flag*.gif] [caption|rigimg:*dir\\flag*.gif]"))
+            self._Render("Here: [caption|rigimg:*dir/flag*.gif] [caption|rigimg:*dir" + os.path.sep + "flag*.gif]"))
 
     def testSectionImage(self):
         self.m = MockIzuParser(self.Log(),
