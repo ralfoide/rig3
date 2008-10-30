@@ -36,6 +36,7 @@ from rig.parser.dir_parser import DirParser, RelDir
 from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
 from rig.version import Version
+from rig import stats
 
 DEFAULT_THEME = "default"
 
@@ -136,20 +137,34 @@ class SiteBase(object):
         Processes the site. Do whatever is needed to get the job done.
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._settings.public_name, self._settings.source_list, self._settings.dest_dir, self._settings.theme)
+                       self._settings.public_name,
+                       self._settings.source_list,
+                       self._settings.dest_dir,
+                       self._settings.theme)
         self.MakeDestDirs()
         self._CopyMedia()
         site_items = []
+        
+        stats.start("1-parse")
+        
         for source in self._settings.source_list:
             self._ProcessSourceItems(source, site_items)
         categories = self._GollectCategories(site_items)
+
+        stats.stop("1-parse")
+        stats.inc ("1-parse", len(self._settings.source_list))
 
         self._log.Info("[%s] Found %d site_items, %d categories",
                self._settings.public_name,
                len(site_items), len(categories))
 
+        stats.start("2-gen")
+
         self.GeneratePages(categories, site_items)
         # TODO: self.DeleteOldGeneratedItems()
+
+        stats.stop("2-gen")
+        stats.inc ("2-gen", len(site_items))
 
     def _CopyMedia(self):
         """
