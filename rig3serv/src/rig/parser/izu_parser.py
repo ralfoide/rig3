@@ -260,6 +260,17 @@ class IzuParser(object):
 
     def _ParseEscapeBlock(self, is_block, state, line):
         """
+        Parses one line of the input stream and detect blocks based on 3
+        rules:
+        - blocks completly held in the same line.
+        - opened blocks ending on this line.
+        - new blocks opened on this line.
+
+        Input/Output:
+        - is_block (string): Non-empty if there's currently a block opened,
+          in which case the string is the key value for the _escape_block
+          map. The map points to the method to be called to handle the line
+          inside the escaped block.
         """
         # First take care of the case of a block that opens and closes on the same line
         while line:
@@ -322,12 +333,17 @@ class IzuParser(object):
     def _EscapeRawHtml(self, state, line):
         """
         Process an escaped line in an [!html: ... --] block.
-        We simply appending the line as-is, unescaped, to the current section
+        
+        We simply append the line as-is, non-escaped, to the current section
         without using the current section formatter.
+        
+        The line splitter (in _ParseStream) removed the line separator so
+        we need to re-inject one. This is necessary for some HTML tags such
+        as <pre> which are line-sensitive.
         """
         curr_section = state.CurrSection()
         state.InitSection(curr_section, "")
-        state.Append(curr_section, line)
+        state.Append(curr_section, line + "\n")
 
                                
     # --- structural parsers

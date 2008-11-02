@@ -221,10 +221,10 @@ class IzuParserTest(RigTestCase):
             self._Render("foo[!--[!html:<img whatever>--]and <img>bar"))
 
         # A block can start on a line and end on another. Inner new lines are
-        # discarded. TODO: this should be fixed, they should be passed as-is.
+        # not discarded.
         self.assertEquals(
-            '<span class="izu">\nfirst line\nfoo<blah1><blah2>toto</blah2>\nbar\nend</span>',
-            self._Render("first line\nfoo[!html:<blah1>\n<blah2>toto</blah2>--]bar\nend"))
+            '<span class="izu">\nfirst line\nfoo<blah1>\n<blah2>\n\ntoto</blah2>\nbar\nend</span>',
+            self._Render("first line\nfoo[!html:<blah1>\n<blah2>\n\ntoto</blah2>--]bar\nend"))
 
     def testSection(self):
         tags, sections = self.m.RenderStringToHtml("default section is en")
