@@ -40,7 +40,7 @@ class Rig3Test(RigTestCase):
         """
         Test init of Rig3
         """
-        self.assertNotEqual(None, self.m)
+        self.assertNotEquals(None, self.m)
 
     def testParseArgs_None(self):
         """
@@ -82,7 +82,7 @@ class Rig3Test(RigTestCase):
         self.assertTrue(self.m._dry_run)
         
     def testParseArgs_C(self):
-        self.assertNotEqual([ "/foo.rc" ], self.m._configPaths)
+        self.assertNotEquals([ "/foo.rc" ], self.m._configPaths)
         self.m.ParseArgs([ "blah", "-c", "/foo.rc" ])
         self.assertListEquals([ "/foo.rc" ], self.m._configPaths)
 

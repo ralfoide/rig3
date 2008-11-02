@@ -104,6 +104,18 @@ class RigTestCase(unittest.TestCase):
               (msg or "assertEquals failed", expected, actual)
         super(RigTestCase, self).assertEquals(expected, actual, msg)
 
+    def assertNotEquals(self, expected, actual, msg=None):
+        """
+        Same as the base unittest.TestCase.assertNotEquals
+        except it prints both values on different lines for easier visual diff.
+        """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+              (msg or "assertNotEquals failed", expected, actual)
+        super(RigTestCase, self).assertNotEquals(expected, actual, msg)
+    
+    def assertNotEqual(self, expected, actual, msg=None):
+        raise NotImplementedError("Please use assertNotEquals instead of assertNotEqual.")
+
     def assertSame(self, expected, actual, msg=None):
         """
         Asserts that the two reference point to the same object, not just
@@ -112,6 +124,15 @@ class RigTestCase(unittest.TestCase):
         msg = "%s\nExpected: %s\nActual  : %s" % \
               (msg or "assertSame failed", expected, actual)
         super(RigTestCase, self).assertEquals(id(expected), id(actual), msg)
+
+    def assertNotSame(self, expected, actual, msg=None):
+        """
+        Asserts that the two reference do NOT point to the same object, not just
+        non-equal objects. This compares the internal object ids.
+        """
+        msg = "%s\nExpected: %s\nActual  : %s" % \
+              (msg or "assertNotSame failed", expected, actual)
+        super(RigTestCase, self).assertNotEquals(id(expected), id(actual), msg)
 
     def assertSearch(self, expected_regexp, actual, msg=None):
         """

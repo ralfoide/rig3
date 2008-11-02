@@ -72,7 +72,7 @@ class SiteBaseTest(RigTestCase):
                          dest_dir=self._tempdir,
                          theme=DEFAULT_THEME)
         m = MockSiteBase(self, self.Log(), False, s)
-        self.assertNotEqual(None, m)
+        self.assertNotEquals(None, m)
         self.assertEquals("Site Name", m._settings.public_name)
         self.assertEquals(
             [ SourceDirReader(self.Log(), None, "/tmp/source/data") ],

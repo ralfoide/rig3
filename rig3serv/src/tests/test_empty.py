@@ -24,7 +24,7 @@ class EmptyTest(RigTestCase):
         """
         Test init of Empty
         """
-        self.assertNotEqual(None, self.m)
+        self.assertNotEquals(None, self.m)
 
 
 #------------------------

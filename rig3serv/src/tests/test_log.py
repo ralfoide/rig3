@@ -33,7 +33,7 @@ class LogTest(RigTestCase):
         pass
 
     def testLogging(self):
-        self.assertNotEqual(None, self._log)
+        self.assertNotEquals(None, self._log)
         self.assertEquals("", self._str.getvalue())
         self._log.Warn("test_simple")
         self.assertMatches(r"WARNING (?:.*[/\\])?test_log\.py \[1901/01/02 12:13:14\] test_simple\n",
