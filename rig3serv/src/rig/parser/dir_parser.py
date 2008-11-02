@@ -32,6 +32,9 @@ class RelPath(object):
         else:
             return False
 
+    def __hash__(self):
+        return hash(self.abs_path)
+
     def __str__(self):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)
 

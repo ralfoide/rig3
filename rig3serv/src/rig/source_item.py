@@ -12,6 +12,20 @@ from datetime import datetime
 from rig.parser.dir_parser import RelDir, RelFile
 
 #------------------------
+def _rig_hash(obj):
+    h = 0
+    if isinstance(obj, list):
+        for v in obj:
+            h = h ^ _rig_hash(v)
+    elif isinstance(obj, dict):
+        for k, v in obj.iteritems():
+            h = h ^ _rig_hash(k) ^ _rig_hash(v)
+    else:
+        h = hash(obj)
+    return h
+            
+
+#------------------------
 class SourceSettings(object):
     """
     Settings that can be overriden and attached to a specific source.
@@ -41,6 +55,9 @@ class SourceSettings(object):
         keys = self.__dict__.keys()
         keys.sort()
         return keys
+    
+    def __hash__(self):
+        return _rig_hash(self.__dict__)
 
 #------------------------
 class SourceItem(object):
@@ -64,6 +81,16 @@ class SourceItem(object):
                 self.date == rhs.date and
                 self.source_settings == rhs.source_settings and
                 self.categories == rhs.categories)
+
+    def __ne__(self, rhs):
+        return not self.__eq__(rhs)
+    
+    def __hash__(self):
+        h = (hash(self.date) ^ 
+             hash(self.source_settings) ^ 
+             _rig_hash(self.categories))
+        return h
+        
 
 #------------------------
 class SourceDir(SourceItem):
@@ -90,6 +117,12 @@ class SourceDir(SourceItem):
                 self.rel_dir == rhs.rel_dir and
                 self.all_files == rhs.all_files)
 
+    def __hash__(self):
+        h = super(SourceDir, self).__hash__() ^ hash(self.rel_dir)
+        for f in self.all_files:
+            h = h ^ hash(f)
+        return h
+
     def __repr__(self):
         return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
                                          self.date,
@@ -115,6 +148,10 @@ class SourceFile(SourceItem):
             return False
         return (isinstance(rhs, SourceFile) and
                 self.rel_file == rhs.rel_file)
+
+    def __hash__(self):
+        h = super(SourceFile, self).__hash__() ^ hash(self.rel_file)
+        return h
 
     def __repr__(self):
         return "<%s (%s) %s, %s>" % (self.__class__.__name__,

@@ -37,20 +37,34 @@ class RelPathTest(RigTestCase):
     def testBasename(self):
         self.assertEquals("blah", self.m.basename())
 
-    def testDirname(self, *args):
+    def testDirname(self):
         p = self.m.dirname()
         self.assertEquals(
               RelPath(os.path.join("base", "dir"),
                       os.path.join("sub", "dir")),
               p)
 
-    def testJoin(self, *args):
+    def testJoin(self):
         p = self.m.join("foo", "bar")
         self.assertEquals(
               RelPath(os.path.join("base", "dir"),
                       os.path.join("sub", "dir", "blah", "foo", "bar")),
               p)
 
+    def testEqAndHash(self):
+        m2 = RelPath(os.path.join("base", "dir"),
+                     os.path.join("sub", "dir", "blah"))
+        
+        self.assertNotSame(self.m, m2)
+        self.assertEquals(self.m, m2)
+        self.assertEquals(hash(self.m), hash(m2))
+
+        m3 = m2.join("foo")
+
+        self.assertNotSame(self.m, m3)
+        self.assertNotEquals(self.m, m3)
+        self.assertNotEquals(hash(self.m), hash(m3))
+        
 
 #------------------------
 class MockDirParser(DirParser):
