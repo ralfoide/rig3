@@ -149,10 +149,11 @@ class SiteBase(object):
         
         for source in self._settings.source_list:
             self._ProcessSourceItems(source, site_items)
-        categories = self._GollectCategories(site_items)
 
         stats.stop("1-parse")
         stats.inc ("1-parse", len(site_items))
+
+        categories = self._GollectCategories(site_items)
 
         self._log.Info("[%s] Found %d site_items, %d categories",
                self._settings.public_name,
@@ -200,10 +201,14 @@ class SiteBase(object):
 
         Returns in_out_items, which is a list of SiteItems.
         """
+        dups = {}
+
         for source_item in source.Parse(self._settings.dest_dir):
-            site_item = self.GenerateItem(source_item)
-            if site_item:
-                in_out_items.append(site_item)
+            if not source_item in dups:
+                dups[source_item] = source_item
+                site_item = self.GenerateItem(source_item)
+                if site_item:
+                    in_out_items.append(site_item)
         return in_out_items
 
     def _TemplatePath(self, path, **keywords):

@@ -19,6 +19,8 @@ from rig.site.site_default import SiteDefault
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
+from rig.source_item import SourceFile, SourceDir, SourceSettings
+from rig.parser.dir_parser import RelFile, RelDir
 
 #------------------------
 class MockSiteBase(SiteBase):
@@ -44,6 +46,29 @@ class MockSiteBase(SiteBase):
 
     def GenerateItem(self, source_item):
         return None
+
+class MockSiteBase2(MockSiteBase):
+    """
+    Like MockSiteBase except GenerateItem is hacked to return its argument.
+    Used to test _ProcessSourceItems.
+    """
+    def __init__(self, test_case, log, dry_run, settings):
+        super(MockSiteBase2, self).__init__(test_case, log, dry_run, settings)
+
+    def GenerateItem(self, source_item):
+        return source_item
+
+#------------------------
+class MockSourceReader(object):
+    """
+    A mock source reader that returns the list of source items in its
+    Parse method. Used to test _ProcessSourceItems.
+    """
+    def __init__(self, source_items):
+        self._source_items = source_items
+    
+    def Parse(self, dest_dir):
+        return self._source_items
 
 #------------------------
 class SiteBaseTest(RigTestCase):
@@ -122,6 +147,41 @@ class SiteBaseTest(RigTestCase):
         self.assertSearch("base url is http://www.example.com", style_css)
         self.assertSearch("public name is Test Album", style_css)
 
+    def testProcessSourceItems_DuplicatesRemoval(self):
+        today = datetime.today()
+        source = MockSourceReader(
+             [
+             SourceFile(today, RelFile("/base", "file1")),
+             SourceFile(today, RelFile("/AYB",  "file1")),
+             SourceFile(today, RelFile("/AYB",  "file1")),
+             SourceFile(today, RelFile("/base", "file2")),
+             SourceFile(today, RelFile("/base", "file2")),
+             SourceFile(today, RelFile("/base", "file2"),
+                               source_settings=SourceSettings(rig_base="/rig/base")),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ]),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
+             ])
+        m2 = MockSiteBase2(self, self.Log(), False, self.s)
+
+        in_out_items = []
+        m2._ProcessSourceItems(source, in_out_items)
+        
+        self.assertListEquals(
+             [
+             SourceFile(today, RelFile("/base", "file1")),
+             SourceFile(today, RelFile("/AYB",  "file1")),
+             SourceFile(today, RelFile("/base", "file2")),
+             SourceFile(today, RelFile("/base", "file2"),
+                               source_settings=SourceSettings(rig_base="/rig/base")),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ]),
+             ],
+             in_out_items)
+        
 
 #------------------------
 # Local Variables:

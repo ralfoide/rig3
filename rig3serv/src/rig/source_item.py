@@ -56,6 +56,9 @@ class SourceSettings(object):
         keys.sort()
         return keys
     
+    def __eq__(self, rhs):
+        return (isinstance(rhs, SourceSettings) and self.__dict__ == rhs.__dict__)
+    
     def __hash__(self):
         return _rig_hash(self.__dict__)
 

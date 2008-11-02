@@ -32,6 +32,7 @@
 
 ---- Done Version 0.3 ----
 
+20081102 Engine:   Discard dup source items (after parsing source tree)
 20081101 Bug Fix:  Izu raw-html was discarding line separators
 20081029 Engine:   Capture basic timing stats
 20081025 Izu:      Support glob1*/glob2* patterns in rigimg/riglink
