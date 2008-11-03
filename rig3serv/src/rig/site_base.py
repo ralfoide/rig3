@@ -16,7 +16,7 @@ Workflow:
     - Call self._CopyMedia()                         (not overriden)
     - For each source: Call self._ProcessSourceItems (never overriden)
         - For each item: Calls self.GenerateItem     (always overriden)
-    - Calls self._GollectCategories                  (never overriden)
+    - Calls self._CollectCategories                  (never overriden)
     - Calls self.GeneratePages                       (always overriden)
 
 Derives classes MUST implement:
@@ -153,7 +153,7 @@ class SiteBase(object):
         stats.stop("1-parse")
         stats.inc ("1-parse", len(site_items))
 
-        categories = self._GollectCategories(site_items)
+        categories = self._CollectCategories(site_items)
 
         self._log.Info("[%s] Found %d site_items, %d categories",
                self._settings.public_name,
@@ -175,7 +175,7 @@ class SiteBase(object):
         The base implementation is expected to be good enough.
         """
         _keywords = { "base_url": self._settings.base_url,
-                    "public_name": self._settings.public_name }
+                      "public_name": self._settings.public_name }
         def _apply_template(source, dest):
             # Use fill template to copy/transform the file
             template = Template(self._log, file=source)
@@ -251,7 +251,7 @@ class SiteBase(object):
 
     # Utilities, overridable for unit tests
 
-    def _GollectCategories(self, site_items):
+    def _CollectCategories(self, site_items):
         """
         Get all categories used in all site items.
         Returns a list of string, sorted.
