@@ -581,8 +581,8 @@ class IzuParser(object):
         line = self._RE_LINK_UNFORMATTED.sub(r'\1<a href="\2">\2</a>\3', line)
         return line
 
-    _RE_LINK_NAMED_IMG   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|(https?://[^\] "<>]+\.(?:gif|jpe?g|png|svg))\]')
-    _RE_LINK_UNNAMED_IMG = re.compile(r'(?<!\[)\[(https?://[^\]" <>]+\.(?:gif|jpe?g|png|svg))\]')
+    _RE_LINK_NAMED_IMG   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|((?:https?://|/)[^\] "<>]+\.(?:gif|jpe?g|png|svg))\]')
+    _RE_LINK_UNNAMED_IMG = re.compile(r'(?<!\[)\[((?:https?://|/)[^\]" <>]+\.(?:gif|jpe?g|png|svg))\]')
     _RE_LINK_NAMED_URL   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|((?:https?://|ftp://|#|/)[^ "<>]+?)\]')
     _RE_LINK_UNNAMED_URL = re.compile(r'(?<!\[)\[((?:https?://|ftp://|#)[^ "<>]+?)\]')
     _RE_LINK_UNFORMATTED = re.compile(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<>]+)($|[^"\]])')
