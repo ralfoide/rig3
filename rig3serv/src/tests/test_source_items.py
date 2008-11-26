@@ -15,6 +15,19 @@ from rig.source_item import SourceDir, SourceFile, SourceSettings
 from rig.parser.dir_parser import RelDir, RelFile
 
 #------------------------
+class MockRelFile(RelFile):
+    """
+    Mocks RelFile so that realpath returns abs_path. This is necessary
+    so that we can call it with dummy paths. OTOH it prevents from testing
+    paths duplicates using symlinks, which we can't do on windows anyway.
+    """
+    def __init__(self, abs_base, rel_curr):
+        super(RelFile, self).__init__(abs_base, rel_curr)
+
+    def realpath(self):
+        return self.abs_path
+
+#------------------------
 class SourceDirTest(RigTestCase):
 
     def testSourceDir(self):
@@ -29,8 +42,8 @@ class SourceDirTest(RigTestCase):
 
     def testEqAndHash(self):
         date1 = datetime.today()
-        s1 = SourceDir(date1, RelFile("/tmp", "foo.txt"), ["file1", "file2"])
-        s2 = SourceDir(date1, RelFile("/tmp", "foo.txt"), ["file1", "file2"])
+        s1 = SourceDir(date1, MockRelFile("/tmp", "foo.txt"), ["file1", "file2"])
+        s2 = SourceDir(date1, MockRelFile("/tmp", "foo.txt"), ["file1", "file2"])
 
         # 2 equal but different objects
         self.assertNotSame(s1, s2)
@@ -39,28 +52,28 @@ class SourceDirTest(RigTestCase):
 
         # with same path but a different date
         date2 = datetime.fromtimestamp(1) # e.g. 'Wed Dec 31 16:00:01 1969'
-        s2 = SourceDir(date2, RelFile("/tmp", "foo.txt"), ["file1", "file2"])
+        s2 = SourceDir(date2, MockRelFile("/tmp", "foo.txt"), ["file1", "file2"])
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # with same date but different path
-        s2 = SourceDir(date1, RelFile("/tmp", "blah.txt"), ["file1", "file2"])
+        s2 = SourceDir(date1, MockRelFile("/tmp", "blah.txt"), ["file1", "file2"])
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # with different all-files list
-        s2 = SourceDir(date1, RelFile("/tmp", "foo.txt"), ["abc", "def", "123"])
+        s2 = SourceDir(date1, MockRelFile("/tmp", "foo.txt"), ["abc", "def", "123"])
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # same date/path but different source settings
-        s2 = SourceDir(date1, RelFile("/tmp", "foo.txt"), ["file1", "file2"],
+        s2 = SourceDir(date1, MockRelFile("/tmp", "foo.txt"), ["file1", "file2"],
                         source_settings=SourceSettings(rig_base="/rig/base"))
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # and different categories
-        s2 = SourceDir(date1, RelFile("/tmp", "foo.txt"), ["file1", "file2"])
+        s2 = SourceDir(date1, MockRelFile("/tmp", "foo.txt"), ["file1", "file2"])
         self.assertEquals(s1, s2)
         self.assertEquals(hash(s1), hash(s2))
         s2.categories = ["foo", "bar"]
@@ -72,7 +85,7 @@ class SourceFileTest(RigTestCase):
 
     def testSourceFile(self):
         date = datetime.today()
-        rel_file = RelFile("/tmp", "foo.txt")
+        rel_file = MockRelFile("/tmp", "foo.txt")
         s = SourceFile(date, rel_file)
         self.assertNotEquals(None, s)
         self.assertSame(date, s.date)
@@ -80,8 +93,8 @@ class SourceFileTest(RigTestCase):
 
     def testEqAndHash(self):
         date1 = datetime.today()
-        s1 = SourceFile(date1, RelFile("/tmp", "foo.txt"))
-        s2 = SourceFile(date1, RelFile("/tmp", "foo.txt"))
+        s1 = SourceFile(date1, MockRelFile("/tmp", "foo.txt"))
+        s2 = SourceFile(date1, MockRelFile("/tmp", "foo.txt"))
 
         # 2 equal but different objects
         self.assertNotSame(s1, s2)
@@ -90,23 +103,23 @@ class SourceFileTest(RigTestCase):
 
         # with same path but a different date
         date2 = datetime.fromtimestamp(1) # e.g. 'Wed Dec 31 16:00:01 1969'
-        s2 = SourceFile(date2, RelFile("/tmp", "foo.txt"))
+        s2 = SourceFile(date2, MockRelFile("/tmp", "foo.txt"))
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # with same date but different path
-        s2 = SourceFile(date1, RelFile("/tmp", "blah.txt"))
+        s2 = SourceFile(date1, MockRelFile("/tmp", "blah.txt"))
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # same date/path but different source settings
-        s2 = SourceFile(date1, RelFile("/tmp", "foo.txt"),
+        s2 = SourceFile(date1, MockRelFile("/tmp", "foo.txt"),
                         source_settings=SourceSettings(rig_base="/rig/base"))
         self.assertNotEquals(s1, s2)
         self.assertNotEquals(hash(s1), hash(s2))
 
         # and different categories
-        s2 = SourceFile(date1, RelFile("/tmp", "foo.txt"))
+        s2 = SourceFile(date1, MockRelFile("/tmp", "foo.txt"))
         self.assertEquals(s1, s2)
         self.assertEquals(hash(s1), hash(s2))
         s2.categories = ["foo", "bar"]

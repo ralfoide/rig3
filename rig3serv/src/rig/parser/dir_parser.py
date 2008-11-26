@@ -23,6 +23,7 @@ class RelPath(object):
         self.abs_base = abs_base
         self.rel_curr = rel_curr
         self.abs_path = os.path.join(abs_base, rel_curr)
+        self._realpath = None  # computed on demand. See realpath()
 
     def __eq__(self, rhs):
         if isinstance(rhs, self.__class__):
@@ -80,6 +81,15 @@ class RelPath(object):
                    os.path.join(self.rel_curr, *args))
         return p
 
+    def realpath(self):
+        """
+        Returns the realpath of the file or directory pointed to by this
+        item.
+        """
+        rp = self._realpath
+        if rp is None:
+            rp = self._realpath = os.path.realpath(self.abs_path)
+        return rp
 
 # RelDir and RelFile are strictly equivalent to RelPath. The difference
 # is purely semantic.

@@ -121,7 +121,7 @@ class SourceDir(SourceItem):
                 self.all_files == rhs.all_files)
 
     def __hash__(self):
-        h = super(SourceDir, self).__hash__() ^ hash(self.rel_dir)
+        h = super(SourceDir, self).__hash__() ^ hash(self.rel_dir.realpath())
         for f in self.all_files:
             h = h ^ hash(f)
         return h
@@ -153,7 +153,7 @@ class SourceFile(SourceItem):
                 self.rel_file == rhs.rel_file)
 
     def __hash__(self):
-        h = super(SourceFile, self).__hash__() ^ hash(self.rel_file)
+        h = super(SourceFile, self).__hash__() ^ hash(self.rel_file.realpath())
         return h
 
     def __repr__(self):
