@@ -205,13 +205,13 @@ class SiteBase(object):
 
         for source_item in source.Parse(self._settings.dest_dir):
             # DEBUG -- RM 20081124
-            a = hash(source_item)
+            item_hash = hash(source_item)
             self._log.Info("%s Source Item #%08x: %s",
                             (source_item in dups) and "DUP" or "New",
-                            (a < 0 and ((1L<<32)+a) or a), # hack around the fact that python 2.4 displays negative ints with %x
+                            (item_hash < 0 and ((1L<<32)+item_hash) or item_hash), # hack around the fact that python 2.4 displays negative ints with %x
                             repr(source_item))
-            if not source_item in dups:
-                dups[source_item] = source_item
+            if not item_hash in dups:
+                dups[item_hash] = source_item
                 site_item = self.GenerateItem(source_item)
                 if site_item:
                     in_out_items.append(site_item)
