@@ -204,12 +204,7 @@ class SiteBase(object):
         dups = {}
 
         for source_item in source.Parse(self._settings.dest_dir):
-            # DEBUG -- RM 20081124
             item_hash = hash(source_item)
-            self._log.Info("%s Source Item #%08x: %s",
-                            (source_item in dups) and "DUP" or "New",
-                            (item_hash < 0 and ((1L<<32)+item_hash) or item_hash), # hack around the fact that python 2.4 displays negative ints with %x
-                            repr(source_item))
             if not item_hash in dups:
                 dups[item_hash] = source_item
                 site_item = self.GenerateItem(source_item)
@@ -239,7 +234,7 @@ class SiteBase(object):
 
     def _TemplateThemeDirs(self, **keywords):
         """
-        Returns the list(str) of all possibles directories matching the
+        Returns the list(str) of all possible directories matching the
         current theme.
         The theme name is looked for the keyword or in the current settings.
         
@@ -247,7 +242,7 @@ class SiteBase(object):
         _TemplatePath. However derived implementations can add their own
         custom template path to the list.
         
-        This never returns None or an empty list.
+        Subclassing: This must never returns None nor an empty list.
         """
         if keywords and "theme" in keywords:
             theme = keywords["theme"]
