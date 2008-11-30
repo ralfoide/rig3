@@ -1,5 +1,10 @@
 ---- TODO ----
 
+20081130 Engine:   Index page should have max(num_items, curr_month_lenght) items
+20081130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
+
+20081130 Engine:   Use md5 hashes instead of CRC32 internally. Too weak.
+
 20080930 Engine:   Remove the dirs" and "files" source types
 
 20080907 Bug:      "reverse_categories = !kw1,!kw2" not working (MM#2)
