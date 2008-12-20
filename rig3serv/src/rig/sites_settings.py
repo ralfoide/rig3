@@ -192,7 +192,7 @@ class SiteSettings(object):
     """
     def __init__(self,
                  public_name="",
-                 source_list=None,
+                 source_list=[],
                  dest_dir=None,
                  theme=DEFAULT_THEME,
                  template_dir=None,
@@ -251,7 +251,36 @@ class SiteSettings(object):
         """
         return dict(self.__dict__)
 
+    def Set(self, key, new_value):
+        """
+        Sets a value in this SiteSettings.
+        This correctly matches the new value to the expected internal type.
+        
+        - key (str): the name of the value to set
+        - new_value (any): the value to set.
+        """
+        value = self.__dict__[key]
+        if isinstance(value, IncludeExclude):
+            value.Set(key, new_value)
+        elif isinstance(value, int):
+            value = int(new_value)
+        elif isinstance(value, bool):
+            value = settings.ParseBool(new_value)
+        elif isinstance(value, (str, unicode, type(None))):
+            value = str(new_value)
+        elif isinstance(value, list):
+            value = list(new_value)
+        else:
+            raise TypeError("Invalid type for setting %s: expected %s, got %s" %
+                            (key, type(value), type(new_value) ))
+        self.__dict__[key] = value
+
     def ParseBool(self, value):
+        """
+        Parses a value and interpret it as a boolean.
+        If value is a bool type, returns the value itself.
+        If value is a string, returns true if the string is "1" or "true".
+        """
         if isinstance(value, bool):
             return value
         if isinstance(value, (str, unicode)):
@@ -310,19 +339,8 @@ class SitesSettings(SettingsBase):
         
         """
         for k in settings.__dict__.iterkeys():
-            try:
-                value = settings.__dict__[k]
-                if isinstance(value, IncludeExclude):
-                    value.Set(k, vars[k])
-                elif isinstance(value, int):
-                    value = int(vars[k])
-                elif isinstance(value, bool):
-                    value = settings.ParseBool(vars[k])
-                else:
-                    value = vars[k]
-                settings.__dict__[k] = value
-            except KeyError:
-                pass  # preserve defaults from SiteSettings.__init__
+            if k in vars:
+                settings.Set(k, vars[k])
 
     def _ProcessSources(self, settings, vars):
         """
