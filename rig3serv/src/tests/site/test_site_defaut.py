@@ -44,9 +44,9 @@ class MockSiteDefault(SiteDefault):
 
     def _FillTemplate(self, template, **keywords):
         """
-        Keeps a copy of the _FillTemplate parameters and then call the original.
+        Keeps a copy of the _FillTemplate parameters and then calls the original.
         Trapped parameters are available in
-          self._fill_template_params[template] => list(keyuword dict.)
+          self._fill_template_params[template] => list(keyword dict.)
         """
         if not template in self._fill_template_params:
             self._fill_template_params[template] = []
@@ -69,23 +69,16 @@ class MockSiteDefault(SiteDefault):
     _DEST_DIR = 1
     _LEAFNAME = 2
     
-    def GetWriteFileData(self, tuple_index1, tuple_index2=None):
+    def GetWriteFileData(self, tuple_index):
         """
         Returns a *copy* of the self._write_file_params list
-        with items rearanged.
-        - tuple_index1: _DATA, _DEST_DIR or _LEAFNAME, the first
-          value to return.
-        - tuple_index2: _DATA, _DEST_DIR, _LEAFNAME or None, the second value to return.
+        with items rearranged.
+        - tuple_index: _DATA, _DEST_DIR or _LEAFNAME, the value to return.
         
         This basically remaps (data, dest_dir, leafname) to whatever you like
-        to test. If tuple_index2 is None, only one value is given directly
-        in the list, otherwise it's a tuple (value1, value2).
+        to test, e.g. list[ value: leafname ] or list[ value: data ].
         """
-        # Hey kids, go write that in Java in less than a few dozen lines!
-        if tuple_index2 is None:
-            return [ p[tuple_index1] for p in self._write_file_params ]
-        else:
-            return [ ( p[tuple_index1], p[tuple_index2] ) for p in self._write_file_params ]
+        return [ p[tuple_index] for p in self._write_file_params ]
 
 
 #------------------------
@@ -420,15 +413,22 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals("http://my.rig/index.php?th=&album=my%20album&img=my%20image.jpg&sz=640&q=75",
                           m._RigThumbLink(settings, "my album", "my image.jpg", 640))
 
-    def testGeneratePages(self):
+    def testGeneratePages_0Empty(self):
+        """
+        Printing an empty list of items only generates an index page
+        """
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
         self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
 
-        # printing an empty list of items only generates an index page
         m.GeneratePages(categories=[], items=[])
         self.assertListEquals([ "index.html", "atom.xml" ], m.GetWriteFileData(m._LEAFNAME))
         
-        # printing 3 times + 1 the number of items per page generates 4 pages
+    def testGeneratePages_0Cats(self):
+        """
+        Printing 3 times + 1 the number of items per page generates 4 pages
+        """
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         items = []
         cats = []
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 1):
@@ -439,7 +439,7 @@ class SiteDefaultTest(RigTestCase):
                           content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-12.html", "2000-11.html", "2000-10.html", "2000-09.html",
@@ -458,9 +458,13 @@ class SiteDefaultTest(RigTestCase):
         for keywords in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]:
             self.assertEquals(len(items), len(keywords["all_entries"]))
         
+    def testGeneratePages_1Cat(self):
+        """
+        Print items with only one category, this does not generate
+        category indexes.
+        """
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
 
-        # print items with only one category, this does not generate
-        # category indexes.
         items = []
         cats = [ "first" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
@@ -471,7 +475,7 @@ class SiteDefaultTest(RigTestCase):
                           content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-07.html", "2000-06.html", "2000-05.html",
@@ -479,7 +483,12 @@ class SiteDefaultTest(RigTestCase):
             "index.html", "atom.xml" ],
           m.GetWriteFileData(m._LEAFNAME))
 
-        # with two categories, we get category pages too
+    def testGeneratePages_2Cats(self):
+        """
+        With two categories, we get category pages too
+        """
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         items = []
         cats = [ "first", "second" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
@@ -490,7 +499,7 @@ class SiteDefaultTest(RigTestCase):
                           content_gen=lambda t, x: "content",
                           categories=cats)
             items.append(si)
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-05.html", "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
@@ -511,7 +520,12 @@ class SiteDefaultTest(RigTestCase):
             os.path.join("cat", "second", "atom.xml") ],
           m.GetWriteFileData(m._LEAFNAME))
 
-        # more categories: 4 main pages but each category has only 2 pages
+    def testGeneratePages_3Cats(self):
+        """
+        More categories: 4 main pages but each category has only 2 pages
+        """
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         items = []
         cats = [ "first", "second", "three" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 3):
@@ -523,7 +537,7 @@ class SiteDefaultTest(RigTestCase):
                           content_gen=lambda t, x: "content",
                           categories=[ cats[x % 3] ])
             items.append(si)
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-03.html", "2000-02.html", "2000-01.html",
@@ -539,6 +553,73 @@ class SiteDefaultTest(RigTestCase):
             os.path.join("cat", "three", "atom.xml") ],
           m.GetWriteFileData(m._LEAFNAME))
 
+    def testGeneratePages_CurrMonth(self):
+        """
+        Test that index contains all items from the first month when
+        use_curr_month_in_index is True, even if it's more than 
+        num_item_page.
+        """
+        self.s.use_curr_month_in_index = True
+        self.s.num_item_page = 2
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
+        items = []
+        cats = []
+        # generate 2 months with 5 items per month each
+        for mo in xrange(0, 2):
+            for d in xrange(0, 5):
+                si = SiteItem(datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
+                          title="blah",
+                          permalink="item",
+                          content_gen=lambda t, x: "content",
+                          categories=cats)
+                items.append(si)
+
+        m.GeneratePages(cats, items)
+
+        self.assertListEquals(
+          [ "2000-02.html", "2000-01.html",
+            "index.html", "atom.xml" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
+        self.assertTrue("entries" in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
+        self.assertListEquals(
+          [ datetime(2000, 2, 5, 0, 0),
+            datetime(2000, 2, 4, 0, 0),
+            datetime(2000, 2, 3, 0, 0),
+            datetime(2000, 2, 2, 0, 0),
+            datetime(2000, 2, 1, 0, 0) ],
+          [ j.date
+            for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
+
+        # Now if we set num_item_page to 7, we'll get the 5 items of the last month
+        # plus 2 from the next month
+
+        self.s.num_item_page = 7
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
+        m.GeneratePages(cats, items)
+
+        self.assertListEquals(
+          [ "2000-02.html", "2000-01.html",
+            "index.html", "atom.xml" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
+        self.assertTrue("entries" in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
+        self.assertListEquals(
+          [ datetime(2000, 2, 5, 0, 0),
+            datetime(2000, 2, 4, 0, 0),
+            datetime(2000, 2, 3, 0, 0),
+            datetime(2000, 2, 2, 0, 0),
+            datetime(2000, 2, 1, 0, 0),
+            datetime(2000, 1, 5, 0, 0),
+            datetime(2000, 1, 4, 0, 0) ],
+          [ j.date
+            for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
 
 #------------------------
 # Local Variables:

@@ -47,7 +47,7 @@ class SiteDefault(SiteBase):
     """
     Describes how to generate the content of a site using the "default" theme.
     
-    Right now the "magic" theme is identicaly to the "default" theme
+    Right now the "magic" theme is identical to the "default" theme
     so the implementation is empty. This is expected to change later.
     """
     EXT_IZU = ".izu"
@@ -115,7 +115,7 @@ class SiteDefault(SiteBase):
         # Generate monthly pages and get a cached version of each item
         month_pages = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
-        self._GenerateIndexPage("", "", None, categories, items, month_pages, max_num_pages=1)
+        self._GenerateIndexPage("", "", None, categories, items, month_pages)
         self._GenerateAtomFeed ("", "", None, categories, items, month_pages)
 
         # Only generate per-category months pages if we have more than one category
@@ -124,14 +124,13 @@ class SiteDefault(SiteBase):
                 month_pages = self._GenerateMonthPages([ "cat", c ], "../../", c,
                                                categories, items)
                 self._GenerateIndexPage([ "cat", c ], "../../", c,
-                                        categories, items, month_pages, max_num_pages=1)
+                                        categories, items, month_pages)
                 self._GenerateAtomFeed ([ "cat", c ], "../../", c,
                                         categories, items, month_pages)
 
     def _GenerateIndexPage(self, path, rel_base,
                                 curr_category, all_categories,
                                 items, month_pages,
-                                max_num_pages=None,
                                 base_filename="index"):
         """
         Generates most-recent pages with items that match the curr_category.
@@ -149,7 +148,6 @@ class SiteDefault(SiteBase):
         - month_pages: list(MonthPageItem(url, date)) for each month page generated for the
             same entries. Can be an empty list but not None. MUST be sorted in
             decreasing date order.
-        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         - base_filename: If you want to generate something else than indexNN.html files.
         """
         base_url = "/".join(path)
@@ -176,6 +174,7 @@ class SiteDefault(SiteBase):
             relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
         num_item_page = self._settings.num_item_page
+        assert isinstance(num_item_page, (int, long))
         if num_item_page < 1:
             num_item_page = DEFAULT_ITEMS_PER_PAGE
 
@@ -199,39 +198,37 @@ class SiteDefault(SiteBase):
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
 
-        pages = []
+        use_curr_month_in_index = self._settings.use_curr_month_in_index
         all_entries = []
-
+        entries = []
+        older_date = None
         n = len(relevant_items)
-        np = n / num_item_page
-        i = 0
-        for p in xrange(0, np + 1):
-            filename = "%s%s.html" % (base_filename, p > 0 and p or "")
+        if n > 0:
+            curr_month = self._GetMonth(relevant_items[0].date)
+            is_first_page = True
 
-            entries = []
-            older_date = None
-            for j in relevant_items[i:i + num_item_page]:
+            for j in relevant_items:
                 # SiteItem.content_gen is a lambda that generates the content
                 content = j.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
                 entry = ContentEntry(content, j.title, j.date, j.permalink)
-                entries.append(entry)
                 all_entries.append(entry)
-                older_date = (older_date is None) and j.date or max(older_date, j.date)
-            i += num_item_page
-            pages.append((filename, entries, older_date))
 
+                entry_month = self._GetMonth(j.date)
+
+                if is_first_page:
+                    is_first_page = (entry_month == curr_month) or (len(entries) < num_item_page)
+                
+                if is_first_page:
+                    entries.append(entry)
+                    older_date = (older_date is None) and j.date or max(older_date, j.date)
+
+        filename = "%s.html" % base_filename
         keywords["all_entries"] = all_entries
+        keywords["entries"] = entries
+        keywords["last_content_ts"] = older_date
 
-        if max_num_pages > 0:
-            pages = pages[0:max_num_pages]
-            
-        for page in pages:
-            filename = page[0]
-            keywords["entries"] = page[1]
-            keywords["last_content_ts"] = page[2]
-            
-            content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
-            self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+        content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
+        self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
 
     def _GenerateAtomFeed(self, path, rel_base,
                                 curr_category, all_categories,
@@ -374,9 +371,9 @@ class SiteDefault(SiteBase):
 
         by_months = {}
         for i in relevant_items:
-            # key is index=(year*16+month), the year and the month.
+            # key is date(year, month), the year and the month.
             # the index is there just to ease sorting.
-            key = date(i.date.year, i.date.month, 1)
+            key = self._GetMonth(i.date)
             if not key in by_months:
                 by_months[key] = []
             by_months[key].append(i)
@@ -878,6 +875,13 @@ class SiteDefault(SiteBase):
         # also collapse all whitespace to single space
         ti = re.sub("[ _\t\f\r\n]+", " ", ti)
         return (dt, ti.strip())
+
+    def _GetMonth(self, _date):
+        """
+        Given a datetime object, returns a date with only the year and the
+        month and the day set to 1.
+        """
+        return date(_date.year, _date.month, 1)
 
 #------------------------
 # Local Variables:

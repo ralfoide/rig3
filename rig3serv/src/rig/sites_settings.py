@@ -188,6 +188,7 @@ class SiteSettings(object):
     - mangled_name_len (int): Max length of blog entries. Titles which are longer
         than this length are mangled with a hash to make them unique. Set to 0
         to deactivate.
+    - use_curr_month_in_index (boolean): True if index should use current month
     """
     def __init__(self,
                  public_name="",
@@ -214,7 +215,8 @@ class SiteSettings(object):
                  blog_file_pattern=None,
                  blog_dir_pattern=None,
                  blog_dir_valid_files=None,
-                 mangled_name_len=50):
+                 mangled_name_len=50,
+                 use_curr_month_in_index=True):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -240,6 +242,7 @@ class SiteSettings(object):
         self.blog_dir_pattern = blog_dir_pattern
         self.blog_dir_valid_files = blog_dir_valid_files
         self.mangled_name_len = mangled_name_len
+        self.use_curr_month_in_index = self.ParseBool(use_curr_month_in_index)
 
     def AsDict(self):
         """
@@ -247,6 +250,13 @@ class SiteSettings(object):
         It's safe for caller to modify this dictionnary.
         """
         return dict(self.__dict__)
+
+    def ParseBool(self, value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (str, unicode)):
+            return value.lower() in [ "1", "true" ]
+        return False
 
 #------------------------
 class SitesSettings(SettingsBase):
@@ -301,10 +311,16 @@ class SitesSettings(SettingsBase):
         """
         for k in settings.__dict__.iterkeys():
             try:
-                if isinstance(settings.__dict__[k], IncludeExclude):
-                    settings.__dict__[k].Set(k, vars[k])
+                value = settings.__dict__[k]
+                if isinstance(value, IncludeExclude):
+                    value.Set(k, vars[k])
+                elif isinstance(value, int):
+                    value = int(vars[k])
+                elif isinstance(value, bool):
+                    value = settings.ParseBool(vars[k])
                 else:
-                    settings.__dict__[k] = vars[k]
+                    value = vars[k]
+                settings.__dict__[k] = value
             except KeyError:
                 pass  # preserve defaults from SiteSettings.__init__
 

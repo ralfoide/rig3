@@ -1,6 +1,5 @@
 ---- TODO ----
 
-20081130 Engine:   Index page should have max(num_items, curr_month_lenght) items
 20081130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
 
 20081130 Engine:   Use md5 hashes instead of CRC32 internally. Too weak.
@@ -37,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20081220 Engine:   Index page should have max(num_items, curr_month_lenght) items
 20081102 Engine:   Discard dup source items (after parsing source tree)
 20081101 Bug Fix:  Izu raw-html was discarding line separators
 20081029 Engine:   Capture basic timing stats
