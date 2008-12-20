@@ -216,7 +216,8 @@ class SiteDefault(SiteBase):
                 entry_month = self._GetMonth(j.date)
 
                 if is_first_page:
-                    is_first_page = (entry_month == curr_month) or (len(entries) < num_item_page)
+                    is_first_page = (entry_month == curr_month and use_curr_month_in_index) \
+                                     or (len(entries) < num_item_page)
                 
                 if is_first_page:
                     entries.append(entry)

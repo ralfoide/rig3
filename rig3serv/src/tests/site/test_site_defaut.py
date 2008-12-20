@@ -553,7 +553,7 @@ class SiteDefaultTest(RigTestCase):
             os.path.join("cat", "three", "atom.xml") ],
           m.GetWriteFileData(m._LEAFNAME))
 
-    def testGeneratePages_CurrMonth(self):
+    def testGeneratePages_UseCurrMonth(self):
         """
         Test that index contains all items from the first month when
         use_curr_month_in_index is True, even if it's more than 
@@ -591,6 +591,70 @@ class SiteDefaultTest(RigTestCase):
             datetime(2000, 2, 3, 0, 0),
             datetime(2000, 2, 2, 0, 0),
             datetime(2000, 2, 1, 0, 0) ],
+          [ j.date
+            for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
+
+        # Now if we set num_item_page to 7, we'll get the 5 items of the last month
+        # plus 2 from the next month
+
+        self.s.num_item_page = 7
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
+        m.GeneratePages(cats, items)
+
+        self.assertListEquals(
+          [ "2000-02.html", "2000-01.html",
+            "index.html", "atom.xml" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
+        self.assertTrue("entries" in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
+        self.assertListEquals(
+          [ datetime(2000, 2, 5, 0, 0),
+            datetime(2000, 2, 4, 0, 0),
+            datetime(2000, 2, 3, 0, 0),
+            datetime(2000, 2, 2, 0, 0),
+            datetime(2000, 2, 1, 0, 0),
+            datetime(2000, 1, 5, 0, 0),
+            datetime(2000, 1, 4, 0, 0) ],
+          [ j.date
+            for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
+
+    def testGeneratePages_DontUseCurrMonth(self):
+        """
+        Test that index contains N max items independantly of the first month when
+        use_curr_month_in_index is False.
+        """
+        self.s.use_curr_month_in_index = False
+        self.s.num_item_page = 2
+        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+
+        items = []
+        cats = []
+        # generate 2 months with 5 items per month each
+        for mo in xrange(0, 2):
+            for d in xrange(0, 5):
+                si = SiteItem(datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
+                          title="blah",
+                          permalink="item",
+                          content_gen=lambda t, x: "content",
+                          categories=cats)
+                items.append(si)
+
+        m.GeneratePages(cats, items)
+
+        self.assertListEquals(
+          [ "2000-02.html", "2000-01.html",
+            "index.html", "atom.xml" ],
+          m.GetWriteFileData(m._LEAFNAME))
+
+        self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
+        self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
+        self.assertTrue("entries" in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
+        self.assertListEquals(
+          [ datetime(2000, 2, 5, 0, 0),
+            datetime(2000, 2, 4, 0, 0) ],
           [ j.date
             for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
 
