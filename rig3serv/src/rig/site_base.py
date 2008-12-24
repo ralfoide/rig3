@@ -26,7 +26,7 @@ Derives classes MUST implement:
 
 
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import re
 import os

@@ -14,7 +14,7 @@ Note that the whole point here is that the templates exercised are the
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import os
 

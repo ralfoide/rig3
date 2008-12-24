@@ -6,7 +6,7 @@ Unit tests for SourceItem
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 from datetime import datetime
 

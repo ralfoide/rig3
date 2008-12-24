@@ -6,7 +6,7 @@ Extended TestCase for rig3 tests.
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import os
 import re

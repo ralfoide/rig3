@@ -6,7 +6,7 @@ Unit tests for DirParser
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import os
 from StringIO import StringIO

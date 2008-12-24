@@ -8,7 +8,7 @@ Site generators are instantiated by rig.site.__init__.py.CreateSite()
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import os
 

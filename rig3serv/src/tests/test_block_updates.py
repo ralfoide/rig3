@@ -4,7 +4,7 @@
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 from tests.rig_test_case import RigTestCase
 

@@ -6,7 +6,7 @@ Rig3 module: One-line module description
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 from datetime import datetime
 from rig.parser.dir_parser import RelDir, RelFile

@@ -10,7 +10,7 @@ This a base class for settings that merely defines how to load settings, not
 what they should define. Derived classes will provide accessors to the (expected)
 settings to be loaded.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import sys
 import ConfigParser

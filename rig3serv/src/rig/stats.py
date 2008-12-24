@@ -3,7 +3,7 @@
 """
 Rig3 module: Describes Rig3 internal stats.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 from time import time
 

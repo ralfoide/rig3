@@ -6,7 +6,7 @@ Rig3 module: Template generator
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import os
 

@@ -7,7 +7,7 @@ Rig3 module: Parses Izumi files to HTML
 Part of Rig3.
 License GPL.
 """
-__author__ = "ralfoide@gmail.com"
+__author__ = "ralfoide at gmail com"
 
 import re
 import os
