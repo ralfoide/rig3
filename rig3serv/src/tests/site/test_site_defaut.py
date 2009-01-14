@@ -304,7 +304,7 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
+            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           400))
 
@@ -317,7 +317,7 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
+            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           -1))
 
@@ -329,7 +329,7 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(RelDir("base", "My Albums/Year_2007/2007-11-08 Album & Title"),
+            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album & Title"),
                           None,
                           -1))
 
@@ -338,26 +338,26 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), [], {}))
+            m._GenerateImages(RelDir("base", ""), [], self.s.AsDict()))
 
         self.assertEquals(
             None,
             m._GenerateImages(RelDir("base", ""), [ "index.izu",
                                                     "index.html",
                                                     "image.jpeg" ],
-                                                  {} ))
+                                                  self.s.AsDict() ))
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ], {}))
+            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ], self.s.AsDict()))
         
         self.assertHtmlEquals(
-            "See more images for " + m._GetRigLink(RelDir("base", ""), None, -1),
-            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], {}))
+            "See more images for " + m._GetRigLink(self.s, RelDir("base", ""), None, -1),
+            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], self.s.AsDict()))
 
         self.assertHtmlEquals(
-            '<table class="image-table"><tr><td>\n' + m._GetRigLink(RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
-            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], {}))
+            '<table class="image-table"><tr><td>\n' + m._GetRigLink(self.s, RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
+            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], self.s.AsDict()))
 
     def testGenerateIndexPage(self):
         m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()

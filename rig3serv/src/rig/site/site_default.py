@@ -605,7 +605,10 @@ class SiteDefault(SiteBase):
         TODO: currently has a lot of hardcoded things that should go into
         site-dependent prefs.
         """
-        if not self._settings.rig_base:
+        local_settings = SiteSettings()
+        local_settings.FromDict(keywords)
+        if not local_settings.rig_base:
+            self._log.Info("No rig_base, no images generated for %s", source_dir.rel_curr)
             return None
 
         images = {}
@@ -648,7 +651,7 @@ class SiteDefault(SiteBase):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_EXCELLENT:
-                    links.append(self._GetRigLink(source_dir, entry["top_name"], size))
+                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], size))
         elif num_good:
             # We got some good-rated images.
             # Display up to 6 of them using the default preview size.
@@ -658,7 +661,7 @@ class SiteDefault(SiteBase):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_GOOD:
-                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
+                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], -1))
         elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
             # We got some up to 6 normal-rated images.
             # Display them using the default preview size. 
@@ -668,7 +671,7 @@ class SiteDefault(SiteBase):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_DEFAULT:
-                    links.append(self._GetRigLink(source_dir, entry["top_name"], -1))
+                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], -1))
         elif num_images:
             # There are some images but none is considered good enough for the
             # auto-preview. Just generate a link on the album.
@@ -676,8 +679,8 @@ class SiteDefault(SiteBase):
             # TODO: the static string should move to the HTML template.
             # TODO: it would make sense to display this even for the other cases
             #       if there were other images not shown.
-            return "See more images for " + self._GetRigLink(source_dir, None, None,
-                                                             title=keywords and keywords["title"] or None)
+            title = (keywords and "title" in keywords) and keywords["title"] or None
+            return "See more images for " + self._GetRigLink(local_settings, source_dir, None, None, title)
 
         if links:
             lines = []
@@ -694,7 +697,7 @@ class SiteDefault(SiteBase):
             return content
         return None
 
-    def _GetRigLink(self, source_dir, leafname, size, title=None):
+    def _GetRigLink(self, local_settings, source_dir, leafname, size, title=None):
         """
         Generates the URL to a rig image, with a caption, that links to the given image
         (or the album if there's no image).
@@ -710,11 +713,11 @@ class SiteDefault(SiteBase):
         """
         album_title = title or cgi.escape(os.path.basename(source_dir.rel_curr))
         album = source_dir.rel_curr
-        link = self._RigAlbumLink(self._settings, album)
+        link = self._RigAlbumLink(local_settings, album)
         if leafname:
             tooltip = title or os.path.splitext(leafname)[0]
-            link = self._RigImgLink(self._settings, album, leafname)
-            img = self._RigThumbLink(self._settings, album, leafname, size)
+            link = self._RigImgLink(local_settings, album, leafname)
+            img = self._RigThumbLink(local_settings, album, leafname, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
                 "title": tooltip,
                 "img": img }
@@ -811,7 +814,7 @@ class SiteDefault(SiteBase):
         if maxlen <= 0:
             maxlen = self._settings.mangled_name_len
         if maxlen > 0 and len(name) > maxlen:
-            # The adler32 crc is returned as an int and can thus "seem" negative
+            # The adler32 CRC is returned as an int and can thus "seem" negative
             # convert to its true long 64-bit value, always positive
             crc = zlib.adler32(leafname) & 0x0FFffFFffL
             crc = "%8x" % crc

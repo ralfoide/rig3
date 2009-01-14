@@ -246,10 +246,18 @@ class SiteSettings(object):
 
     def AsDict(self):
         """
-        Returns a copy of the settings' dictionnary.
-        It's safe for caller to modify this dictionnary.
+        Returns a copy of the settings' dictionary.
+        It's safe for caller to modify this dictionary.
         """
         return dict(self.__dict__)
+    
+    def FromDict(self, keywords):
+        """
+        Set all known settings to the values defined in the keywords dictionary.
+        """
+        for k in self.__dict__.iterkeys():
+            if k in keywords:
+                self.__dict__[k] = keywords[k]
 
     def Set(self, key, new_value):
         """
