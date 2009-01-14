@@ -186,9 +186,17 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals((None, "27"),        m._DateAndTitleFromTitle("27"))
         self.assertEquals((None, "2007"),      m._DateAndTitleFromTitle("2007"))
         self.assertEquals((None, "2007-1"),    m._DateAndTitleFromTitle("2007-1"))
-        self.assertEquals((None, "2007-10"),   m._DateAndTitleFromTitle("2007-10"))
-        self.assertEquals((None, "2007-10-2"), m._DateAndTitleFromTitle("2007-10-2"))
-        self.assertEquals((None, "2007102"),   m._DateAndTitleFromTitle("2007102"))
+
+        # lack of day is the same as using day=01
+        self.assertEquals((datetime(2007, 10, 1), ""),
+                          m._DateAndTitleFromTitle("2007-10"))
+
+        # here we don't interpret "YYYYMM[-]2" as a day because it lacks 2 digits,
+        # instead it gets interpreted as the title.
+        self.assertEquals((datetime(2007, 10, 1), "2"),
+                          m._DateAndTitleFromTitle("2007102"))
+        self.assertEquals((datetime(2007, 10, 1), "2"),
+                          m._DateAndTitleFromTitle("2007-10-2"))
         
         self.assertEquals((datetime(2007, 10, 27), ""),
                           m._DateAndTitleFromTitle("20071027"))

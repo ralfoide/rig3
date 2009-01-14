@@ -54,7 +54,7 @@ class SiteDefault(SiteBase):
     EXT_HTML = ".html"
     INDEX_IZU = "index" + EXT_IZU
     INDEX_HTML = "index" + EXT_HTML
-    _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})"
+    _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})?"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
 
@@ -849,20 +849,20 @@ class SiteDefault(SiteBase):
             ti = (m.group("rest") or "")
             try:
                 dt = datetime(int(m.group("year" ) or 0),
-                              int(m.group("month") or 0),
-                              int(m.group("day"  ) or 0),
+                              int(m.group("month") or 1),
+                              int(m.group("day"  ) or 1),
                               int(m.group("hour" ) or 0),
                               int(m.group("min"  ) or 0),
                               int(m.group("sec"  ) or 0))
             except ValueError, e:
                 self._log.Warn("Failed to extract date from title '%s': %s", title, str(e))
-        
+
             # Fall back, trying again without the time part
             try:
                 if dt is None:
                     dt = datetime(int(m.group("year" ) or 0),
-                                  int(m.group("month") or 0),
-                                  int(m.group("day"  ) or 0),
+                                  int(m.group("month") or 1),
+                                  int(m.group("day"  ) or 1),
                                   0,
                                   0,
                                   0)

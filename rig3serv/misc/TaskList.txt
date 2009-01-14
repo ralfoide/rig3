@@ -36,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20090113 Engine:   Fix parsing of YM_Title directory names (it will have day=01)
 20081220 Engine:   Index page should have max(num_items, curr_month_lenght) items
 20081102 Engine:   Discard dup source items (after parsing source tree)
 20081101 Bug Fix:  Izu raw-html was discarding line separators
