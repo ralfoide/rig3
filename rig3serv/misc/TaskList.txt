@@ -38,6 +38,7 @@
 
 ---- Done Version 0.3 ----
 
+20090114 Engine:   Disable config file variable expansion for all settings
 20090113 Engine:   Disable config file variable expansion for rig_xyz_url settings
 20090113 Eng. Bug: rig_base from per-source settings was not used (no UTs yet)
 20090113 Eng. Bug: Fix parsing of YM_Title directory names (it will have day=01)

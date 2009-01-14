@@ -244,18 +244,6 @@ class SiteSettings(object):
         self.mangled_name_len = mangled_name_len
         self.use_curr_month_in_index = self.ParseBool(use_curr_month_in_index)
 
-    def NoInterpolation(self):
-        """
-        Returns a list of variables that must not be interpolated.
-        
-        The default behavior of the SettingsBase config reader is to
-        interpolate variables using the %(name) python-like syntax.
-        
-        This returns a list of variables that are expected to by %-var
-        strings in python format and thus should not be interpolated.
-        """
-        return [ "rig_album_url", "rig_img_url", "rig_thumb_url" ]
-
     def AsDict(self):
         """
         Returns a copy of the settings' dictionary.
@@ -338,7 +326,7 @@ class SitesSettings(SettingsBase):
         Returns a SiteSetting for the given site.
         """
         s = SiteSettings()
-        vars = self.Items(site_name, s.NoInterpolation())
+        vars = self.Items(site_name)
         self._ProcessDefaults(s, vars)
         self._ProcessSources(s, vars)
         return s

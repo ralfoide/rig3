@@ -57,14 +57,14 @@ class SettingsBaseTest(RigTestCase):
         self.assertListEquals(
             [ ("key1", "value1"),
               ("global_default_key", "global_value_default") ],
-            self.m._parser.GetItems("section1", None))
+            self.m._parser.items("section1"))
         
         # The settings_base.rc file entry for [site1] has multiple definitions
         # for the same variable. Only the last definition is used. 
         self.assertListEquals(
             [ ("sources", "/tmp/data/site1/last"),
               ("global_default_key", "global_value_default") ],
-            self.m._parser.GetItems("site1", None),
+            self.m._parser.items("site1"),
             sort=True)
 
         # SettingsBase.Items() returns the items as a dictionnary
@@ -72,18 +72,21 @@ class SettingsBaseTest(RigTestCase):
         self.assertDictEquals(
             { "sources": "/tmp/data/site1/last",
               "global_default_key": "global_value_default" },
-            self.m.Items("site1", None))
+            self.m.Items("site1"))
 
-    def testExpand(self):
+    def testNoExpand(self):
+        """
+        Test that there is *no* variable expansion
+        """
         p = self.getTestDataPath()
         r = self.m.Load(os.path.join(p, "settings_base.rc"))
         self.assertSame(r, self.m)
 
         self.assertDictEquals(
-            { "expanded":     "This variables is expanded to global_value_default",
+            { "expanded":     "This variables is expanded to %(global_default_key)s",
               "not_expanded": "This variable is not expanded %(global_default_key)s",
               "global_default_key": "global_value_default" },
-            self.m.Items("expand", [ "not_expanded" ]))
+            self.m.Items("expand"))
 
 
 #------------------------
