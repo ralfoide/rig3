@@ -45,8 +45,9 @@ class SettingsBaseTest(RigTestCase):
 
         # Defined sections... the default one is not present
         self.assertListEquals(
-            [ "section1", "site1" ],
-            self.m._parser.sections())
+            [  "expand", "section1", "site1"],
+            self.m._parser.sections(),
+            sort=True)
 
         self.assertTrue(self.m._parser.has_section("section1"))
         self.assertTrue(self.m._parser.has_section("site1"))
@@ -56,14 +57,14 @@ class SettingsBaseTest(RigTestCase):
         self.assertListEquals(
             [ ("key1", "value1"),
               ("global_default_key", "global_value_default") ],
-            self.m._parser.items("section1"))
+            self.m._parser.GetItems("section1", None))
         
         # The settings_base.rc file entry for [site1] has multiple definitions
         # for the same variable. Only the last definition is used. 
         self.assertListEquals(
             [ ("sources", "/tmp/data/site1/last"),
               ("global_default_key", "global_value_default") ],
-            self.m._parser.items("site1"),
+            self.m._parser.GetItems("site1", None),
             sort=True)
 
         # SettingsBase.Items() returns the items as a dictionnary
@@ -71,7 +72,18 @@ class SettingsBaseTest(RigTestCase):
         self.assertDictEquals(
             { "sources": "/tmp/data/site1/last",
               "global_default_key": "global_value_default" },
-            self.m.Items("site1"))
+            self.m.Items("site1", None))
+
+    def testExpand(self):
+        p = self.getTestDataPath()
+        r = self.m.Load(os.path.join(p, "settings_base.rc"))
+        self.assertSame(r, self.m)
+
+        self.assertDictEquals(
+            { "expanded":     "This variables is expanded to global_value_default",
+              "not_expanded": "This variable is not expanded %(global_default_key)s",
+              "global_default_key": "global_value_default" },
+            self.m.Items("expand", [ "not_expanded" ]))
 
 
 #------------------------

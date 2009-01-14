@@ -12,3 +12,6 @@ sources  	= /tmp/data/site1/000
 sources  	= /tmp/data/site1/zzz
 sources  	= /tmp/data/site1/last
 
+[expand]
+expanded = This variables is expanded to %(global_default_key)s
+not_expanded = This variable is not expanded %(global_default_key)s
