@@ -61,13 +61,14 @@ class Rig3LiveTest(RigTestCase):
         f = file(os.path.join(d, "index.html"), "r")
         index_izu = f.read()
         f.close()
+
         # check accent conversion to html
         self.assertSearch("&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t",
                           index_izu)
         # check tracking inclusion
         self.assertSearch("<i>tracking code here</i>", index_izu)
         # check that riglinks are properly expanded
-        self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
+        self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos1/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
         self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="2007-09.html#Izu-File-Item" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
@@ -81,7 +82,7 @@ class Rig3LiveTest(RigTestCase):
         # empty posts are accepted
         self.assertHtmlSearch('<td class="title">\s*<a name="Empty-Post" title="Permalink to \'Empty Post\'"><a href="2007-10.html#Empty-Post" title="Permalink to \'Empty Post\'"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
                                index_izu)
-        
+
 
 
 #------------------------

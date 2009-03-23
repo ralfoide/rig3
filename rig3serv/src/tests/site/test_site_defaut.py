@@ -18,7 +18,7 @@ from rig.site_base import DEFAULT_THEME, SiteItem
 from rig.sites_settings import SiteSettings
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
-from rig.source_item import SourceDir
+from rig.source_item import SourceDir, SourceSettings
 from rig.sites_settings import SiteSettings, SitesSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
@@ -27,14 +27,14 @@ class MockSiteDefault(SiteDefault):
     """
     Behaves like a SiteDefault() but overrides the base template directory location
     to use testdata/templates instead.
-    
+
     Also traps the last _Filltemplate parameters.
     """
-    def __init__(self, test_case, log, dry_run, settings):
+    def __init__(self, test_case, log, dry_run, site_settings):
         self._test_case = test_case
         self._fill_template_params = {}
         self._write_file_params = []
-        super(MockSiteDefault, self).__init__(log, dry_run, settings)
+        super(MockSiteDefault, self).__init__(log, dry_run, site_settings)
 
     def _TemplateDir(self):
         """"
@@ -58,7 +58,7 @@ class MockSiteDefault(SiteDefault):
         Keeps a copy of all parameters given to _WriteFile.
         This implementation does NOT call the base class so that nothing gets
         written anywhere.
-        
+
         Trapped parameters are available in
           self._write_file_params => list(data, dest_dir, leafname)
         See GetWriteFileData(n, m) below.
@@ -68,13 +68,13 @@ class MockSiteDefault(SiteDefault):
     _DATA = 0
     _DEST_DIR = 1
     _LEAFNAME = 2
-    
+
     def GetWriteFileData(self, tuple_index):
         """
         Returns a *copy* of the self._write_file_params list
         with items rearranged.
         - tuple_index: _DATA, _DEST_DIR or _LEAFNAME, the value to return.
-        
+
         This basically remaps (data, dest_dir, leafname) to whatever you like
         to test, e.g. list[ value: leafname ] or list[ value: data ].
         """
@@ -86,20 +86,25 @@ class SiteDefaultTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
-        source = SourceDirReader(self.Log(), None,
-                                 os.path.join(self.getTestDataPath(), "album"))
-        self.s = SiteSettings(public_name="Test Album",
-                              source_list=[ source ],
-                              dest_dir=self._tempdir,
-                              theme=DEFAULT_THEME,
-                              base_url="http://www.example.com",
-                              rig_base="http://example.com/photos/index.php")
+        source = SourceDirReader(self.Log(),
+                                 site_settings=None,
+                                 source_settings=None,
+                                 path=os.path.join(self.getTestDataPath(), "album"))
+        self.sis = SiteSettings(public_name="Test Album",
+                                source_list=[ source ],
+                                dest_dir=self._tempdir,
+                                theme=DEFAULT_THEME,
+                                base_url="http://www.example.com")
+        self.sos = SourceSettings(rig_base="http://example.com/photos/index.php")
+
+        self.keywords = self.sis.AsDict()
+        self.keywords.update(self.sos.AsDict())
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
 
     def testSimpleFileName(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc///de\\\\f/g\\h"))
@@ -111,17 +116,17 @@ class SiteDefaultTest(RigTestCase):
 
         # the default for mangled_name_len is 50
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof",
-                                                                          self.s.mangled_name_len))
-        self.s.mangled_name_len = 25
+                                                                          self.sis.mangled_name_len))
+        self.sis.mangled_name_len = 25
         self.assertEquals("the-unit-test-is_81bc09a5", m._SimpleFileName("the unit test is the proof"))
         # 0 deactivates the mangling
-        self.s.mangled_name_len = 0
+        self.sis.mangled_name_len = 0
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof"))
 
     def testFillTemplate(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
 
-        keywords = self.s.AsDict()
+        keywords = dict(self.keywords)
         keywords["title"] = "MyTitle"
         keywords["entries"] = [
            ContentEntry("content entry1", "entry1", None, "url1"),
@@ -154,12 +159,12 @@ class SiteDefaultTest(RigTestCase):
                 content entry2
                 <p>
                 Most recent entry: 2001-03-14 15:09:02 --
-                Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig3 3.1.4.15</a> 
+                Generated on 2007-11-12 14:15:16 by <a href="http://code.google.com/p/rig3/">Rig3 3.1.4.15</a>
                 </body>
                 </html>""",
             html)
 
-        keywords = self.s.AsDict()
+        keywords = dict(self.keywords)
         keywords["title"] = "MyTitle"
         keywords["sections"] = { "en": "Main <b>Text Content</b> as HTML",
                                  "images": "<a href='page_url'><img src='image_url'/></a>" }
@@ -181,7 +186,7 @@ class SiteDefaultTest(RigTestCase):
             html)
 
     def testDateAndTitleFromTitle(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
 
         self.assertEquals((None, "27"),        m._DateAndTitleFromTitle("27"))
         self.assertEquals((None, "2007"),      m._DateAndTitleFromTitle("2007"))
@@ -197,7 +202,7 @@ class SiteDefaultTest(RigTestCase):
                           m._DateAndTitleFromTitle("2007102"))
         self.assertEquals((datetime(2007, 10, 1), "2"),
                           m._DateAndTitleFromTitle("2007-10-2"))
-        
+
         self.assertEquals((datetime(2007, 10, 27), ""),
                           m._DateAndTitleFromTitle("20071027"))
         self.assertEquals((datetime(2007, 10, 27), "rest"),
@@ -218,7 +223,7 @@ class SiteDefaultTest(RigTestCase):
 
 
     def testDateAndTitleFromTitle_ErrorCases(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
 
         # Hour is invalid: 44>23... log warning and ignore hour in this case
         self.assertEquals((datetime(2007, 10, 27), ""),
@@ -238,30 +243,32 @@ class SiteDefaultTest(RigTestCase):
                           m._DateAndTitleFromTitle("99991027"))
 
     def testGenerateItems_Izu(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        source_dir = os.path.join(self.getTestDataPath(), "album")
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        source_dir = os.path.join(self.getTestDataPath(), "album", "blog1")
         item = m.GenerateItem(SourceDir(datetime.today(),
                                         RelDir(source_dir, "2007-10-07_Folder 1"),
-                                        [ "index.izu" ]))
+                                        [ "index.izu" ],
+                                        self.sos))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2007, 10, 07), item.date)
         self.assertHtmlMatches(r'<div class="entry">.+</div>', item.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY))
         self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
-    
+
     def testGenerateItems_Html(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        source_dir = os.path.join(self.getTestDataPath(), "album")
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        source_dir = os.path.join(self.getTestDataPath(), "album", "blog2")
         item = m.GenerateItem(SourceDir(datetime.today(),
                                         RelDir(source_dir, "2006-05_Movies"),
-                                        [ "index.html" ]))
+                                        [ "index.html" ],
+                                        self.sos))
         self.assertNotEquals(None, item)
         self.assertEquals(datetime(2006, 5, 28, 17, 18, 5), item.date)
-        self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] --> <table.+>.+</table>.+</div>',
+        self.assertHtmlMatches(r'<div class="entry">.+<!-- \[izu:.+\] -->blog 2 <table.+>.+</table>.+</div>',
                                item.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY))
         self.assertListEquals([ "videos" ], item.categories, sort=True)
 
     def testImgPattern(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
         self.assertEquals(None, m._IMG_PATTERN.match("myimage.jpg"))
         self.assertEquals(None, m._IMG_PATTERN.match("PICT1200.jpg"))
         self.assertEquals(None, m._IMG_PATTERN.match("R12345-Some Name.bmp"))
@@ -269,31 +276,31 @@ class SiteDefaultTest(RigTestCase):
         self.assertDictEquals({ "index": "1000",
                                 "rating": "_",
                                 "name": " Old Index ",
-                                "ext": ".jpg" }, 
+                                "ext": ".jpg" },
                               m._IMG_PATTERN.match("1000_ Old Index .jpg").groupdict())
         self.assertDictEquals({ "index": "R12345",
                                 "rating": "_",
                                 "name": "Some Name",
-                                "ext": ".jpg" }, 
+                                "ext": ".jpg" },
                               m._IMG_PATTERN.match("R12345_Some Name.jpg").groupdict())
         self.assertDictEquals({ "index": "X12345",
                                 "rating": "-",
                                 "name": "Some Movie",
-                                "ext": ".original.mov" }, 
+                                "ext": ".original.mov" },
                               m._IMG_PATTERN.match("X12345-Some Movie.original.mov").groupdict())
         self.assertDictEquals({ "index": "Y31415",
                                 "rating": "+",
                                 "name": "Web Version",
-                                "ext": ".web.mov" }, 
+                                "ext": ".web.mov" },
                               m._IMG_PATTERN.match("Y31415+Web Version.web.mov").groupdict())
         self.assertDictEquals({ "index": "Z31415",
                                 "rating": ".",
                                 "name": "Web Version",
-                                "ext": ".web.wmv" }, 
+                                "ext": ".web.wmv" },
                               m._IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
 
     def testGetRigLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
 
         expected = (
             '<a title="2007-11-08 Album Title" '
@@ -304,7 +311,8 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
+            m._GetRigLink(self.keywords,
+                          RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           400))
 
@@ -317,7 +325,8 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
+            m._GetRigLink(self.keywords,
+                          RelDir("base", "My Albums/Year_2007/2007-11-08 Album Title"),
                           "Best of 2007.jpg",
                           -1))
 
@@ -329,119 +338,126 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertHtmlEquals(
             expected,
-            m._GetRigLink(self.s, RelDir("base", "My Albums/Year_2007/2007-11-08 Album & Title"),
+            m._GetRigLink(self.keywords,
+                          RelDir("base", "My Albums/Year_2007/2007-11-08 Album & Title"),
                           None,
                           -1))
 
     def testGenerateImages(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s)
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
+
+        keywords = self.keywords
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), [], self.s.AsDict()))
+            m._GenerateImages(RelDir("base", ""), [], keywords))
 
         self.assertEquals(
             None,
             m._GenerateImages(RelDir("base", ""), [ "index.izu",
                                                     "index.html",
                                                     "image.jpeg" ],
-                                                  self.s.AsDict() ))
+                                                  keywords ))
 
         self.assertEquals(
             None,
-            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ], self.s.AsDict()))
-        
-        self.assertHtmlEquals(
-            "See more images for " + m._GetRigLink(self.s, RelDir("base", ""), None, -1),
-            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], self.s.AsDict()))
+            m._GenerateImages(RelDir("base", ""), [ "J1234_sound.mp3" ], keywords))
 
         self.assertHtmlEquals(
-            '<table class="image-table"><tr><td>\n' + m._GetRigLink(self.s, RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
-            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], self.s.AsDict()))
+            "See more images for " + m._GetRigLink(keywords, RelDir("base", ""), None, -1),
+            m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], keywords))
+
+        self.assertHtmlEquals(
+            '<table class="image-table"><tr><td>\n' + m._GetRigLink(keywords, RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
+            m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], keywords))
 
     def testGenerateIndexPage(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+
         m._GenerateIndexPage("", "", [], [], [], [])
         params = m._fill_template_params
 
-        for key in [  "rig_img_url",
-                      "rig_thumb_url",
-                      "source_list",
-                      "header_img_height",
-                      "tracking_code",
-                      "header_img_url", 
-                      "rig_album_url",
-                      "img_gen_script",
-                      "entries",
-                      "last_content_ts",
-                      "rig_img_size",
-                      "month_pages",
-                      "rig3_version",
-                      "rig_base",
-                      "title",
-                      "rel_base_url",
-                      "base_url",
-                      "public_name",
-                      "theme",
-                      "all_categories",
-                      "dest_dir",
-                      "cat_filter",
-                      "toc_categories",
-                      "last_gen_ts" ]:
-            self.assertTrue(key in params[SiteDefault._TEMPLATE_HTML_INDEX][0], "Missing [%s] in %s" % (key, params))
+        for key in [ "rig_img_url",
+                     "rig_thumb_url",
+                     "source_list",
+                     "header_img_height",
+                     "tracking_code",
+                     "header_img_url",
+                     "rig_album_url",
+                     "img_gen_script",
+                     "entries",
+                     "last_content_ts",
+                     "rig_img_size",
+                     "month_pages",
+                     "rig3_version",
+                     "title",
+                     "rel_base_url",
+                     "base_url",
+                     "public_name",
+                     "theme",
+                     "all_categories",
+                     "dest_dir",
+                     "cat_filter",
+                     "toc_categories",
+                     "last_gen_ts" ]:
+            self.assertTrue(key in params[SiteDefault._TEMPLATE_HTML_INDEX][0],
+                            "Missing [%s] in %s" % (key, params))
 
     def testRigAlbumLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        
-        settings = SiteSettings()
-        self.assertEquals("", m._RigAlbumLink(settings, "my album"))
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
-        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        keywords = self.keywords
+        keywords.update(SourceSettings(rig_base=None).AsDict())
+        self.assertEquals("", m._RigAlbumLink(keywords, "my album"))
+
+        keywords.update(SourceSettings(rig_base="http://my.rig/index.php").AsDict())
         self.assertEquals("http://my.rig/index.php?album=my%20album",
-                          m._RigAlbumLink(settings, "my album"))
-        
+                          m._RigAlbumLink(keywords, "my album"))
+
     def testRigImgLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
-        settings = SiteSettings()
-        self.assertEquals("", m._RigImgLink(settings, "my album", "my image.jpg"))
+        keywords = self.keywords
+        keywords.update(SourceSettings(rig_base=None).AsDict())
+        self.assertEquals("", m._RigImgLink(keywords, "my album", "my image.jpg"))
 
-        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        keywords.update(SourceSettings(rig_base="http://my.rig/index.php").AsDict())
         self.assertEquals("http://my.rig/index.php?album=my%20album&img=my%20image.jpg",
-                          m._RigImgLink(settings, "my album", "my image.jpg"))
+                          m._RigImgLink(keywords, "my album", "my image.jpg"))
 
     def testRigThumbLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
-        
-        settings = SiteSettings()
-        self.assertEquals("", m._RigThumbLink(settings, "my album", "my image.jpg", 640))
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
-        settings = SiteSettings(rig_base="http://my.rig/index.php")
+        keywords = self.keywords
+        keywords.update(SourceSettings(rig_base=None).AsDict())
+        self.assertEquals("", m._RigThumbLink(keywords, "my album", "my image.jpg", 640))
+
+        keywords.update(SourceSettings(rig_base="http://my.rig/index.php").AsDict())
         self.assertEquals("http://my.rig/index.php?th=&album=my%20album&img=my%20image.jpg&sz=640&q=75",
-                          m._RigThumbLink(settings, "my album", "my image.jpg", 640))
+                          m._RigThumbLink(keywords, "my album", "my image.jpg", 640))
 
     def testGeneratePages_0Empty(self):
         """
         Printing an empty list of items only generates an index page
         """
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
         self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
 
         m.GeneratePages(categories=[], items=[])
         self.assertListEquals([ "index.html", "atom.xml" ], m.GetWriteFileData(m._LEAFNAME))
-        
+
     def testGeneratePages_0Cats(self):
         """
         Printing 3 times + 1 the number of items per page generates 4 pages
         """
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = []
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 1):
             # x % 12 => we'll generate 12 month pages
-            si = SiteItem(datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
+            si = SiteItem(source_item=None,
+                          date=datetime(2000, 1 + (x % 12), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
                           permalink="item",
                           content_gen=lambda t, x: "content",
@@ -465,19 +481,20 @@ class SiteDefaultTest(RigTestCase):
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
         for keywords in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]:
             self.assertEquals(len(items), len(keywords["all_entries"]))
-        
+
     def testGeneratePages_1Cat(self):
         """
         Print items with only one category, this does not generate
         category indexes.
         """
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
             # x % 7 => we'll generate 7 month pages
-            si = SiteItem(datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
+            si = SiteItem(source_item=None,
+                          date=datetime(2000, 1 + (x % 7), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
                           permalink="item",
                           content_gen=lambda t, x: "content",
@@ -495,13 +512,14 @@ class SiteDefaultTest(RigTestCase):
         """
         With two categories, we get category pages too
         """
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first", "second" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE + 1):
             # x % 5 => we'll generate 5 month pages
-            si = SiteItem(datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
+            si = SiteItem(source_item=None,
+                          date=datetime(2000, 1 + (x % 5), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
                           permalink="item",
                           content_gen=lambda t, x: "content",
@@ -532,14 +550,15 @@ class SiteDefaultTest(RigTestCase):
         """
         More categories: 4 main pages but each category has only 2 pages
         """
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first", "second", "three" ]
         for x in xrange(0, DEFAULT_ITEMS_PER_PAGE * 3 + 3):
             # x % 3 => we'll generate 3 month pages and we have 3 categories
             # so each category ends up in the same month.
-            si = SiteItem(datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
+            si = SiteItem(source_item=None,
+                          date=datetime(2000, 1 + (x % 3), 1 + (x % 28), x % 24, x % 60, x % 60),
                           title="blah",
                           permalink="item",
                           content_gen=lambda t, x: "content",
@@ -549,7 +568,7 @@ class SiteDefaultTest(RigTestCase):
         m.GeneratePages(cats, items)
         self.assertListEquals(
           [ "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml", 
+            "index.html", "atom.xml",
             os.path.join("cat", "first", "2000-01.html"),
             os.path.join("cat", "first", "index.html"),
             os.path.join("cat", "first", "atom.xml"),
@@ -564,23 +583,24 @@ class SiteDefaultTest(RigTestCase):
     def testGeneratePages_UseCurrMonth(self):
         """
         Test that index contains all items from the first month when
-        use_curr_month_in_index is True, even if it's more than 
+        use_curr_month_in_index is True, even if it's more than
         num_item_page.
         """
-        self.s.use_curr_month_in_index = True
-        self.s.num_item_page = 2
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.sis.use_curr_month_in_index = True
+        self.sis.num_item_page = 2
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = []
         # generate 2 months with 5 items per month each
         for mo in xrange(0, 2):
             for d in xrange(0, 5):
-                si = SiteItem(datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
-                          title="blah",
-                          permalink="item",
-                          content_gen=lambda t, x: "content",
-                          categories=cats)
+                si = SiteItem(source_item=None,
+                              date=datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
+                              title="blah",
+                              permalink="item",
+                              content_gen=lambda t, x: "content",
+                              categories=cats)
                 items.append(si)
 
         m.GeneratePages(cats, items)
@@ -605,8 +625,8 @@ class SiteDefaultTest(RigTestCase):
         # Now if we set num_item_page to 7, we'll get the 5 items of the last month
         # plus 2 from the next month
 
-        self.s.num_item_page = 7
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.sis.num_item_page = 7
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         m.GeneratePages(cats, items)
 
@@ -634,20 +654,21 @@ class SiteDefaultTest(RigTestCase):
         Test that index contains N max items independantly of the first month when
         use_curr_month_in_index is False.
         """
-        self.s.use_curr_month_in_index = False
-        self.s.num_item_page = 2
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.sis.use_curr_month_in_index = False
+        self.sis.num_item_page = 2
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         items = []
         cats = []
         # generate 2 months with 5 items per month each
         for mo in xrange(0, 2):
             for d in xrange(0, 5):
-                si = SiteItem(datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
-                          title="blah",
-                          permalink="item",
-                          content_gen=lambda t, x: "content",
-                          categories=cats)
+                si = SiteItem(source_item=None,
+                              date=datetime(2000, 1 + mo, 1 + d, 0, 0, 0),
+                              title="blah",
+                              permalink="item",
+                              content_gen=lambda t, x: "content",
+                              categories=cats)
                 items.append(si)
 
         m.GeneratePages(cats, items)
@@ -669,8 +690,8 @@ class SiteDefaultTest(RigTestCase):
         # Now if we set num_item_page to 7, we'll get the 5 items of the last month
         # plus 2 from the next month
 
-        self.s.num_item_page = 7
-        m = MockSiteDefault(self, self.Log(), False, self.s).MakeDestDirs()
+        self.sis.num_item_page = 7
+        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
 
         m.GeneratePages(cats, items)
 

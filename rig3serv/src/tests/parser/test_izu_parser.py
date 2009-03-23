@@ -19,22 +19,16 @@ from rig.parser.dir_parser import RelFile
 _j_ = os.path.join  # shortcut
 
 #------------------------
-class MockSettings(object):
-    def __init__(self, settings):
-        self.__dict__.update(settings)
-        
 class MockIzuParser(IzuParser):
-    def __init__(self, log, glob=None, settings=None):
+    def __init__(self, log, glob, rig_base, img_gen_script):
         self._popen_args = None
         self._popen_kw = None
         self._popen_ret = None
         self._popen_out = None
-        
+
         self._glob = glob or {}
-        
-        if settings and isinstance(settings, dict):
-            settings = MockSettings(settings)
-        super(MockIzuParser, self).__init__(log, settings)
+
+        super(MockIzuParser, self).__init__(log, rig_base, img_gen_script)
 
     def _GlobGlob(self, dir, pattern):
         return self._glob.get(pattern, None)
@@ -42,7 +36,7 @@ class MockIzuParser(IzuParser):
     def SetPopenValues(self, retcode, stdout):
         self._popen_ret = retcode
         self._popen_out = stdout
-    
+
     def GetPopenArgs(self):
         """
         Returns the positional arguments given to Popen (as a tuple)
@@ -62,11 +56,11 @@ class MockIzuParser(IzuParser):
         self._popen_args = popenargs
         self._popen_kw = kwargs
         return self
-    
+
     def communicate(self, input=None):
         """ Simulates subprocess.Popen.communicate """
         return [ self._popen_out, "MOCK-stderr" ]
-    
+
     def wait(self):
         """ Simulates subprocess.Popen.wait """
         return self._popen_ret
@@ -75,7 +69,10 @@ class MockIzuParser(IzuParser):
 class IzuParserTest(RigTestCase):
 
     def setUp(self):
-        self.m = MockIzuParser(self.Log())
+        self.m = MockIzuParser(self.Log(),
+                               glob=None,
+                               rig_base=None,
+                               img_gen_script=None)
 
     def tearDown(self):
         self.m = None
@@ -131,12 +128,12 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\nthere is a _break<br>\nin the line_\nbut not here.</span>',
             self._Render("there is a __break/\nin the line__\nbut not here."))
 
-        # A double-slash // does not generate a <br> 
+        # A double-slash // does not generate a <br>
         self.assertEquals(
             '<span class="izu">\nthere is no //\na break.</span>',
             self._Render("there is no //\na break."))
 
-        # / not at the end of the line is used as-is 
+        # / not at the end of the line is used as-is
         self.assertEquals(
             '<span class="izu">\nthere is no /a break.</span>',
             self._Render("there is no /a break."))
@@ -271,7 +268,7 @@ class IzuParserTest(RigTestCase):
         tags, sections = self.m.RenderStringToHtml("\n[s:en]\nline 1\n\n[s:fr]\nline 2\n\n")
         self.assertEquals('<span class="izu">\nline 1</span>', sections.get("en", None))
         self.assertEquals('<span class="izu">\nline 2</span>', sections.get("fr", None))
-    
+
     def testIzuTags(self):
         tags, sections = self.m.RenderStringToHtml("[izu:author:ralf]")
         self.assertDictEquals({ "author": "ralf" }, tags)
@@ -339,9 +336,11 @@ class IzuParserTest(RigTestCase):
     def testRigLink(self):
         self.m = MockIzuParser(self.Log(),
                    glob={ "A01234*.jpg": "A01234 My Image.jpg",
-                          os.path.join("pic*", "all*", "A01234*.jpg"): 
+                          os.path.join("pic*", "all*", "A01234*.jpg"):
                             os.path.join("pictures", "all my pix", "A01234 Some Image.jpg")
-                        })
+                        },
+                   rig_base=None,
+                   img_gen_script=None)
 
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<a title="This is &amp; comment" '
@@ -362,10 +361,12 @@ class IzuParserTest(RigTestCase):
                    glob={ "A01234*.jpg": "A01234 My Image.jpg",
                           "*dir/flag*.gif" : "mydir/flag1.gif",
                           "*dir\\flag*.gif" : "mydir\\flag1.gif",
-                          os.path.join("pic*", "all*", "A01234*.jpg"): 
+                          os.path.join("pic*", "all*", "A01234*.jpg"):
                             os.path.join("pictures", "all my pix", "A01234 Some Image.jpg")
-                        })
-        
+                        },
+                   rig_base=None,
+                   img_gen_script=None)
+
         # full tag with name, size and glob
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
@@ -373,7 +374,7 @@ class IzuParserTest(RigTestCase):
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:256:A01234*.jpg]"))
-        
+
         # full tag with name, size and sub-dir-based glob
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
@@ -381,7 +382,7 @@ class IzuParserTest(RigTestCase):
             '{ "rig_base": rig_base, "album": curr_album + (curr_album and "/" or "") + "pictures/all%20my%20pix", "img": "A01234%20Some%20Image.jpg", "size": "256" } ]]">'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:256:" + os.path.join("pic*", "all*", "A01234*.jpg") + "]"))
-        
+
         # tag with name and glob, no size
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
@@ -389,7 +390,7 @@ class IzuParserTest(RigTestCase):
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:A01234*.jpg]"))
-        
+
         # size field present but empty
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
@@ -423,7 +424,7 @@ class IzuParserTest(RigTestCase):
             '<br><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:A01234*.jpg|This is a caption!]"))
-        
+
         # size field present but empty and caption
         self.assertEquals(
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
@@ -461,7 +462,9 @@ class IzuParserTest(RigTestCase):
 
     def testSectionImage(self):
         self.m = MockIzuParser(self.Log(),
-                               glob={ "A01234*.jpg": "A01234 My Image.jpg" })
+                               glob={ "A01234*.jpg": "A01234 My Image.jpg" },
+                               rig_base=None,
+                               img_gen_script=None)
         tags, sections = self.m.RenderStringToHtml("[s:images]")
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
@@ -498,8 +501,9 @@ class IzuParserTest(RigTestCase):
                   rel_file=None, abs_dir=0, filename=1, title=2, is_link=False, size=4, caption=5))
 
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
 
         # error code is not 0, so nothing is done
         m.SetPopenValues(42, "blah")
@@ -513,8 +517,9 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_url(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, "some-url")
 
         # auto generate an <img> for a url (i.e. something without "<img")
@@ -542,8 +547,9 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_env(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
@@ -552,7 +558,7 @@ class IzuParserTest(RigTestCase):
                                   is_link=False, size="size4", caption="caption5"))
 
         args, kw = m.GetPopenArgs()
-        
+
         self.assertListEquals( ( [ "/path/to/my/script",
                                    "some/path",
                                    _j_("path", "file1"),
@@ -575,8 +581,9 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_img(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<img src"toto"><blah>')
 
         self.assertEquals('<img src"toto"><blah><br><tt>caption5</tt>',
@@ -596,8 +603,9 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_a(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
@@ -617,8 +625,9 @@ class IzuParserTest(RigTestCase):
 
     def testExternalGenRigUrl_tt(self):
         m = MockIzuParser(self.Log(),
-                          settings={ "img_gen_script": "/path/to/my/script",
-                                     "rig_base": "/pix/for/rig" })
+                          glob=None,
+                          rig_base="/pix/for/rig",
+                          img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a><tt>boo</tt>')
 
         self.assertEquals('<a href="foo"><img src"toto"><blah></a><tt>boo</tt>',

@@ -1,12 +1,10 @@
 ---- TODO ----
 
-20090113 Eng. Bug: rig_base from per-source settings is not used (needs UTs)
-
 20081130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
 
 20081130 Engine:   Use md5 hashes instead of CRC32 internally. Too weak.
 
-20080930 Engine:   Remove the dirs" and "files" source types
+20080930 Engine:   Remove the "dirs" and "files" source types
 
 20080907 Bug:      "reverse_categories = !kw1,!kw2" not working (MM#2)
 20080907 Bug:      izu rigimg not working properly (MM#4)
@@ -38,6 +36,9 @@
 
 ---- Done Version 0.3 ----
 
+20090322 Engine:   Use two sources w/ two rig_base in sample data + UTs
+20090322 Engine:   Complete rewrite of the handling of rig_base, move it per source.
+20090320 Eng. Bug: Try to fix the broken rig_base per source scheme. Give up.
 20090114 Engine:   Disable config file variable expansion for all settings
 20090113 Engine:   Disable config file variable expansion for rig_xyz_url settings
 20090113 Eng. Bug: rig_base from per-source settings was not used (no UTs yet)
@@ -69,8 +70,8 @@
 20080727 Template: Added html_toc, used by html_index with toc_categories
 20080727 Template: Give entries as { content, title, date, permalink }
 20080626 Template: Give entries as { content, title, date }
-20080626 Engine:   Fix rig_base not propagated by SourceReaders 
-20080624 Template: Support for [[insert path-to-template]] tag 
+20080626 Engine:   Fix rig_base not propagated by SourceReaders
+20080624 Template: Support for [[insert path-to-template]] tag
 20080622 Engine:   Ability to have a different rig_base per source (w/ basic UT)
 20080622 Engine:   Fix double XML encoding in content of atom entry
 20080622 Engine:   Limit atom feed to settings.num_item_atom (20 per default)
@@ -81,10 +82,10 @@
 20080621 Engine:   Generate Atom feed (merge back with html generation)
 20080615 Engine:   Generate Atom feed (using a specific theme, experimental)
 20080612 Engine:   Call custom script for on-the-fly image generation + pref
-20080429 Template: Support for a plain HTML template (mostly for printing) 
+20080429 Template: Support for a plain HTML template (mostly for printing)
 20080330 Izu:      Support for [rigimglink] tag
-20080330 Izu:      Final support for [s:images] section 
-20080330 Izu:      Initial support for [s:images] section 
+20080330 Izu:      Final support for [s:images] section
+20080330 Izu:      Initial support for [s:images] section
 20080330 Template: Remove prev/next/curr/max links in templates, use month pages link
 20080330 Template: CSS color for entry title link back to yellow
 20080224 Engine:   Continued adding support for SourceSettings and using it. Needs UTs.
@@ -137,7 +138,7 @@
 20071114 Template: Display up to 6 "normal" images if nothing else to display
 20071114 Template: Format date/title for entry headers
 20071113 Engine: DirParser scan for .rig3-exclude w/ regexp of folders/files to exclude
-20071113 Fix:    Some entries appear in double in the generated index => dup symlinks!    
+20071113 Fix:    Some entries appear in double in the generated index => dup symlinks!
 20071113 Fix:    Fixed izu:date for format YYYY:MM:DD HH:MM
 20071112 Misc:   Script to svn checkout and apply *only* if all tests pass
 20071112 Template: Last-updated timestamp in main page (from content) vs last-generated
@@ -165,7 +166,7 @@
 20071022 Engine: Template buffer line separation handling, UTs
 20071021 Engine: Template class+ buffer, UTs
 20071020 Engine: Define templating system, start impl.
-20071015 Tests:  Need to tests rig_test_case 
+20071015 Tests:  Need to tests rig_test_case
 20071014 Tests:  Testing Kid template system
 20071013 Engine: Skeleton for Izumi-to-Html converter, UT
 20071008 Engine: DirParser.TraverseDirs w/ UT

@@ -23,12 +23,12 @@ class SourceReaderBase(object):
     """
     Base class for a source reader, i.e. an object that knows how to read
     "items" out of files or directories on disk. These items (...TODO...)
-    
+
     The constructor captures the current site settings and the default source
     path. The settings are used for specific configuration, for example
     filtering patterns.
     """
-    def __init__(self, log, site_settings, path, source_settings):
+    def __init__(self, log, site_settings, source_settings, path):
         self._log = log
         self._path = path
         self._site_settings = site_settings
@@ -42,10 +42,10 @@ class SourceReaderBase(object):
         Parses the source and returns a list of SourceItem.
         The source directory is always the internal path given to the
         constructor of the source reader.
-        
+
         Parameter:
         - dest_dir (string): Destination directory.
-        
+
         This method is abstract and must always be implemented by derived
         classes. Derived classes should not call their super.
         """
@@ -62,7 +62,7 @@ class SourceReaderBase(object):
                     self._site_settings == rhs._site_settings)
         else:
             return False
-    
+
     def __repr__(self):
         return "<%s '%s'>" % (self.__class__.__name__, self._path)
 
@@ -77,18 +77,18 @@ class SourceBlogReader(SourceReaderBase):
     DIR_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
-    def __init__(self, log, site_settings, path, source_settings=None):
+    def __init__(self, log, site_settings, source_settings, path):
         """
-        Constructs a new SourceDirReader.
-        
+        Constructs a new SourceBlogReader.
+
         Arguments:
         - log (Log)
         - site_settings (SiteSettings)
-        - path (String): The base directory to read recursively 
-        - source_settings(SourceSettings): optional SourceSettings
+        - path (String): The base directory to read recursively
+        - source_settings(SourceSettings)
         """
-        super(SourceBlogReader, self).__init__(log, site_settings, path, source_settings)
-        # allow patterns to be overrided via site settings
+        super(SourceBlogReader, self).__init__(log, site_settings, source_settings, path)
+        # allow patterns to be overridden via site settings
         self._dir_pattern     = site_settings and site_settings.blog_dir_pattern     or self.DIR_PATTERN
         self._dir_valid_files = site_settings and site_settings.blog_dir_valid_files or self.DIR_VALID_FILES
         self._file_pattern    = site_settings and site_settings.blog_file_pattern    or self.FILE_PATTERN
@@ -98,32 +98,32 @@ class SourceBlogReader(SourceReaderBase):
         Calls the directory parser on the source vs dest directories.
 
         Then traverses the source tree and generates new items as needed.
-        
+
         An item in a RIG site is a directory that contains either an
         index.izu and/or JPEG images.
-        
+
         Parameter:
         - dest_dir (string): Destination directory.
-        
+
         Returns a list of SourceItem.
         """
         tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
                                           os.path.realpath(dest_dir))
- 
+
         dir_pattern = re.compile(self._dir_pattern)
         dir_valid_files = re.compile(self._dir_valid_files)
         file_pattern = re.compile(self._file_pattern)
- 
+
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             basename = source_dir.basename()
-            
+
             if dir_pattern.search(basename):
                 # This directory looks like one entry.
                 # Only keep the "valid" files for directory entries.
                 valid_files = [f for f in all_files if dir_valid_files.search(f)]
-            
-                
+
+
                 # Only process directories that have at least one file of interest
                 if valid_files:
                     self._log.Debug("[%s] Process '%s' to '%s'",
@@ -152,7 +152,7 @@ class SourceBlogReader(SourceReaderBase):
         """
         Returns the most recent change or modification time stamp for the
         given directory.
-        
+
         Throws OSError with e.errno==errno.ENOENT (2) when the directory
         does not exists.
         """
@@ -164,7 +164,7 @@ class SourceBlogReader(SourceReaderBase):
         """
         Returns the most recent change or modification time stamp for the
         given file.
-        
+
         Throws OSError with e.errno==errno.ENOENT (2) when the file
         does not exists.
         """
@@ -178,29 +178,29 @@ class SourceBlogReader(SourceReaderBase):
 class SourceDirReader(SourceReaderBase):
     """
     Source reader for rig3 directory-based entries.
-    
+
     Only directories are considered as items: valid directory names must match
     the specified DIR_PATTERN regexp *and* must contain one or more of the files
     specified by the VALID_FILES regexp.
-    
+
     @deprecated
     """
 
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
-    def __init__(self, log, site_settings, path, source_settings=None):
+    def __init__(self, log, site_settings, source_settings, path):
         """
         Constructs a new SourceDirReader.
-        
+
         Arguments:
         - log (Log)
         - site_settings (SiteSettings)
-        - path (String): The base directory to read recursively 
-        - source_settings(SourceSettings): optional SourceSettings
+        - path (String): The base directory to read recursively
+        - source_settings(SourceSettings)
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceDirReader, self).__init__(log, site_settings, path, source_settings)
+        super(SourceDirReader, self).__init__(log, site_settings, source_settings, path)
 
     def Parse(self, dest_dir):
         """
@@ -208,20 +208,20 @@ class SourceDirReader(SourceReaderBase):
         with the default dir/file patterns.
 
         Then traverses the source tree and generates new items as needed.
-        
+
         An item in a RIG site is a directory that contains either an
         index.izu and/or JPEG images.
-        
+
         Parameter:
         - dest_dir (string): Destination directory.
-        
+
         Returns a list of SourceItem.
         """
         tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
                                           os.path.realpath(dest_dir),
                                           file_pattern=self.VALID_FILES,
                                           dir_pattern=self.DIR_PATTERN)
- 
+
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             if all_files:
@@ -244,7 +244,7 @@ class SourceDirReader(SourceReaderBase):
         its internal files are more recent than the destination directory.
         And obviously it needs to be created if the destination does not
         exist yet.
-        
+
         Arguments:
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         - dest_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
@@ -252,7 +252,7 @@ class SourceDirReader(SourceReaderBase):
         # TODO: This needs to be revisited. Goal is to have a per-site "last update timestamp"
         # and compare to this.
         return True
-        
+
         #if not os.path.exists(dest_dir.abs_path):
         #    return True
         #source_ts = None
@@ -275,7 +275,7 @@ class SourceDirReader(SourceReaderBase):
         """
         Returns the most recent change or modification time stamp for the
         given directory.
-        
+
         Throws OSError with e.errno==errno.ENOENT (2) when the directory
         does not exists.
         """
@@ -288,26 +288,26 @@ class SourceDirReader(SourceReaderBase):
 class SourceFileReader(SourceReaderBase):
     """
     Source reader for file-based entries.
-    
+
     Only files which name match the specified FILE_PATTERN regexp are considered valid.
-    
+
     @deprecated
     """
 
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
 
-    def __init__(self, log, site_settings, path, source_settings=None):
+    def __init__(self, log, site_settings, source_settings, path):
         """
         Constructs a new SourceDirReader.
-        
+
         Arguments:
         - log (Log)
         - site_settings (SiteSettings)
-        - path (String): The base directory to read recursively 
-        - source_settings(SourceSettings): optional SourceSettings
+        - path (String): The base directory to read recursively
+        - source_settings(SourceSettings)
         """
         # TODO: the patterns must be overridable via site settings
-        super(SourceFileReader, self).__init__(log, site_settings, path, source_settings)
+        super(SourceFileReader, self).__init__(log, site_settings, source_settings, path)
 
     def Parse(self, dest_dir):
         """
@@ -315,18 +315,18 @@ class SourceFileReader(SourceReaderBase):
         with the default dir/file patterns.
 
         Then traverses the source tree and generates new items as needed.
-        
+
         An item in a RIG site is a file if it matches the given file pattern.
-        
+
         Parameter:
         - dest_dir (string): Destination directory.
-        
+
         Returns a list of SourceItem.
         """
         tree = DirParser(self._log).Parse(os.path.realpath(self.GetPath()),
                                           os.path.realpath(dest_dir),
                                           file_pattern=self.FILE_PATTERN)
- 
+
         items = []
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             self._log.Debug("[%s] Process '%s' to '%s'",
@@ -351,7 +351,7 @@ class SourceFileReader(SourceReaderBase):
         """
         Returns the most recent change or modification time stamp for the
         given file.
-        
+
         Throws OSError with e.errno==errno.ENOENT (2) when the file
         does not exists.
         """

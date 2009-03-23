@@ -13,6 +13,7 @@ import os
 from tests.rig_test_case import RigTestCase
 
 import rig3
+from rig.source_item import SourceSettings
 from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.sites_settings import SitesSettings, SiteSettings, IncludeExclude
 
@@ -67,7 +68,7 @@ class IncludeExcludeTest(RigTestCase):
         s.Set("name", "abc * def $ !foo !* !$ !bfg")
         self.assertEquals(None, s._include)
         self.assertEquals(IncludeExclude.ALL, s._exclude)
-        
+
         # category names are case-insenstive, they are internally all lower-case
         s = IncludeExclude()
         s.Set("name", "foo Foo FooBar Bar bAr bar")
@@ -171,106 +172,113 @@ class SitesSettingsTest(RigTestCase):
         self.assertSame(r, self.m)
         self.assertListEquals(["site1", "site2"], self.m.Sites())
 
-        s = self.m.GetSiteSettings("site1")
-        self.assertNotEquals(None, s)
-        self.assertIsInstance(SiteSettings, s)
-        self.assertEquals("blue_template", s.theme)
-        self.assertEquals("Site 1", s.public_name)
+        sis = self.m.GetSiteSettings("site1")
+        self.assertNotEquals(None, sis)
+        self.assertIsInstance(SiteSettings, sis)
+        self.assertEquals("blue_template", sis.theme)
+        self.assertEquals("Site 1", sis.public_name)
         self.assertListEquals(
-            [ SourceDirReader(self.Log(), s, "/tmp/data/site1") ],
-            s.source_list)
-        self.assertEquals("/tmp/generated/site1", s.dest_dir)
+            [ SourceDirReader(self.Log(), sis, SourceSettings(), "/tmp/data/site1") ],
+            sis.source_list)
+        self.assertEquals("/tmp/generated/site1", sis.dest_dir)
 
     def testProcessSources(self):
         log = self.Log()
-        s = SiteSettings()
-        self.assertListEquals([], s.source_list)
+        sis = SiteSettings()
+        self.assertListEquals([], sis.source_list)
 
         # Invalid sources (no qualifier)
-        self.m._ProcessSources(s, { "var1": "path1", "var2": "path2" })
-        self.assertListEquals([], s.source_list)
+        self.m._ProcessSources(sis, { "var1": "path1", "var2": "path2" })
+        self.assertListEquals([], sis.source_list)
 
         # SourceDirReader
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "dir:/my/path1" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": "dir:/my/path1" })
         self.assertListEquals(
-            [ SourceDirReader(log, s, "/my/path1") ],
-            s.source_list)
+            [ SourceDirReader(log, sis, SourceSettings(), "/my/path1") ],
+            sis.source_list)
 
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": '  dir :  "/my/path1,path2"  ' })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": '  dir :  "/my/path1,path2"  ' })
         self.assertListEquals(
-            [ SourceDirReader(log, s, "/my/path1,path2") ],
-            s.source_list)
-        
+            [ SourceDirReader(log, sis, SourceSettings(), "/my/path1,path2") ],
+            sis.source_list)
+
         # SourceFileReader
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "file:/my/path1" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": "file:/my/path1" })
         self.assertListEquals(
-            [ SourceFileReader(log, s, "/my/path1") ],
-            s.source_list)
+            [ SourceFileReader(log, sis, SourceSettings(), "/my/path1") ],
+            sis.source_list)
 
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": '  file :  "/my/path1,path2"  ' })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": '  file :  "/my/path1,path2"  ' })
         self.assertListEquals(
-            [ SourceFileReader(log, s, "/my/path1,path2") ],
-            s.source_list)
+            [ SourceFileReader(log, sis, SourceSettings(), "/my/path1,path2") ],
+            sis.source_list)
 
         # Combined
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "dir:/my/path1,file:/my/path2" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": "dir:/my/path1,file:/my/path2" })
         self.assertListEquals(
-            [ SourceDirReader (log, s, "/my/path1"),
-              SourceFileReader(log, s, "/my/path2") ],
-            s.source_list)
+            [ SourceDirReader (log, sis, SourceSettings(), "/my/path1"),
+              SourceFileReader(log, sis, SourceSettings(), "/my/path2") ],
+            sis.source_list)
 
         # Blog
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "blog:/my/path1" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis, { "sources": "blog:/my/path1" })
         self.assertListEquals(
-            [ SourceBlogReader (log, s, "/my/path1") ],
-            s.source_list)
+            [ SourceBlogReader (log, site_settings=sis,
+                                     source_settings=SourceSettings(),
+                                     path="/my/path1") ],
+            sis.source_list)
 
     def testOverrideSourcesSettings(self):
         log = self.Log()
 
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "file:/my/path1, rig_base:http://some/url" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis,
+                               { "sources": "file:/my/path1, rig_base:http://some/url" })
         self.assertListEquals(
-            [ SourceFileReader(log, s, "/my/path1") ],
-            s.source_list)
+            [ SourceFileReader(log, sis,
+                               SourceSettings(rig_base="http://some/url"),
+                               "/my/path1") ],
+            sis.source_list)
         self.assertDictEquals( { "rig_base": "http://some/url" },
-            s.source_list[0]._source_settings.OverrideDict())
+            sis.source_list[0]._source_settings.AsDict())
 
-        s = SiteSettings()
-        self.m._ProcessSources(s, { "sources": "dir:/my/path1,file:/my/path2, rig_base:http://some/url, file:/my/path3" })
+        sis = SiteSettings()
+        self.m._ProcessSources(sis,
+                               { "sources": "dir:/my/path1,file:/my/path2, rig_base:http://some/url, file:/my/path3" })
+        sos = SourceSettings(rig_base="http://some/url")
         self.assertListEquals(
-            [ SourceDirReader (log, s, "/my/path1"),
-              SourceFileReader(log, s, "/my/path2"),
-              SourceFileReader(log, s, "/my/path3") ],
-            s.source_list)
+            [ SourceDirReader (log, sis, sos, "/my/path1"),
+              SourceFileReader(log, sis, sos, "/my/path2"),
+              SourceFileReader(log, sis, sos, "/my/path3") ],
+            sis.source_list)
         self.assertDictEquals( { "rig_base": "http://some/url" },
-            s.source_list[0]._source_settings.OverrideDict())
+            sis.source_list[0]._source_settings.AsDict())
         self.assertDictEquals( { "rig_base": "http://some/url" },
-            s.source_list[1]._source_settings.OverrideDict())
+            sis.source_list[1]._source_settings.AsDict())
         self.assertDictEquals( { "rig_base": "http://some/url" },
-            s.source_list[2]._source_settings.OverrideDict())
+            sis.source_list[2]._source_settings.AsDict())
 
     def testSiteSettingsTypes(self):
         """
         Validates that parameters in SiteSettings are of the correct type.
         """
         # all integer values
-        s = SiteSettings(
+        sis = SiteSettings(
                  rig_img_size=42,
                  header_img_height=43,
                  num_item_page=44,
                  num_item_atom=45
                  )
-        self.assertEquals(42, s.rig_img_size)
-        self.assertEquals(43, s.header_img_height)
-        self.assertEquals(44, s.num_item_page)
-        self.assertEquals(45, s.num_item_atom)
+        self.assertEquals(42, sis.rig_img_size)
+        self.assertEquals(43, sis.header_img_height)
+        self.assertEquals(44, sis.num_item_page)
+        self.assertEquals(45, sis.num_item_atom)
 
         # integer values will fail it set to none or not an integer
         self.assertRaises(TypeError,  SiteSettings, rig_img_size=None)

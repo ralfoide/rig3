@@ -8,11 +8,11 @@
 sites = test_default, test_magic
 
 [DEFAULT]
-sources      = dir:album, file:album
+sources1    = dir: album/blog1, file: album/blog1, blog: album/blog1, rig_base: http://rig.base.url/photos1/index.php
+sources2    = dir: album/blog2, file: album/blog2, blog: album/blog2, rig_base: http://rig.base.url/photos2/index.php
 base_url     =
 template_dir = templates
 cat_filter   = !exclude-me
-rig_base     = http://rig.base.url/photos/index.php
 tracking_code = <i>tracking code here</i>
 toc_categories = bar
 reverse_categories = bar

@@ -8,11 +8,11 @@
 sites = rig3_live
 
 [DEFAULT]
-sources     = blog:album
+sources1    = blog: album/blog1, rig_base: http://rig.base.url/photos1/index.php
+sources2    = blog: album/blog2, rig_base: http://rig.base.url/photos2/index.php
 dest_dir    = live_dest
 base_url    =
 cat_filter  = !exclude-me
-rig_base    = http://rig.base.url/photos/index.php
 
 [rig3_live]
 theme = default

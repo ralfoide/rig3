@@ -1,7 +1,7 @@
-#Thu Nov 29 19:14:47 PST 2007
+#Sun Mar 22 15:35:02 PDT 2009
 eclipse.preferences.version=1
 encoding//src/rig/parser/izu_parser.py=iso-8859-1
 encoding//src/rig/parser/utf8_accents.py=UTF-8
 encoding//src/tests/parser/test_izu_parser.py=iso-8859-1
-encoding//testdata/album/2007-10-07_Folder\ 1/index.izu=ISO-8859-1
+encoding//testdata/album/blog1/2007-10-07_Folder\ 1/index.izu=ISO-8859-1
 instance/org.eclipse.core.net/org.eclipse.core.net.hasMigrated=true

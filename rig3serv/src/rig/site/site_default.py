@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Rig3 module: Site generator for "default" theme 
+Rig3 module: Site generator for "default" theme
 
 Site generators are instantiated by rig.site.__init__.py.CreateSite()
 
@@ -20,6 +20,7 @@ import urllib
 import operator
 from datetime import date, datetime
 
+from rig.parser.izu_parser import IzuParser
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
 from rig.source_item import SourceDir, SourceFile
@@ -46,7 +47,7 @@ class MonthPageItem(object):
 class SiteDefault(SiteBase):
     """
     Describes how to generate the content of a site using the "default" theme.
-    
+
     Right now the "magic" theme is identical to the "default" theme
     so the implementation is empty. This is expected to change later.
     """
@@ -60,7 +61,7 @@ class SiteDefault(SiteBase):
 
     _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]{0,2}\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
-    
+
     _RATING_BASE = -2
     _RATING_BAD = -1
     _RATING_DEFAULT = 0
@@ -76,12 +77,12 @@ class SiteDefault(SiteBase):
     _TEMPLATE_HTML_ENTRY   = "html_entry.html"    # template for individual entries in HTML page
     _TEMPLATE_HTML_TOC     = "html_toc.html"      # template for HTML TOC
     _TEMPLATE_ATOM_FEED    = "atom_feed.xml"      # template for atom feed
-    _TEMPLATE_ATOM_ENTRY   = "atom_entry.xml"     # template for individual entries in atom feed 
-    _TEMPLATE_ATOM_CONTENT = "atom_content.xml"   # template for content of atom entry 
-    
+    _TEMPLATE_ATOM_ENTRY   = "atom_entry.xml"     # template for individual entries in atom feed
+    _TEMPLATE_ATOM_CONTENT = "atom_content.xml"   # template for content of atom entry
 
-    def __init__(self, log, dry_run, settings):
-        super(SiteDefault, self).__init__(log, dry_run, settings)
+
+    def __init__(self, log, dry_run, site_settings):
+        super(SiteDefault, self).__init__(log, dry_run, site_settings)
 
     def MakeDestDirs(self):
         """
@@ -89,11 +90,11 @@ class SiteDefault(SiteBase):
 
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
-        
+
         Returns self for chaining
         """
         return self
-        
+
     def GeneratePages(self, categories, items):
         """
         Generates several pages:
@@ -169,16 +170,16 @@ class SiteDefault(SiteBase):
                         relevant_items.append(i)
                         break
 
-        if curr_category in self._settings.reverse_categories:
+        if curr_category in self._site_settings.reverse_categories:
             # sort by increasing date (thus reverse the name "decreasing date" order)
             relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
-        num_item_page = self._settings.num_item_page
+        num_item_page = self._site_settings.num_item_page
         assert isinstance(num_item_page, (int, long))
         if num_item_page < 1:
             num_item_page = DEFAULT_ITEMS_PER_PAGE
 
-        keywords = self._settings.AsDict()
+        keywords = self._site_settings.AsDict()
 
         if curr_category:
             title = curr_category.capitalize()
@@ -191,14 +192,14 @@ class SiteDefault(SiteBase):
         keywords["last_gen_ts"] = datetime.today()
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
-        keywords["toc_categories"] = self._settings.toc_categories.Filter(all_categories)
+        keywords["toc_categories"] = self._site_settings.toc_categories.Filter(all_categories)
         keywords["month_pages"] = month_pages
         keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
 
-        use_curr_month_in_index = self._settings.use_curr_month_in_index
+        use_curr_month_in_index = self._site_settings.use_curr_month_in_index
         all_entries = []
         entries = []
         older_date = None
@@ -218,7 +219,7 @@ class SiteDefault(SiteBase):
                 if is_first_page:
                     is_first_page = (entry_month == curr_month and use_curr_month_in_index) \
                                      or (len(entries) < num_item_page)
-                
+
                 if is_first_page:
                     entries.append(entry)
                     older_date = (older_date is None) and j.date or max(older_date, j.date)
@@ -229,7 +230,7 @@ class SiteDefault(SiteBase):
         keywords["last_content_ts"] = older_date
 
         content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
-        self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+        self._WriteFile(content, self._site_settings.dest_dir, os.path.join(base_path, filename))
 
     def _GenerateAtomFeed(self, path, rel_base,
                                 curr_category, all_categories,
@@ -271,16 +272,16 @@ class SiteDefault(SiteBase):
                         relevant_items.append(i)
                         break
 
-        if self._settings.num_item_atom > 0:
-            relevant_items = relevant_items[:self._settings.num_item_atom]
+        if self._site_settings.num_item_atom > 0:
+            relevant_items = relevant_items[:self._site_settings.num_item_atom]
 
         filename = "atom.xml"
 
-        keywords = self._settings.AsDict()
+        keywords = self._site_settings.AsDict()
 
         curr_url = keywords.get("base_url", "") + base_url
         keywords["curr_url"] = curr_url
-        
+
         if curr_category:
             title = curr_category.capitalize()
         else:
@@ -296,7 +297,7 @@ class SiteDefault(SiteBase):
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
 
-        
+
         entries = []
         older_date = None
         for i in relevant_items:
@@ -307,17 +308,17 @@ class SiteDefault(SiteBase):
             # Then generate the <entry> for the post
             content = i.content_gen(SiteDefault._TEMPLATE_ATOM_ENTRY, keywords)
             entry = ContentEntry(content, i.title, i.date, i.permalink)
-            entries.append(entry)            
+            entries.append(entry)
             older_date = (older_date is None) and i.date or max(older_date, i.date)
 
         keywords["entries"] = entries
         keywords["last_content_ts"] = older_date
         keywords["last_content_iso"] = self._DateToIso(keywords["last_gen_ts"])
-        
+
         # Finally generate the whole feed
         content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
-        self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
-    
+        self._WriteFile(content, self._site_settings.dest_dir, os.path.join(base_path, filename))
+
     def _AtomId(self, curr_url, date, title):
         name = self._SimpleFileName(title)
         return "%s%04d-%02d/%s" % (curr_url,
@@ -329,7 +330,7 @@ class SiteDefault(SiteBase):
                                 items, max_num_pages=None):
         """
         Generates months pages with items that match the curr_category.
-        
+
         SiteItems are not re-ordered, it's up to the caller to re-order the
         items by decreasing date order.
 
@@ -341,7 +342,7 @@ class SiteDefault(SiteBase):
         - all_categories: list of all categories (used for template to create links)
         - items: list of SiteItem. Items MUST be sorted by decreasing date order.
         - max_num_pages: How many pages to create? 0 or None to create them all.
-        
+
         Returns a list( MonthPageItem(string: URL, date) ) of URLs to the pages just
         created with the date matching the month.
         """
@@ -366,7 +367,7 @@ class SiteDefault(SiteBase):
                         relevant_items.append(i)
                         break
 
-        if curr_category in self._settings.reverse_categories:
+        if curr_category in self._site_settings.reverse_categories:
             # sort by increasing date (thus reverse the name "decreaseing date" order)
             relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
@@ -380,10 +381,10 @@ class SiteDefault(SiteBase):
             by_months[key].append(i)
         relevant_items = None
         keys = by_months.keys()
-        
+
         # The "natural" sort is to do a reverse sort.
         # If this category is reversed, use an incrementing sort.
-        keys.sort(reverse=not curr_category in self._settings.reverse_categories)
+        keys.sort(reverse=not curr_category in self._site_settings.reverse_categories)
 
         np = len(keys)
         for n in xrange(0, np):
@@ -393,7 +394,7 @@ class SiteDefault(SiteBase):
             filename = self._MonthPageName(year, month)
             month_pages.append(MonthPageItem(filename, month_key))
 
-        keywords = self._settings.AsDict()
+        keywords = self._site_settings.AsDict()
 
         if curr_category:
             title = curr_category.capitalize()
@@ -406,7 +407,7 @@ class SiteDefault(SiteBase):
         keywords["last_gen_ts"] = datetime.today()
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
-        keywords["toc_categories"] = self._settings.toc_categories.Filter(all_categories)
+        keywords["toc_categories"] = self._site_settings.toc_categories.Filter(all_categories)
         keywords["month_pages"] = month_pages
         keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
         version = Version()
@@ -415,7 +416,7 @@ class SiteDefault(SiteBase):
 
         pages = []
         all_entries = []
-            
+
         for p in month_pages:
             filename = p.url
             month_key = p.date
@@ -430,7 +431,7 @@ class SiteDefault(SiteBase):
                 all_entries.append(entry)
                 older_date = (older_date is None) and j.date or max(older_date, j.date)
             pages.append((p, filename, entries, older_date))
-            
+
         keywords["all_entries"] = all_entries
 
         for page in pages:
@@ -441,13 +442,13 @@ class SiteDefault(SiteBase):
             keywords["title"] = title + " - " + p.date.strftime("%B %Y")
 
             content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_MONTH, **keywords)
-            self._WriteFile(content, self._settings.dest_dir, os.path.join(base_path, filename))
+            self._WriteFile(content, self._site_settings.dest_dir, os.path.join(base_path, filename))
 
         return month_pages
 
     def _MonthPageName(self, year, month):
         return "%04d-%02d.html" % (year, month)
-    
+
     def _Permalink(self, year, month, title):
         name = self._SimpleFileName(title)
         return "%s#%s" % (self._MonthPageName(year, month), name), name
@@ -457,7 +458,7 @@ class SiteDefault(SiteBase):
         Generates a new photoblog entry, which may have an index and/or may have an album.
 
         Returns a SiteItem that describes an entry for the site's pages.
-        
+
         If the source item is not suitable (i.e. generates no data),
         the method must return None and the caller must be prepared to ignore it.
 
@@ -492,27 +493,32 @@ class SiteDefault(SiteBase):
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
-        
+
         date, title = self._DateAndTitleFromTitle(title)
         if not date:
             date = datetime.today()
         sections = {}
         tags = {}
+
+        keywords = self._site_settings.AsDict()
+        keywords.update(source_item.source_settings.AsDict())
+
         if izu_file:
-            self._log.Info("[%s] Render '%s' to HTML", self._settings.public_name,
+            self._log.Info("[%s] Render '%s' to HTML", self._site_settings.public_name,
                            izu_file)
-            tags, sections = self._izu_parser.RenderFileToHtml(izu_file)
+            izu_parser = IzuParser(self._log,
+                                   keywords["rig_base"],
+                                   keywords["img_gen_script"])
+            tags, sections = izu_parser.RenderFileToHtml(izu_file)
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):
-                    keywords = self._settings.AsDict()
                     if may_have_images:
                         keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
                     template = Template(self._log, source=v)
                     sections[k] = template.Generate(keywords)
                 elif k == "images":
                     if may_have_images:
-                        keywords = self._settings.AsDict()
                         keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
                         keywords["lines"] = [v]  # one line of many columns
                         content = self._FillTemplate("image_table.html", **keywords)
@@ -523,7 +529,10 @@ class SiteDefault(SiteBase):
 
         elif html_file:
             sections["html"] = self._ReadFile(html_file)
-            tags = self._izu_parser.ParseFirstLine(sections["html"])
+            izu_parser = IzuParser(self._log,
+                                   keywords["rig_base"],
+                                   keywords["img_gen_script"])
+            tags = izu_parser.ParseFirstLine(sections["html"])
             self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
             self._log.Debug("No content for source %s", source_item)
@@ -531,7 +540,7 @@ class SiteDefault(SiteBase):
 
         # Are item categories accepted on this site?
         cats = tags.get("cat", {}).keys()
-        if not self._settings.cat_filter.Matches(cats):
+        if not self._site_settings.cat_filter.Matches(cats):
             return None
         cats.sort()
 
@@ -542,9 +551,6 @@ class SiteDefault(SiteBase):
         if may_have_images and not "images" in sections:
             img_params = { "rel_dir": rel_dir, "all_files":list(all_files) }
 
-        keywords = self._settings.AsDict()
-        if source_item.source_settings:
-            keywords.update(source_item.source_settings.OverrideDict())
         keywords["title"] = title
         keywords["sections"] = dict(sections)
         keywords["date"] = date
@@ -574,7 +580,8 @@ class SiteDefault(SiteBase):
                     _keywords["sections"]["images"] = html_img
             return self._FillTemplate(_template, **_keywords)
 
-        return SiteItem(date,
+        return SiteItem(source_item,
+                        date,
                         title,
                         permalink_url,
                         categories=cats,
@@ -584,7 +591,7 @@ class SiteDefault(SiteBase):
     def _GenerateImages(self, source_dir, all_files, keywords):
         """
         Generates a table with images.
-        
+
         Arguments:
         - source_dir: DirParser.RelDir (abs_base + rel_curr + abs_dir)
         - all_files: List of "interesting/acceptable" files in the directory.
@@ -595,19 +602,18 @@ class SiteDefault(SiteBase):
         - if rating- images are present, show them as thumbnails
         - otherwise, simply returns a link on the album (TODO later: sample based on date)
         - if there are no files that look suitable for rig, returns None
-        
+
         Also, Rig-specific stuff:
         - all links point on the albums (i.e. parent directory)
         - The image pattern means there might be several variations
           (.jpg/.mov) for the same image index. For movies, uses the
-          snapshot if present. 
-        
+          snapshot if present.
+
         TODO: currently has a lot of hardcoded things that should go into
         site-dependent prefs.
         """
-        local_settings = SiteSettings()
-        local_settings.FromDict(keywords)
-        if not local_settings.rig_base:
+        rig_base = keywords["rig_base"]
+        if not rig_base:
             self._log.Info("No rig_base, no images generated for %s", source_dir.rel_curr)
             return None
 
@@ -616,8 +622,8 @@ class SiteDefault(SiteBase):
         #                    "files": [ pattern.groupdict + "full": leaf name ] }
         num_excellent = 0
         num_good = 0
-        num_images = 0 
-        num_normal = 0 
+        num_images = 0
+        num_normal = 0
         for filename in all_files:
             m = self._IMG_PATTERN.match(filename)
             if m:
@@ -632,11 +638,11 @@ class SiteDefault(SiteBase):
                     entry["top_rating"] = rating
                     entry["top_name"] = filename
                 entry["files"].append(filename)
-        
+
         # TODO: the heuristics below are lousy. Works for me, and even that
         # is questionable and all these constants... pfff. Need something
         # better. Maybe some inline-python mini-rules in the prefs?
-        
+
         links = []
         if num_excellent:
             # We got some excellent-rated images.
@@ -651,7 +657,7 @@ class SiteDefault(SiteBase):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_EXCELLENT:
-                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], size))
+                    links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], size))
         elif num_good:
             # We got some good-rated images.
             # Display up to 6 of them using the default preview size.
@@ -661,17 +667,17 @@ class SiteDefault(SiteBase):
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_GOOD:
-                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], -1))
+                    links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], -1))
         elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
             # We got some up to 6 normal-rated images.
-            # Display them using the default preview size. 
+            # Display them using the default preview size.
             num_col = num_normal
             keys = images.keys()
             keys.sort()
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_DEFAULT:
-                    links.append(self._GetRigLink(local_settings, source_dir, entry["top_name"], -1))
+                    links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], -1))
         elif num_images:
             # There are some images but none is considered good enough for the
             # auto-preview. Just generate a link on the album.
@@ -680,7 +686,7 @@ class SiteDefault(SiteBase):
             # TODO: it would make sense to display this even for the other cases
             #       if there were other images not shown.
             title = (keywords and "title" in keywords) and keywords["title"] or None
-            return "See more images for " + self._GetRigLink(local_settings, source_dir, None, None, title)
+            return "See more images for " + self._GetRigLink(keywords, source_dir, None, None, title)
 
         if links:
             lines = []
@@ -692,32 +698,32 @@ class SiteDefault(SiteBase):
                 curr.append(link)
                 i += 1
             content = self._FillTemplate("image_table.html",
-                                         theme=self._settings.theme,
+                                         theme=keywords["theme"],
                                          lines=lines)
             return content
         return None
 
-    def _GetRigLink(self, local_settings, source_dir, leafname, size, title=None):
+    def _GetRigLink(self, keywords, source_dir, leafname, size, title=None):
         """
         Generates the URL to a rig image, with a caption, that links to the given image
         (or the album if there's no image).
         Size: Max pixel size or -1 for a thumbnail.
-        
+
         If title is not None, it is used as the album title or image tooltip.
         If title is None, leafname is used for the image tooltip and the
         directory name is used for the album title.
-        
+
         If leafname & size are None, creates an URL to the album.
-        
+
         TODO: site prefs (base url, size, title, thumbnail size, quality)
         """
         album_title = title or cgi.escape(os.path.basename(source_dir.rel_curr))
         album = source_dir.rel_curr
-        link = self._RigAlbumLink(local_settings, album)
+        link = self._RigAlbumLink(keywords, album)
         if leafname:
             tooltip = title or os.path.splitext(leafname)[0]
-            link = self._RigImgLink(local_settings, album, leafname)
-            img = self._RigThumbLink(local_settings, album, leafname, size)
+            link = self._RigImgLink(keywords, album, leafname)
+            img = self._RigThumbLink(keywords, album, leafname, size)
             content = '<img title="%(title)s" alt="%(title)s" src="%(img)s"/>' % {
                 "title": tooltip,
                 "img": img }
@@ -734,29 +740,29 @@ class SiteDefault(SiteBase):
     def _DateToIso(self, date):
         return datetime.utcfromtimestamp(time.mktime(time.gmtime(time.mktime( date.timetuple() )))).isoformat() + "Z"
 
-    def _RigAlbumLink(self, settings, album):
-        if not settings.rig_base:
+    def _RigAlbumLink(self, keywords, album):
+        if not keywords["rig_base"]:
             return ""
-        return settings.rig_album_url % {
-                 "rig_base": settings.rig_base,
-                 "album": urllib.quote(album) }
+        k = dict(keywords)
+        k["album"] = urllib.quote(album)
+        return k["rig_album_url"] % k
 
-    def _RigImgLink(self, settings, album, img):
-        if not settings.rig_base:
+    def _RigImgLink(self, keywords, album, img):
+        if not keywords["rig_base"]:
             return ""
-        return settings.rig_img_url % {
-                 "rig_base": settings.rig_base,
-                 "album": urllib.quote(album),
-                 "img":   urllib.quote(img) }
+        k = dict(keywords)
+        k["album"] = urllib.quote(album)
+        k["img"] = urllib.quote(img)
+        return k["rig_img_url"] % k
 
-    def _RigThumbLink(self, settings, album, img, size):
-        if not settings.rig_base:
+    def _RigThumbLink(self, keywords, album, img, size):
+        if not keywords["rig_base"]:
             return ""
-        return settings.rig_thumb_url % {
-                 "rig_base": settings.rig_base,
-                 "album": urllib.quote(album),
-                 "img":   urllib.quote(img),
-                 "size":  urllib.quote(str(size)) }
+        k = dict(keywords)
+        k["album"] = urllib.quote(album)
+        k["img"] = urllib.quote(img)
+        k["size"] = urllib.quote(str(size))
+        return k["rig_thumb_url"] % k
 
     def _GetRating(self, ascii):
         return self._RATING.get(ascii, self._RATING_DEFAULT)
@@ -777,23 +783,23 @@ class SiteDefault(SiteBase):
     def _WriteFile(self, data, dest_dir, leafname):
         """
         Writes the given data to the given directory and leaf name.
-        
+
         If you need the leafname to be sanitized (i.e. if used later in
         URLs), then call _SimpleFileName first.
-        
+
         If data is None or anything empty (list, string, whatever), it will
         generate an empty file, but a file should be created nonetheless.
         Otherwise data can be anything that can be formatted with str().
         The file is open in binary mode so data need not be human-readable text.
-        
+
         If the destination exists, it will be overwritten.
-        
+
         Returns the actual full pathname written to.
-        
+
         This method is extracted so that it can be mocked in unit tests.
         """
         dest_file = os.path.join(dest_dir, leafname)
-        self._log.Info("[%s] Write %s", self._settings.public_name, dest_file)
+        self._log.Info("[%s] Write %s", self._site_settings.public_name, dest_file)
         if not self._dry_run:
             f = file(dest_file, mode="wb")
             f.write(data)
@@ -812,7 +818,7 @@ class SiteDefault(SiteBase):
         name = re.sub(r"[ /\\-]+", "-", leafname)
         name = re.sub(r"[^a-zA-Z0-9-]+", "_", name)
         if maxlen <= 0:
-            maxlen = self._settings.mangled_name_len
+            maxlen = self._site_settings.mangled_name_len
         if maxlen > 0 and len(name) > maxlen:
             # The adler32 CRC is returned as an int and can thus "seem" negative
             # convert to its true long 64-bit value, always positive

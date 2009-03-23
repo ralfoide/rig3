@@ -33,7 +33,6 @@ import os
 import errno
 
 from rig.parser.dir_parser import DirParser, RelDir
-from rig.parser.izu_parser import IzuParser
 from rig.template.template import Template
 from rig.version import Version
 from rig import stats
@@ -50,8 +49,10 @@ class SiteItem(object):
     - date (datetime)
     - title (string)
     - permalink: (string) The permalink URL relative from the base site.
+    - source_item (SourceItem)
     """
-    def __init__(self, date, title, permalink, content_gen, categories=None):
+    def __init__(self, source_item, date, title, permalink, content_gen, categories=None):
+        self.source_item = source_item
         self.date = date
         self.title = title
         self.content_gen = content_gen
@@ -74,18 +75,17 @@ class SiteItem(object):
 class SiteBase(object):
     """
     Base class to generate sites.
-    
+
     This class is "abstract". Some methds must be derived to define a proper behavior.
     """
     MEDIA_DIR = "media"
     DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
-    def __init__(self, log, dry_run, settings):
+    def __init__(self, log, dry_run, site_settings):
         self._log = log
         self._dry_run = dry_run
-        self._settings = settings
-        self._izu_parser = IzuParser(self._log, settings)
+        self._site_settings = site_settings
 
     # Derived class must implement this to define the desired behavoior
 
@@ -95,10 +95,10 @@ class SiteBase(object):
 
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
-        
+
         Returns self for chaining
 
-        Subclassing: Derived classes SHOULD override this. Parent does nothing.        
+        Subclassing: Derived classes SHOULD override this. Parent does nothing.
         """
         return self
 
@@ -115,9 +115,9 @@ class SiteBase(object):
         """
         Generates a new photoblog entry, which may have an index and/or may
         have an album.
-        
+
         Returns a SiteItem that describes an entry for the site's pages.
-        
+
         If the source item is not suitable (i.e. generates no data),
         the method must return None and the caller must be prepared to ignore it.
 
@@ -137,17 +137,17 @@ class SiteBase(object):
         Processes the site. Do whatever is needed to get the job done.
         """
         self._log.Info("[%s] Processing site:\n  Source: %s\n  Dest: %s\n  Theme: %s",
-                       self._settings.public_name,
-                       self._settings.source_list,
-                       self._settings.dest_dir,
-                       self._settings.theme)
+                       self._site_settings.public_name,
+                       self._site_settings.source_list,
+                       self._site_settings.dest_dir,
+                       self._site_settings.theme)
         self.MakeDestDirs()
         self._CopyMedia()
         site_items = []
-        
+
         stats.start("1-parse")
-        
-        for source in self._settings.source_list:
+
+        for source in self._site_settings.source_list:
             self._ProcessSourceItems(source, site_items)
 
         stats.stop("1-parse")
@@ -156,7 +156,7 @@ class SiteBase(object):
         categories = self._CollectCategories(site_items)
 
         self._log.Info("[%s] Found %d site_items, %d categories",
-               self._settings.public_name,
+               self._site_settings.public_name,
                len(site_items), len(categories))
 
         stats.start("2-gen")
@@ -174,8 +174,8 @@ class SiteBase(object):
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
         """
-        _keywords = { "base_url": self._settings.base_url,
-                      "public_name": self._settings.public_name }
+        _keywords = { "base_url": self._site_settings.base_url,
+                      "public_name": self._site_settings.public_name }
         def _apply_template(source, dest):
             # Use fill template to copy/transform the file
             template = Template(self._log, file=source)
@@ -186,16 +186,16 @@ class SiteBase(object):
 
         media = self._TemplatePath(self.MEDIA_DIR)
         if os.path.isdir(media):
-            self._CopyDir(media, os.path.join(self._settings.dest_dir, self.MEDIA_DIR),
+            self._CopyDir(media, os.path.join(self._site_settings.dest_dir, self.MEDIA_DIR),
                           filter_ext={ ".css": _apply_template })
-    
+
     def _ProcessSourceItems(self, source, in_out_items):
         """
         Process all items from a given source and queue them into the
         in_out_items list.
 
         This basically converts a list of SourceItem into a list of SiteItem.
-        
+
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
 
@@ -203,7 +203,7 @@ class SiteBase(object):
         """
         dups = {}
 
-        for source_item in source.Parse(self._settings.dest_dir):
+        for source_item in source.Parse(self._site_settings.dest_dir):
             item_hash = hash(source_item)
             if not item_hash in dups:
                 dups[item_hash] = source_item
@@ -215,12 +215,12 @@ class SiteBase(object):
     def _TemplatePath(self, path, **keywords):
         """
         Returns the relative path to "path" under the theme's template directory.
-        
+
         The default is to extract the theme given as a keyword parameter,
-        or to get the theme from the site settings.
-        
+        or to get the theme from the site site_settings.
+
         Returns an os.path.join of _TemplateDir, theme and path.
-        
+
         Subclassing: some site generators may want to override the theme
         name used for the template directory (for example to always return
         stuff from the default directory.) Mock objects might want to change
@@ -229,25 +229,25 @@ class SiteBase(object):
         if keywords and "theme" in keywords:
             theme = keywords["theme"]
         else:
-            theme = self._settings.theme
+            theme = self._site_settings.theme
         return os.path.join(self._TemplateDir(), theme, path)
 
     def _TemplateThemeDirs(self, **keywords):
         """
         Returns the list(str) of all possible directories matching the
         current theme.
-        The theme name is looked for the keyword or in the current settings.
-        
+        The theme name is looked for the keyword or in the current site_settings.
+
         In the base version, this is the same as the path used by
         _TemplatePath. However derived implementations can add their own
         custom template path to the list.
-        
+
         Subclassing: This must never returns None nor an empty list.
         """
         if keywords and "theme" in keywords:
             theme = keywords["theme"]
         else:
-            theme = self._settings.theme
+            theme = self._site_settings.theme
         return [ os.path.join(self._TemplateDir(), theme) ]
 
     # Utilities, overridable for unit tests
@@ -256,7 +256,7 @@ class SiteBase(object):
         """
         Get all categories used in all site items.
         Returns a list of string, sorted.
-        
+
         Subclassing: There should be no need to override this.
         """
         categories = {}
@@ -270,12 +270,12 @@ class SiteBase(object):
 
     def _TemplateDir(self):
         """
-        Returns the template dir from the site settings.
+        Returns the template dir from the site site_settings.
         If it doesn't exist, returns the path to the the implicit "templates"
         directory relative to this source file.
         """
-        if self._settings.template_dir:
-            return self._settings.template_dir
+        if self._site_settings.template_dir:
+            return self._site_settings.template_dir
         else:
             f = __file__
             return os.path.realpath(os.path.join(os.path.dirname(f), "..", "..", "templates"))
@@ -286,7 +286,7 @@ class SiteBase(object):
         Doesn't generate an error if the directory already exists.
         """
         try:
-            os.makedirs(os.path.join(self._settings.dest_dir, rel_dir))
+            os.makedirs(os.path.join(self._site_settings.dest_dir, rel_dir))
         except OSError, e:
             if e.errno != errno.EEXIST:
                 raise
@@ -301,7 +301,7 @@ class SiteBase(object):
         Also it will fail if:
         - the destination is not a directory
         - the destination is not writable/executable
-        
+
         filter_ext is a dict { extension => filter_method }.
         Methods should have a signature (source_name, dest_name) and should
         copy the source to the dest, using whatever transformation desired.

@@ -10,9 +10,9 @@ Note: The following SVN keywords are enabled for substitution:
 -   HeadURL
 -   Id
 
-To enable substitutions, do something like this: 
+To enable substitutions, do something like this:
   $ svn propset svn:keywords "Date Author Revision HeadURL Id" version.py
-    
+
 Part of Rig3.
 License GPL.
 """
@@ -22,13 +22,13 @@ import re
 
 #------------------------
 class Version(object):
-    
+
     SVN_DATE = "$Date$"
     SVN_REVISION = "$Revision$"
     SVN_AUTHOR = "$Author$"
     SNV_HEAD_URL = "$HeadURL$"
     SVN_ID = "$Id$"
-    
+
     RIG3_VERSION = (0, 3)
 
     def Version(self):
@@ -47,7 +47,7 @@ class Version(object):
         """
         Returns the Rig3 SVN revision number as an integer.
         If there is no such revision number, returns the string 'Unknown'.
-        
+
         For the SVN_REVISION to change, it is necessary for this file to be
         edited and checked in. Thus this represents the *last* revision of this
         file, not the one from the whole rig source code.

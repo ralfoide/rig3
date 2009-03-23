@@ -27,7 +27,7 @@ class MockSiteBase(SiteBase):
     """
     Behaves like a Site() but overrides the base template directory location
     to use testdata/templates instead.
-    
+
     Also traps the last _Filltemplate parameters.
     """
     def __init__(self, test_case, log, dry_run, settings):
@@ -66,7 +66,7 @@ class MockSourceReader(object):
     """
     def __init__(self, source_items):
         self._source_items = source_items
-    
+
     def Parse(self, dest_dir):
         return self._source_items
 
@@ -75,14 +75,16 @@ class SiteBaseTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
-        source = SourceDirReader(self.Log(), None,
-                                 os.path.join(self.getTestDataPath(), "album"))
-        self.s = SiteSettings(public_name="Test Album",
-                              source_list=[ source ],
-                              dest_dir=self._tempdir,
-                              theme=DEFAULT_THEME,
-                              base_url="http://www.example.com",
-                              rig_base="http://example.com/photos/")
+        source = SourceDirReader(self.Log(),
+                                 site_settings=None,
+                                 source_settings=None,
+                                 path=os.path.join(self.getTestDataPath(), "album"))
+        self.sis = SiteSettings(public_name="Test Album",
+                                source_list=[ source ],
+                                dest_dir=self._tempdir,
+                                theme=DEFAULT_THEME,
+                                base_url="http://www.example.com")
+        self.sos = SourceSettings(rig_base="http://example.com/photos/")
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
@@ -91,19 +93,19 @@ class SiteBaseTest(RigTestCase):
         """
         Test init of Site
         """
-        source = SourceDirReader(self.Log(), None, "/tmp/source/data")
-        s = SiteSettings(public_name="Site Name",
+        source = SourceDirReader(self.Log(), None, None, "/tmp/source/data")
+        sis = SiteSettings(public_name="Site Name",
                          source_list=[ source ],
                          dest_dir=self._tempdir,
                          theme=DEFAULT_THEME)
-        m = MockSiteBase(self, self.Log(), False, s)
+        m = MockSiteBase(self, self.Log(), False, sis)
         self.assertNotEquals(None, m)
-        self.assertEquals("Site Name", m._settings.public_name)
+        self.assertEquals("Site Name", m._site_settings.public_name)
         self.assertEquals(
-            [ SourceDirReader(self.Log(), None, "/tmp/source/data") ],
-            m._settings.source_list)
-        self.assertEquals(self._tempdir, m._settings.dest_dir)
-        self.assertEquals(DEFAULT_THEME, m._settings.theme)
+            [ SourceDirReader(self.Log(), None, None, "/tmp/source/data") ],
+            m._site_settings.source_list)
+        self.assertEquals(self._tempdir, m._site_settings.dest_dir)
+        self.assertEquals(DEFAULT_THEME, m._site_settings.theme)
 
     def testPatterns(self):
         self.assertSearch(SiteBase.DIR_PATTERN, "2007-10-07_Folder 1")
@@ -114,11 +116,11 @@ class SiteBaseTest(RigTestCase):
         self.assertSearch(SiteBase.VALID_FILES, "T12896_tiny_jpeg.jpg")
 
     def testAlbum(self):
-        m = MockSiteBase(self, self.Log(), False, self.s)
+        m = MockSiteBase(self, self.Log(), False, self.sis)
         m.Process()
 
     def testTemplateDir(self):
-        m = SiteBase(self.Log(), False, self.s)
+        m = SiteBase(self.Log(), False, self.sis)
         td = m._TemplateDir()
         self.assertNotEquals("", td)
         self.assertTrue(os.path.exists(td))
@@ -130,14 +132,14 @@ class SiteBaseTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(td, "default", SiteDefault._TEMPLATE_HTML_ENTRY)))
 
     def testCopyMedia(self):
-        m = MockSiteBase(self, self.Log(), False, self.s)
+        m = MockSiteBase(self, self.Log(), False, self.sis)
         m._CopyMedia()
-        
+
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
-        
+
         style_css_path = os.path.join(self._tempdir, "media", "style.css")
         self.assertTrue(os.path.exists(style_css_path))
-        
+
         # Check that the style.css has been transformed
         f = file(style_css_path, "rb")
         style_css = f.read()
@@ -149,39 +151,39 @@ class SiteBaseTest(RigTestCase):
 
     def testProcessSourceItems_DuplicatesRemoval(self):
         today = datetime.today()
+        sos2 = SourceSettings(rig_base="http://all.your.bases/are.../")
+
         source = MockSourceReader(
              [
-             SourceFile(today, RelFile("/base", "file1")),
-             SourceFile(today, RelFile("/AYB",  "file1")),
-             SourceFile(today, RelFile("/AYB",  "file1")),
-             SourceFile(today, RelFile("/base", "file2")),
-             SourceFile(today, RelFile("/base", "file2")),
-             SourceFile(today, RelFile("/base", "file2"),
-                               source_settings=SourceSettings(rig_base="/rig/base")),
-             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
-             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
-             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ]),
-             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
-             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
+             SourceFile(today, RelFile("/base", "file1"), self.sos),
+             SourceFile(today, RelFile("/AYB",  "file1"), self.sos),
+             SourceFile(today, RelFile("/AYB",  "file1"), self.sos),
+             SourceFile(today, RelFile("/base", "file2"), self.sos),
+             SourceFile(today, RelFile("/base", "file2"), sos2),
+             SourceFile(today, RelFile("/base", "file2"), self.sos),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ], self.sos),
              ])
-        m2 = MockSiteBase2(self, self.Log(), False, self.s)
+        m2 = MockSiteBase2(self, self.Log(), False, self.sis)
 
         in_out_items = []
         m2._ProcessSourceItems(source, in_out_items)
-        
+
         self.assertListEquals(
              [
-             SourceFile(today, RelFile("/base", "file1")),
-             SourceFile(today, RelFile("/AYB",  "file1")),
-             SourceFile(today, RelFile("/base", "file2")),
-             SourceFile(today, RelFile("/base", "file2"),
-                               source_settings=SourceSettings(rig_base="/rig/base")),
-             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ]),
-             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ]),
-             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ]),
+             SourceFile(today, RelFile("/base", "file1"), self.sos),
+             SourceFile(today, RelFile("/AYB",  "file1"), self.sos),
+             SourceFile(today, RelFile("/base", "file2"), self.sos),
+             SourceFile(today, RelFile("/base", "file2"), sos2),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ], self.sos),
+             SourceDir(today, RelDir("/base", "dir1"), [ "all", "my", "files" ], self.sos),
              ],
              in_out_items)
-        
+
 
 #------------------------
 # Local Variables:

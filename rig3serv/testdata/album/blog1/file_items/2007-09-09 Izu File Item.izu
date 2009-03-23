@@ -2,6 +2,8 @@
 You can have sections but it's not mandatory. The ''en'' one is the default.
 
 [s:en]
+blog 1
+
 File item #1 from an izu file.
 Some content in English.
 

@@ -59,7 +59,7 @@ _ACCENTS_TO_HTML = {
     "ù": "&ugrave;",
     "û": "&ucirc;",
     "ü": "&uuml;",
-    
+
     "°": "&deg;",
 }
 
@@ -105,7 +105,7 @@ class _State(object):
 
     def InitSection(self, section, default):
         self._sections[section] = self._sections.get(section, default)
-    
+
     def Append(self, section, content):
         try:
             # lists support append()
@@ -141,7 +141,7 @@ class _State(object):
         """
         Ends usage of the State and returns a tuple that will be returned by
         RenderFiletoHtml.
-        
+
         Returns tuple(dict: tags, dict: sections)
         """
         # Wrap existing non-empty HTML sessions in the appropriate div
@@ -157,10 +157,11 @@ class IzuParser(object):
     Izumi parser.
     This class is stateless.
     """
-    def __init__(self, log, settings):
+    def __init__(self, log, rig_base, img_gen_script):
         self._log = log
-        self._settings = settings
-        
+        self._img_gen_script = img_gen_script
+        self._rig_base = rig_base
+
         # custom section handlers. Unlisted sections use the "default" formatter
         self._escape_block = { "--": self._EscapeComment,
                                "html:": self._EscapeRawHtml }
@@ -173,16 +174,16 @@ class IzuParser(object):
         """
         Parses the file 'filename' and returns an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
-        
+
         If source is a string or a RelPath/RelFile, it is considered a path to
         be opened as read-only text.
 
         Otherwise, it must be a file-like object. Use StringIO if you need to parse
         a string buffer.
-        
+
         Returns a tuple:
         - dict of izumi header tags (can be an empty list, but not None)
-            - most are just srtings. The "cat" (categories) tag is a list of strings. 
+            - most are just srtings. The "cat" (categories) tag is a list of strings.
         - dict of sections.
             - most are HTML content.
             - the "images" section must be a list of RIG urls.
@@ -201,7 +202,7 @@ class IzuParser(object):
             else:
                 f = filestream
                 filename = "<unknown stream>"
-            
+
             state = _State(f, filename, rel_file)
             self._ParseStream(state)
             result = state.Close()
@@ -223,7 +224,7 @@ class IzuParser(object):
         """
         Parses the *first* line of a string -- the string is actual content,
         not a filename. It returns any Izu tags found on the line.
-        
+
         This is mostly an utility method to parse izu tags embedded in the
         first line of an HTML file.
         """
@@ -285,7 +286,7 @@ class IzuParser(object):
                 self._ParseLine(state, start)
             if body:
                 self._escape_block[name](state, body)
-            
+
         # Now handle the case of a block that gets closed and another one opened
         # on the line...
         if is_block:
@@ -333,10 +334,10 @@ class IzuParser(object):
     def _EscapeRawHtml(self, state, line):
         """
         Process an escaped line in an [!html: ... --] block.
-        
+
         We simply append the line as-is, non-escaped, to the current section
         without using the current section formatter.
-        
+
         The line splitter (in _ParseStream) removed the line separator so
         we need to re-inject one. This is necessary for some HTML tags such
         as <pre> which are line-sensitive.
@@ -345,7 +346,7 @@ class IzuParser(object):
         state.InitSection(curr_section, "")
         state.Append(curr_section, line + "\n")
 
-                               
+
     # --- structural parsers
 
     def _ParseLine(self, state, line):
@@ -353,7 +354,7 @@ class IzuParser(object):
         Parses a line, or part of a line:
         - first process all tags and strips them out
         - then splits into sections, formatting whatever is before the current section
-        - finally formats whatever is left 
+        - finally formats whatever is left
         """
         while line is not None:
             line = self._ParseIzuTags(state, line)
@@ -486,13 +487,13 @@ class IzuParser(object):
 
     def _ConvertAccents(self, line):
         """
-        Converts accents to HTML encoding entities. 
+        Converts accents to HTML encoding entities.
         Returns the formatted line.
         """
         for k, v in _ACCENTS_TO_HTML.iteritems():
             if k in line:
                 line = line.replace(k, v)
-        
+
         try:
             us = line.decode("utf-8")
             for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
@@ -501,7 +502,7 @@ class IzuParser(object):
             line = us
         except Exception:
             pass
-                    
+
         return line
 
     def _FormatBoldItalicHtmlEmpty(self, line):
@@ -522,7 +523,7 @@ class IzuParser(object):
 
         # Code: ==word==
         line = self._RE_TAG_CODE.sub(r"<code>\1</code>", line)
-       
+
         return line
 
     _RE_TAG_BOLD   = re.compile(r"(?<!_)__([^_].*?)__(?!_)")
@@ -537,7 +538,7 @@ class IzuParser(object):
         # [br] generates an HTML <br> in-place
         # A single forward-slash at the end of a line generates a <br> too
         line = self._RE_TAG_BR.sub("<br>", line)
-       
+
         # [p] generates an HTML <p/> in-place
         line = self._RE_TAG_P.sub(r"<p/>", line)
 
@@ -591,7 +592,7 @@ class IzuParser(object):
     def _ParseRigImage(self, state, line, accept_rest):
         """
         Parses the line for a [name|rigimg:size:image_glob] tag.
-        
+
         If accept_rest is True, a sub-replacement is done so the tag can be anywhere
         in the line. If accept_rest is False, a pure match is done so the tag must
         start at the beginning of the line and anything after the tag is ignored.
@@ -612,7 +613,7 @@ class IzuParser(object):
     def _ReplRigLink(self, state, title, image_glob):
         """
         Returns the replacement string for a [name|riglink:...] tag.
-        
+
         The image_glob parameter must be a leaf name (no paths) and will be
         located in the current Izu's file directory or subdirectories. if possible.
         """
@@ -629,7 +630,7 @@ class IzuParser(object):
                         subdir = subdir.replace(os.path.sep, "/")
                     album += ' + (curr_album and "/" or "") + "%s"' % urllib.quote(subdir, "/")
                 result = '[[[if rig_base]]<a title="%(name)s" href="[[[raw rig_img_url %% { "rig_base": rig_base, "album": %(album)s, "img": "%(img)s" } ]]">%(name)s</a>[[[end]]'
-                result %= { "name":  title, 
+                result %= { "name":  title,
                             "album": album,
                             "img":   urllib.quote(filename, "/") }
         return result
@@ -637,10 +638,10 @@ class IzuParser(object):
     def _ReplRigImage(self, state, title, is_link, size, image_glob, caption):
         """
         Returns the replacement string for a [name|rigimg:size:image_glob|caption]
-        Title and size are optional and can be empty or None. 
-        
+        Title and size are optional and can be empty or None.
+
         If the glob pattern returns more than one name, only the first one is used.
-        
+
         The image_glob parameter must be a leaf name (no paths) and will be
         located in the current Izu's file directory if possible.
         """
@@ -663,13 +664,11 @@ class IzuParser(object):
     def _ExternalGenRigUrl(self, rel_file, abs_dir, filename, title, is_link, size, caption):
         """
         """
-        if not self._settings:
-            return None
-        script = self._settings.img_gen_script
+        script = self._img_gen_script
         if not script:
             return None
 
-        rig_base = self._settings.rig_base
+        rig_base = self._rig_base
 
         env = { "ABS_DIR":     abs_dir,
                 "REL_FILE":    rel_file and rel_file.rel_curr or "",
@@ -722,7 +721,7 @@ class IzuParser(object):
                     "title": title,
                     "caption": caption }
         return result
-        
+
 
     def _InternalGenRigUrl(self, subdir, filename, title, is_link, size, caption):
         """
@@ -836,13 +835,13 @@ class IzuParser(object):
         """
         Traverse a directory tree starting at directory "dir" and using
         the glob-like pattern.
-        
+
         Pattern can be composed of several path segments, each one
         being a glob-like expression. Each segment is resolved once
         going forward, thus making sure you can only select things in
         the current or sub-directories. For each glob resolved, only
         the first choice is taken into account.
-        
+
         This is used by _ReplRigLink.
         """
         if isinstance(pattern, list):
@@ -875,7 +874,7 @@ class IzuParser(object):
     def _SubprocessPopen(self, *popenargs, **kwargs):
         """
         Returns the result from subprocess.Popen().
-        This is useful for mocking in unit tests. 
+        This is useful for mocking in unit tests.
         """
         return subprocess.Popen(*popenargs, **kwargs)
 

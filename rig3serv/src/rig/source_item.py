@@ -23,30 +23,22 @@ def _rig_hash(obj):
     else:
         h = hash(obj)
     return h
-            
+
 
 #------------------------
 class SourceSettings(object):
     """
-    Settings that can be overriden and attached to a specific source.
+    Settings attached to a specific source.
     """
     def __init__(self, rig_base=None):
         self.rig_base = rig_base
 
-    def OverrideDict(self, remove_none=True):
+    def AsDict(self):
         """
-        Returns a copy of the settings' dictionnary.
-        It's safe for caller to modify this dictionnary.
-        
-        - remove_none: When true, items which are "None" are removed,
-          useful to update another dictionary and not "erase" unset values.
+        Returns a copy of the settings' dictionary.
+        It's safe for caller to modify this dictionary.
         """
-        d = dict(self.__dict__)
-        if remove_none:
-            for k, v in d.items():  # not iteritems since we'll modify the dictionary
-                if v is None:
-                    del d[k]
-        return d
+        return dict(self.__dict__)
 
     def KnownKeys(self):
         """
@@ -55,12 +47,19 @@ class SourceSettings(object):
         keys = self.__dict__.keys()
         keys.sort()
         return keys
-    
+
     def __eq__(self, rhs):
         return (isinstance(rhs, SourceSettings) and self.__dict__ == rhs.__dict__)
-    
+
     def __hash__(self):
         return _rig_hash(self.__dict__)
+
+    def __repr__(self):
+        try:
+            return "[%s: %s]" % (self.__class__.__name__, self.__dict__)
+        except:
+            return super(RelPath, self).__repr__()
+
 
 #------------------------
 class SourceItem(object):
@@ -68,13 +67,13 @@ class SourceItem(object):
     Abstract base class to represents an item:
     - list of categories (list of string)
     - date (datetime)
-    - optional SourceSettings
+    - source_settings (not optional)
 
     The class is conceptually abstract, meaning it has no data.
     In real usage, clients will process derived classes (e.g. SourceDir)
     which have members with actual data to process.
     """
-    def __init__(self, date, source_settings=None, categories=None):
+    def __init__(self, date, source_settings, categories=None):
         self.date = date
         self.source_settings = source_settings
         self.categories = categories or []
@@ -87,28 +86,28 @@ class SourceItem(object):
 
     def __ne__(self, rhs):
         return not self.__eq__(rhs)
-    
+
     def __hash__(self):
-        h = (hash(self.date) ^ 
-             hash(self.source_settings) ^ 
+        h = (hash(self.date) ^
+             hash(self.source_settings) ^
              _rig_hash(self.categories))
         return h
-        
+
 
 #------------------------
 class SourceDir(SourceItem):
     """
     Represents a directory item from a SourceDirReader.
-    
+
     Such a directory generally contains an index.izu or index.html
     and a bunch of image files.
 
-    Paremeters:
+    Parameters:
     - date (datetime): Date of the directory (i.e. most recent item)
     - rel_dir (RelDir): absolute+relative source directory
     - all_files (list [string]): All interesting files in this directory
     """
-    def __init__(self, date, rel_dir, all_files, source_settings=None):
+    def __init__(self, date, rel_dir, all_files, source_settings):
         super(SourceDir, self).__init__(date, source_settings)
         self.rel_dir = rel_dir
         self.all_files = all_files
@@ -127,22 +126,24 @@ class SourceDir(SourceItem):
         return h
 
     def __repr__(self):
-        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
-                                         self.date,
-                                         self.rel_dir,
-                                         self.all_files,
-                                         self.categories)
+        return "<%s (%s) %s, %s, %s, %s>" % (self.__class__.__name__,
+                                             self.date,
+                                             self.rel_dir,
+                                             self.all_files,
+                                             self.categories,
+                                             self.source_settings)
 
 #------------------------
 class SourceFile(SourceItem):
     """
     Represents a file item from a SourceFileReader.
-    
+
     Paremeters:
     - date (datetime): Date of the file
     - rel_file (RelFile): absolute+relative source file
+    - source_settings (not optional)
     """
-    def __init__(self, date, rel_file, source_settings=None):
+    def __init__(self, date, rel_file, source_settings):
         super(SourceFile, self).__init__(date, source_settings)
         self.rel_file = rel_file
 
@@ -157,10 +158,11 @@ class SourceFile(SourceItem):
         return h
 
     def __repr__(self):
-        return "<%s (%s) %s, %s>" % (self.__class__.__name__,
+        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
                                          self.date,
                                          self.rel_file,
-                                         self.categories)
+                                         self.categories,
+                                         self.source_settings)
 
 
 # TODO:  SourceBlog

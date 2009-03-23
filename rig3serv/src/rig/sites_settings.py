@@ -29,13 +29,13 @@ class IncludeExclude(object):
     def __init__(self, include=None, exclude=None):
         self._include = include
         self._exclude = exclude
-    
+
     def Matches(self, cats):
         """
         For the given list of categories that apply to a post, check if they
         match against the current include/exclude list: if one is excluded,
         the whole thing is rejected. They must all be included for it to match.
-        
+
         Returns true if it matches.
         """
         # First apply exclusions... the first match makes the test fail
@@ -64,9 +64,9 @@ class IncludeExclude(object):
         """
         For a given list of all possible categories, start with those that
         can be included, then removes what needs to be excluded.
-        
+
         Returns a list(str) of all what matches. The list can be empty but
-        not none. 
+        not none.
         """
         exc = self._exclude
         if exc == IncludeExclude.ALL:
@@ -92,7 +92,7 @@ class IncludeExclude(object):
         """
         Processes a "filter" variable from the settings and builds the
         corresponding include/exclude list in the site's defaults.
-        
+
         Exclusions are matched using a "OR". Inclusions are matched using a "OR" too.
         The "all" exclusion trumps everything else.
         The "all" inclusion trumps all other inclusions.
@@ -144,7 +144,7 @@ class IncludeExclude(object):
                 cat_exclude = _ALL
             else:
                 cat_exclude = None
-        
+
         self._exclude = cat_exclude
         self._include = cat_include
 
@@ -160,11 +160,10 @@ class SiteSettings(object):
     - template_dir (str): Path of the templates directory. Can be relative or absolute.
     - base_url (str): URL where the site will be published, in case templates wants to use that.
       Will be used as-is, so you probably want to terminate it with a / separator.
-    - rig_base(string): An http:// URL for the base of your RIG album.
-    - rig_img_size(int): 512, the default size of a [rigimg] tag in Izumi
     - rig_album_url(string): Declares how to generate a link to a given RIG album.
         rig_album_url=%(rig_base)s?album=%(album)s
     - rig_img_url(string): Declares how to generate a text link to a given RIG image _page_.
+    - rig_img_size(int): 512, the default size of a [rigimg] tag in Izumi
         rig_img_url=%(rig_base)s?album=%(album)s&img=%(img)s
     - rig_thumb_url(string): Declares how to generate an IMG reference to a give RIG image.
         rig_thumb_url=%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75
@@ -197,7 +196,6 @@ class SiteSettings(object):
                  theme=DEFAULT_THEME,
                  template_dir=None,
                  base_url=None,
-                 rig_base=None,
                  rig_album_url="%(rig_base)s?album=%(album)s",
                  rig_img_url="%(rig_base)s?album=%(album)s&img=%(img)s",
                  rig_thumb_url="%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75",
@@ -223,7 +221,6 @@ class SiteSettings(object):
         self.theme = theme
         self.template_dir = template_dir
         self.base_url = base_url
-        self.rig_base = rig_base
         self.rig_album_url = rig_album_url
         self.rig_img_url = rig_img_url
         self.rig_thumb_url = rig_thumb_url
@@ -250,7 +247,7 @@ class SiteSettings(object):
         It's safe for caller to modify this dictionary.
         """
         return dict(self.__dict__)
-    
+
     def FromDict(self, keywords):
         """
         Set all known settings to the values defined in the keywords dictionary.
@@ -263,7 +260,7 @@ class SiteSettings(object):
         """
         Sets a value in this SiteSettings.
         This correctly matches the new value to the expected internal type.
-        
+
         - key (str): the name of the value to set
         - new_value (any): the value to set.
         """
@@ -294,6 +291,12 @@ class SiteSettings(object):
         if isinstance(value, (str, unicode)):
             return value.lower() in [ "1", "true" ]
         return False
+
+    def __repr__(self):
+        try:
+            return "[%s: %s]" % (self.__class__.__name__, self.__dict__)
+        except:
+            return super(RelPath, self).__repr__()
 
 #------------------------
 class SitesSettings(SettingsBase):
@@ -338,13 +341,13 @@ class SitesSettings(SettingsBase):
         Parameters:
         - settings(SiteSettings), the settings to modify
         - vars is a dict { var_name: value }, the new values to use
-        
+
         If a variable is defined in the SiteSettings instance,
         it's value is used. Otherwise the default is left intact.
-        
+
         Variables not declared in SiteSettings are ignored: we do not inject
         unknown variables.
-        
+
         """
         for k in settings.__dict__.iterkeys():
             if k in vars:
@@ -382,8 +385,11 @@ class SitesSettings(SettingsBase):
                         assert path.endswith('"')
                         path = path[1:-1]
                     if type in type_class:
-                        settings.source_list.append(type_class[type](self._log, settings, path,
-                                                                     source_settings=curr_source_settings))
+                        settings.source_list.append(
+                            type_class[type](self._log,
+                                             site_settings=settings,
+                                             source_settings=curr_source_settings,
+                                             path=path))
                     elif type in source_settings_keys:
                         curr_source_settings.__dict__[type] = path
                     else:

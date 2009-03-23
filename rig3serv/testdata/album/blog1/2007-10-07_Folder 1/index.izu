@@ -1,5 +1,7 @@
 [izu:cat:bar,foo,other,Foo	FOO foo]
 [s:en]
+blog 1
+
 Some content in English.
 
 HTML Link: [Link to some page|/index.html]
