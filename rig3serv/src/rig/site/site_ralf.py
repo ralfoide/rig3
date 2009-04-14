@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-----------------------------------------------------------------------------|
 """
-Rig3 module: Site generator for "ralf" theme 
+Rig3 module: Site generator for "ralf" theme
 
 Site generators are instantiated by rig.site.__init__.py.CreateSite()
 
@@ -19,7 +19,7 @@ THEME="ralf"
 class SiteRalf(SiteDefault):
     """
     Describes how to generate the content of a site using the "ralf" theme.
-    
+
     Right now the "ralf" theme is identicaly to the "default" theme
     so the implementation is empty. This is expected to change later.
     """
@@ -27,7 +27,7 @@ class SiteRalf(SiteDefault):
     def _TemplatePath(self, path, **keywords):
         """
         Returns the relative path to "path" under the default theme's template
-        directory.        
+        directory.
         """
         target = super(SiteRalf, self)._TemplatePath(path, theme=THEME)
         if not os.path.exists(target):
@@ -40,7 +40,6 @@ class SiteRalf(SiteDefault):
         """
         default = super(SiteRalf, self)._TemplateThemeDirs(theme="default")
         return [ os.path.join(self._TemplateDir(), THEME) ] + default
-
 
 #------------------------
 # Local Variables:

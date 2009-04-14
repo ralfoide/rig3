@@ -643,41 +643,58 @@ class SiteDefault(SiteBase):
         # is questionable and all these constants... pfff. Need something
         # better. Maybe some inline-python mini-rules in the prefs?
 
-        links = []
-        if num_excellent:
-            # We got some excellent-rated images.
-            # Display them all with large previews with a max size ranging
-            # from 300 to 800px depending on the number of images.
-            size = 400
-            if num_excellent > 2:
-                size = max(300, 800 / num_excellent)
-            num_col = min(num_excellent, 4)
-            keys = images.keys()
-            keys.sort()
-            for key in keys:
-                entry = images[key]
-                if entry["top_rating"] == self._RATING_EXCELLENT:
-                    links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], size))
-        elif num_good:
-            # We got some good-rated images.
-            # Display up to 6 of them using the default preview size.
-            num_col = min(num_good, 6)
-            keys = images.keys()
-            keys.sort()
-            for key in keys:
-                entry = images[key]
-                if entry["top_rating"] == self._RATING_GOOD:
-                    links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], -1))
+        series = []
+        if num_excellent or num_good:
+
+            if num_excellent:
+                # We got some excellent-rated images.
+                # Display them all with large previews with a max size ranging
+                # from 300 to 800px depending on the number of images.
+                size = 400
+                if num_excellent > 2:
+                    size = max(300, 800 / num_excellent)
+                keys = images.keys()
+                keys.sort()
+                links = []
+                for key in keys:
+                    entry = images[key]
+                    if entry["top_rating"] == self._RATING_EXCELLENT:
+                        links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], size))
+                series.append(links)
+
+            if num_good:
+                # We got some good-rated images. Put them under the excellent ones if any.
+                # Display them all with large previews with a max size ranging
+                # from 200 to 400px depending on the number of images.
+                size = 300
+                if num_good > 2:
+                    size = max(200, 400 / num_good)
+                keys = images.keys()
+                keys.sort()
+                merge_in_excellent = len(series) > 0 and (num_excellent == 1 or num_good == 1)
+                if merge_in_excellent:
+                    links = series[0]
+                else:
+                    links = []
+                for key in keys:
+                    entry = images[key]
+                    if entry["top_rating"] == self._RATING_GOOD:
+                        links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], size))
+                if not merge_in_excellent:
+                    series.append(links)
+
         elif num_normal > 0 and num_normal <= 6:  # TODO: max_num_normal site pref
             # We got some up to 6 normal-rated images.
             # Display them using the default preview size.
-            num_col = num_normal
             keys = images.keys()
             keys.sort()
+            links = []
             for key in keys:
                 entry = images[key]
                 if entry["top_rating"] == self._RATING_DEFAULT:
                     links.append(self._GetRigLink(keywords, source_dir, entry["top_name"], -1))
+            series.append(links)
+
         elif num_images:
             # There are some images but none is considered good enough for the
             # auto-preview. Just generate a link on the album.
@@ -688,18 +705,10 @@ class SiteDefault(SiteBase):
             title = (keywords and "title" in keywords) and keywords["title"] or None
             return "See more images for " + self._GetRigLink(keywords, source_dir, None, None, title)
 
-        if links:
-            lines = []
-            i = 0
-            for link in links:
-                if i % num_col == 0:
-                    curr = []
-                    lines.append(curr)
-                curr.append(link)
-                i += 1
+        if series:
             content = self._FillTemplate("image_table.html",
                                          theme=keywords["theme"],
-                                         lines=lines)
+                                         lines=series)
             return content
         return None
 

@@ -36,6 +36,7 @@
 
 ---- Done Version 0.3 ----
 
+20090413 Template: Fix image generation to include both excellent and good images.
 20090322 Engine:   Use two sources w/ two rig_base in sample data + UTs
 20090322 Engine:   Complete rewrite of the handling of rig_base, move it per source.
 20090320 Eng. Bug: Try to fix the broken rig_base per source scheme. Give up.

@@ -368,7 +368,7 @@ class SiteDefaultTest(RigTestCase):
             m._GenerateImages(RelDir("base", ""), [ "J1234.image.jpg" ], keywords))
 
         self.assertHtmlEquals(
-            '<table class="image-table"><tr><td>\n' + m._GetRigLink(keywords, RelDir("base", ""), "J1234-image.jpg", -1) + '</td></tr></table>',
+            '<table class="image-table"><tr><td>\n' + m._GetRigLink(keywords, RelDir("base", ""), "J1234-image.jpg", 300) + '</td></tr></table>',
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], keywords))
 
     def testGenerateIndexPage(self):
