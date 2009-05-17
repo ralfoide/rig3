@@ -11,15 +11,18 @@ __author__ = "ralfoide at gmail com"
 import os
 import re
 
+from rig.hashable import Hashable
+
 _EXCLUDE = ".rig3-exclude"
 
 #------------------------
-class RelPath(object):
+class RelPath(Hashable):
     """
     Represents a 'relative' path, with a base and a relative sub path.
-    The full absolute path is available too. 
+    The full absolute path is available too.
     """
     def __init__(self, abs_base, rel_curr):
+        super(RelPath, self).__init__()
         self.abs_base = abs_base
         self.rel_curr = rel_curr
         self.abs_path = os.path.join(abs_base, rel_curr)
@@ -33,8 +36,8 @@ class RelPath(object):
         else:
             return False
 
-    def __hash__(self):
-        return hash(self.abs_path)
+    def rig_hash(self, md=None):
+        return self.update_hash(md, self.abs_path)
 
     def __str__(self):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)
@@ -59,7 +62,7 @@ class RelPath(object):
         Returns the parent of the relative portion of the path, i.e.
         removes the last path segment. If there's none, the rel_curr path
         will be empty -- abs_base is never touched.
-        
+
         This dies NOT modify the current object. It returns a new one
         of the *same* type.
         """
@@ -67,12 +70,12 @@ class RelPath(object):
         p.__init__(self.abs_base,
                    os.path.dirname(self.rel_curr))
         return p
-    
+
     def join(self, *args):
         """
         Join one or more path components to the relative portion of the
         current path and returns a new RelPath-derived object for it.
-        
+
         This does NOT modify the current object. It returns a new one
         of the *same* type.
         """
@@ -96,7 +99,7 @@ class RelPath(object):
 class RelDir(RelPath):
     """
     Represents a 'relative' directory, with a base and a relative sub directory.
-    The full absolute dir path is available too. 
+    The full absolute dir path is available too.
     """
     def __init__(self, abs_base, rel_curr):
         super(RelDir, self).__init__(abs_base, rel_curr)
@@ -104,7 +107,7 @@ class RelDir(RelPath):
 class RelFile(RelPath):
     """
     Represents a 'relative' file, with a base and a relative sub file.
-    The full absolute file path is available too. 
+    The full absolute file path is available too.
     """
     def __init__(self, abs_base, rel_curr):
         super(RelFile, self).__init__(abs_base, rel_curr)
@@ -115,7 +118,7 @@ class DirParser(object):
     Parses directories recursively accordingly to given file/dir regexps.
     Parses the source directories and match the corresponding destination
     structure (destination is not checked for existence.)
-            
+
     Note that SubDirs() and Files() are already sorted alphabetically.
     This helps remove differences between various file systems.
 
@@ -151,12 +154,12 @@ class DirParser(object):
         """
         Parse the directory at abs_source_dir and associate it with the parallel
         structure at abs_dest_dir. Fills Files() and SubDirs().
-        
+
         dir_pattern and file_pattern are regular expressions (string or compiled regexp)
         to limit the directories or files accepted. Patterns are matched using "re.search",
         not "re.match" so you have to use ^..$ if you want to test against full strings.
         The default patterns are "." which matches anything.
-        
+
         Returns self for chaining.
         """
         self._abs_source_dir = abs_source_dir
@@ -176,20 +179,20 @@ class DirParser(object):
 
         if isinstance(dir_pattern, (str, unicode)):
             dir_pattern = re.compile(dir_pattern)
-        
+
         if isinstance(file_pattern, (str, unicode)):
             file_pattern = re.compile(file_pattern)
-        
+
         abs_source_curr_dir = self._abs_source_dir
-        
+
         if rel_curr_dir:
             abs_source_curr_dir = os.path.join(self._abs_source_dir, rel_curr_dir)
-        
+
         self._log.Debug("Parse dir: %s", abs_source_curr_dir)
-        
+
         names = self._listdir(abs_source_curr_dir)
         names = self._RemoveExclude(abs_source_curr_dir, names)
-        
+
         for name in names:
             full_path = os.path.join(abs_source_curr_dir, name)
             if self._isdir(full_path):
@@ -221,11 +224,11 @@ class DirParser(object):
         Generator that traverses the directories in the directory structure.
         For each directory, returns a tuple (source_dir, dest_dir, all_files).
         Processes directories deep-first in sorted order.
-        
+
         The all_files list is not sorted in any particular order.
         The all_files list can be empty if there are no interesting files in this
         directory. It's up to the caller to decide how to handle this.
-        
+
         Callers should treat the tuples as immutable and not change the values.
         """
         yield (self.AbsSourceDir(), self.AbsDestDir(), self._files)
@@ -240,17 +243,17 @@ class DirParser(object):
     def _RemoveExclude(self, abs_root, names, _excl_file=None):
         """
         Filters a list of file names and remove those that should be excluded.
-        
+
         Parameters:
         - abs_root: string, the current directory parsed
         - names: list [ str ], the names found in the directory.
         - _excl_file: A seam to allow unit test to inject a fake _EXCLUDE file.
           If not none, must support .readlines() and .close() (cf StringIO)
-        
+
         If the _EXCLUDE file is found in names, read it, then use it to filter
         out files to exclude. The _EXCLUDE file is a list of regexp, one per
         line.
-        
+
         Returns the filtered list, or the same list if nothing was touched.
         """
         if not names or not _EXCLUDE in names:
@@ -267,7 +270,7 @@ class DirParser(object):
                 while n >= 0:
                     name = names[n]
                     if r.match(name):
-                        self._log.Debug("Exclude file/dir: %s", os.path.join(abs_root, name))                        
+                        self._log.Debug("Exclude file/dir: %s", os.path.join(abs_root, name))
                         names.pop(n)
                     n -= 1
         finally:

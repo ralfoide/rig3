@@ -204,7 +204,7 @@ class SiteBase(object):
         dups = {}
 
         for source_item in source.Parse(self._site_settings.dest_dir):
-            item_hash = hash(source_item)
+            item_hash = source_item.rig_hash().hexdigest()
             if not item_hash in dups:
                 dups[item_hash] = source_item
                 site_item = self.GenerateItem(source_item)
@@ -296,7 +296,7 @@ class SiteBase(object):
                  filter_ext={}):
         """
         Copies a directory (recursively, with all its content) into
-        a given destination. OVerwrites existing content. This doesn't
+        a given destination. Overwrites existing content. This doesn't
         clean the output so it will merge with existing content, if any.
         Also it will fail if:
         - the destination is not a directory

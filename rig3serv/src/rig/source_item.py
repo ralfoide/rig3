@@ -9,28 +9,17 @@ License GPL.
 __author__ = "ralfoide at gmail com"
 
 from datetime import datetime
+from rig.hashable import Hashable
 from rig.parser.dir_parser import RelDir, RelFile
 
-#------------------------
-def _rig_hash(obj):
-    h = 0
-    if isinstance(obj, list):
-        for v in obj:
-            h = h ^ _rig_hash(v)
-    elif isinstance(obj, dict):
-        for k, v in obj.iteritems():
-            h = h ^ _rig_hash(k) ^ _rig_hash(v)
-    else:
-        h = hash(obj)
-    return h
-
 
 #------------------------
-class SourceSettings(object):
+class SourceSettings(Hashable):
     """
     Settings attached to a specific source.
     """
     def __init__(self, rig_base=None):
+        super(SourceSettings, self).__init__()
         self.rig_base = rig_base
 
     def AsDict(self):
@@ -51,8 +40,8 @@ class SourceSettings(object):
     def __eq__(self, rhs):
         return (isinstance(rhs, SourceSettings) and self.__dict__ == rhs.__dict__)
 
-    def __hash__(self):
-        return _rig_hash(self.__dict__)
+    def rig_hash(self, md=None):
+        return self.update_hash(md, self.__dict__)
 
     def __repr__(self):
         try:
@@ -62,7 +51,7 @@ class SourceSettings(object):
 
 
 #------------------------
-class SourceItem(object):
+class SourceItem(Hashable):
     """
     Abstract base class to represents an item:
     - list of categories (list of string)
@@ -74,6 +63,7 @@ class SourceItem(object):
     which have members with actual data to process.
     """
     def __init__(self, date, source_settings, categories=None):
+        super(SourceItem, self).__init__()
         self.date = date
         self.source_settings = source_settings
         self.categories = categories or []
@@ -87,11 +77,11 @@ class SourceItem(object):
     def __ne__(self, rhs):
         return not self.__eq__(rhs)
 
-    def __hash__(self):
-        h = (hash(self.date) ^
-             hash(self.source_settings) ^
-             _rig_hash(self.categories))
-        return h
+    def rig_hash(self, md=None):
+        md = self.update_hash(md, self.date)
+        md = self.update_hash(md, self.source_settings)
+        md = self.update_hash(md, self.categories)
+        return md
 
 
 #------------------------
@@ -119,11 +109,12 @@ class SourceDir(SourceItem):
                 self.rel_dir == rhs.rel_dir and
                 self.all_files == rhs.all_files)
 
-    def __hash__(self):
-        h = super(SourceDir, self).__hash__() ^ hash(self.rel_dir.realpath())
+    def rig_hash(self, md=None):
+        md = super(SourceDir, self).rig_hash(md)
+        md = self.update_hash(md, self.rel_dir.realpath())
         for f in self.all_files:
-            h = h ^ hash(f)
-        return h
+            md = self.update_hash(md, f)
+        return md
 
     def __repr__(self):
         return "<%s (%s) %s, %s, %s, %s>" % (self.__class__.__name__,
@@ -153,9 +144,10 @@ class SourceFile(SourceItem):
         return (isinstance(rhs, SourceFile) and
                 self.rel_file == rhs.rel_file)
 
-    def __hash__(self):
-        h = super(SourceFile, self).__hash__() ^ hash(self.rel_file.realpath())
-        return h
+    def rig_hash(self, md=None):
+        md = super(SourceFile, self).rig_hash(md)
+        md = self.update_hash(md, self.rel_file.realpath())
+        return md
 
     def __repr__(self):
         return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,

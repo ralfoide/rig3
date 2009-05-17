@@ -43,13 +43,13 @@ def display():
     accum = 0
     for s in _MAP.values():
         accum += s.accum
-    print "Total time: %f s" % accum
+    print "Total time: %.3f s" % accum
     keys = _MAP.keys()
     keys.sort()
     for k in keys:
         s = _MAP[k]
-        print "%-7s: %d items in %f s" % (k, s.count, s.accum), \
-              s.count > 1 and (" (%f s/item)" % (s.accum / s.count)) or ""
+        print "%-7s: %4d items in %6.2f s" % (k, s.count, s.accum), \
+              s.count > 1 and (" (%6.2f ms/item)" % (1000.0 * s.accum / s.count)) or ""
 
 #------------------------
 # Local Variables:
