@@ -18,6 +18,7 @@ import time
 import errno
 import urllib
 import operator
+import cPickle
 from datetime import date, datetime
 
 from rig.parser.izu_parser import IzuParser
@@ -28,6 +29,8 @@ from rig.parser.dir_parser import RelPath
 from rig.version import Version
 from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
+from rig.cache import Cache
+from rig import stats
 
 #------------------------
 class ContentEntry(object):
@@ -37,11 +40,18 @@ class ContentEntry(object):
         self.date = date
         self.permalink = permalink
 
+    def __repr__(self):
+        return "<%s: title %s, date %s, link %s, content %s>" % (
+             self.__class__.__name__, self.title, self.date, self.permalink, self.content)
+
 #------------------------
 class MonthPageItem(object):
     def __init__(self, url, date):
         self.url = url
         self.date = date
+
+    def __repr__(self):
+        return "<%s: url %s, date %s>" % (self.__class__.__name__, self.url, self.date)
 
 #------------------------
 class SiteDefault(SiteBase):
@@ -79,10 +89,14 @@ class SiteDefault(SiteBase):
     _TEMPLATE_ATOM_FEED    = "atom_feed.xml"      # template for atom feed
     _TEMPLATE_ATOM_ENTRY   = "atom_entry.xml"     # template for individual entries in atom feed
     _TEMPLATE_ATOM_CONTENT = "atom_content.xml"   # template for content of atom entry
+    _TEMPLATE_IMG_TABLE    = "image_table.html"   # template for image table in HTML
 
 
     def __init__(self, log, dry_run, site_settings):
         super(SiteDefault, self).__init__(log, dry_run, site_settings)
+        self._cache = Cache(log, site_settings.cache_dir)
+
+        self._ClearCache(site_settings)
 
     def MakeDestDirs(self):
         """
@@ -503,13 +517,48 @@ class SiteDefault(SiteBase):
         keywords = self._site_settings.AsDict()
         keywords.update(source_item.source_settings.AsDict())
 
+        # RM 20090517 debug cache, not enabled by default
+        _DEBUG_CACHE = os.getenv("DEBUG_CACHE") is not None
+
         if izu_file:
             self._log.Info("[%s] Render '%s' to HTML", self._site_settings.public_name,
                            izu_file)
-            izu_parser = IzuParser(self._log,
-                                   keywords["rig_base"],
-                                   keywords["img_gen_script"])
-            tags, sections = izu_parser.RenderFileToHtml(izu_file)
+
+            # Note: preliminary testing indicate that caching here is not
+            # beneficial. On my test blog it takes 3.50 ms to render
+            # an izu2html here. It takes 3 ms to compute the key and get a cache
+            # miss and another 1.50 ms to store a cache item. It then takes
+            # 3.71s to load an item.
+            # Summary: miss = 3 ms (find) + 3.50 ms (render) + 1.50 ms (store) = 8 ms
+            #          hit  = 3.50 ms
+            # So in this case since hit time == render time, the cache is slower.
+            sload = stats.Start("1.1 izu2html Load")
+            smiss = stats.Start("1.1 izu2html Miss")
+
+            cache_key = [ izu_file,
+                          self._Timestamp(izu_file),
+                          keywords["rig_base"],
+                          keywords["img_gen_script"] ]
+            pickled = _DEBUG_CACHE and self._cache.Find(cache_key) or None
+
+            if pickled is not None:
+                tags, sections = pickled
+                sload.Stop()
+            else:
+                smiss.Stop()
+                s = stats.Start("1.2 izu2html Render")
+
+                izu_parser = IzuParser(self._log,
+                                       keywords["rig_base"],
+                                       keywords["img_gen_script"])
+                tags, sections = izu_parser.RenderFileToHtml(izu_file)
+
+                s.Stop()
+                s = stats.Start("1.3 izu2html Store")
+
+                if _DEBUG_CACHE: self._cache.Store([ tags, sections ], cache_key)
+
+                s.Stop()
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):
@@ -521,7 +570,7 @@ class SiteDefault(SiteBase):
                     if may_have_images:
                         keywords["curr_album"] = urllib.quote(rel_dir.rel_curr)
                         keywords["lines"] = [v]  # one line of many columns
-                        content = self._FillTemplate("image_table.html", **keywords)
+                        content = self._FillTemplate(SiteDefault._TEMPLATE_IMG_TABLE, **keywords)
                         template = Template(self._log, source=content)
                         sections[k] = template.Generate(keywords)
                     else:
@@ -573,12 +622,35 @@ class SiteDefault(SiteBase):
                 _keywords = dict(_keywords)
 
             if _img_params:
+                s = stats.Start("2.1 Gen Img")
                 html_img = self._GenerateImages(_img_params["rel_dir"],
                                                 _img_params["all_files"],
                                                 _keywords)
+                s.Stop()
                 if html_img:
                     _keywords["sections"]["images"] = html_img
-            return self._FillTemplate(_template, **_keywords)
+
+            sload = stats.Start("2.2 Gen Content Load")
+            smiss = stats.Start("2.3 Gen Content Miss")
+
+            cache_key = [ _template, _keywords ]
+            content = _DEBUG_CACHE and self._cache.Find(cache_key) or None
+
+            if content is not None:
+                sload.Stop()
+            else:
+                smiss.Stop()
+                s = stats.Start("2.4 Gen Content Render")
+
+                content = self._FillTemplate(_template, **_keywords)
+
+                s.Stop()
+                s = stats.Start("2.5 Gen Content Store")
+
+                if _DEBUG_CACHE: self._cache.Store(content, cache_key)
+
+                s.Stop()
+            return content
 
         return SiteItem(source_item,
                         date,
@@ -706,7 +778,7 @@ class SiteDefault(SiteBase):
             return "See more images for " + self._GetRigLink(keywords, source_dir, None, None, title)
 
         if series:
-            content = self._FillTemplate("image_table.html",
+            content = self._FillTemplate(SiteDefault._TEMPLATE_IMG_TABLE,
                                          theme=keywords["theme"],
                                          lines=series)
             return content
@@ -901,6 +973,61 @@ class SiteDefault(SiteBase):
         month and the day set to 1.
         """
         return date(_date.year, _date.month, 1)
+
+    def _Timestamp(self, path):
+        """
+        Returns the timestamp of a file or directory.
+        For a file return the last modification time.
+        For a dir, returns the oldest mod time of the recursive content.
+        """
+        if isinstance(path, list):
+            older_ts = 0
+            for i in path:
+                older_ts = max(older_ts, self._Timestamp(i))
+            return older_ts
+
+        if isinstance(path, RelPath):
+            path = path.realpath()
+
+        if not isinstance(path, (str, unicode)):
+            raise ValueError("_Timestamp path is not str or unicode: %s" % type(path))
+
+        if os.path.isdir(path):
+            older_ts = os.path.getmtime(path)
+            for i in os.listdir(path):
+                if not i in [ ".git", ".svn", "_svn", ".cvs" ]:
+                    older_ts = max(older_ts, self._Timestamp(os.path.join(path, i)))
+            return older_ts
+
+        try:
+            return os.path.getmtime(path)
+        except OSError:
+            return None
+
+    def _ClearCache(self, site_settings):
+        """
+        Computes a "cache coherency" key that combines the current site
+        settings, the rig version and the templates timestamps. Store
+        this key in the cache. If we fail to find it, it means either that
+        the cache was empty or that one of the parameters changed and we
+        consequently clear the cache.
+        """
+        rig_version = Version()
+        cache_coherency_key = [
+            site_settings,
+            self._Timestamp(self._TemplateThemeDirs(theme=site_settings.theme)),
+            rig_version.VersionString(),
+            rig_version.SvnRevision()
+            ]
+
+        f = self._cache.Find(cache_coherency_key)
+
+        if not f:
+            self._log.Info("Clear cache for site %s", site_settings.public_name)
+            self._cache.Clear()
+            self._cache.Store("1", cache_coherency_key)
+
+
 
 #------------------------
 # Local Variables:

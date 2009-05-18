@@ -67,7 +67,7 @@ class Hashable(object):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<%s, hash %s>" % (self.__class__, self.rig_hash().hexdigest())
+        return "<%s: hash=%s>" % (self.__class__.__name__, self.rig_hash().hexdigest())
 
 #------------------------
 # Local Variables:

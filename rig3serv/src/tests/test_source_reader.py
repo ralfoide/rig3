@@ -31,6 +31,7 @@ class SourceReaderBaseTest(RigTestCase):
 
     def tearDown(self):
         self.m = None
+        self.RemoveDir(self._tempdir)
 
     def testParse(self):
         self.assertRaises(NotImplementedError, self.m.Parse, self._tempdir)
@@ -56,6 +57,7 @@ class SourceBlogReaderTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        self._cachedir = self.MakeTempDir()
         self.path1 = os.path.join(self.getTestDataPath(), "album", "blog1")
         self.path2 = os.path.join(self.getTestDataPath(), "album", "blog2")
         source1 = SourceBlogReader(self.Log(), None, None, self.path1)
@@ -63,6 +65,7 @@ class SourceBlogReaderTest(RigTestCase):
         self.sis = SiteSettings(public_name="Test Album",
                                 source_list=[ source1, source2 ],
                                 dest_dir=self._tempdir,
+                                cache_dir=self._cachedir,
                                 theme=DEFAULT_THEME,
                                 base_url="http://www.example.com")
         self.sos = SourceSettings(rig_base="http://example.com/photos/")
@@ -72,6 +75,8 @@ class SourceBlogReaderTest(RigTestCase):
     def tearDown(self):
         self.m1 = None
         self.m2 = None
+        self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testParse(self):
         p1 = self.m1.Parse(self._tempdir)
@@ -157,6 +162,7 @@ class SourceDirReaderTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        self._cachedir = self.MakeTempDir()
         self.path1 = os.path.join(self.getTestDataPath(), "album", "blog1")
         self.path2 = os.path.join(self.getTestDataPath(), "album", "blog2")
         source1 = SourceDirReader(self.Log(), None, None, self.path1)
@@ -164,6 +170,7 @@ class SourceDirReaderTest(RigTestCase):
         self.sis = SiteSettings(public_name="Test Album",
                                 source_list=[ source1, source2 ],
                                 dest_dir=self._tempdir,
+                                cache_dir=self._cachedir,
                                 theme=DEFAULT_THEME,
                                 base_url="http://www.example.com")
         self.sos = SourceSettings(rig_base="http://example.com/photos/")
@@ -172,6 +179,8 @@ class SourceDirReaderTest(RigTestCase):
 
     def tearDown(self):
         self.m = None
+        self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testParse(self):
         p1 = self.m1.Parse(self._tempdir)
@@ -255,18 +264,25 @@ class SourceFileReaderTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        self._cachedir = self.MakeTempDir()
         self.path1 = os.path.join(self.getTestDataPath(), "album", "blog1")
         source1 = SourceFileReader(self.Log(),
-                                  site_settings=None,
-                                  source_settings=None,
-                                  path=self.path1)
+                                   site_settings=None,
+                                   source_settings=None,
+                                   path=self.path1)
         self.sis = SiteSettings(public_name="Test Album",
-                              source_list=[ source1 ],
-                              dest_dir=self._tempdir,
-                              theme=DEFAULT_THEME,
-                              base_url="http://www.example.com")
+                                source_list=[ source1 ],
+                                dest_dir=self._tempdir,
+                                cache_dir=self._cachedir,
+                                theme=DEFAULT_THEME,
+                                base_url="http://www.example.com")
         self.sos = SourceSettings(rig_base="http://example.com/photos/")
         self.m1 = MockSourceFileReader(self.Log(), self.sis, self.sos, self.path1)
+
+    def tearDown(self):
+        self.m1 = None
+        self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testParse(self):
         p1 = self.m1.Parse(self._tempdir)

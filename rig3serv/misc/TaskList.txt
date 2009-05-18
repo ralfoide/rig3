@@ -35,6 +35,7 @@
 
 ---- Done Version 0.3 ----
 
+20090517 Engine:   Experiment with caching (not enabled, no benefit yet)
 20090517 Engine:   Use md5 hashes instead of CRC32 internally. Too weak.
 20090413 Template: Fix image generation to include both excellent and good images.
 20090322 Engine:   Use two sources w/ two rig_base in sample data + UTs

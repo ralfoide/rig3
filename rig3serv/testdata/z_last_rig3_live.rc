@@ -13,6 +13,7 @@ sources2    = blog: album/blog2, rig_base: http://rig.base.url/photos2/index.php
 dest_dir    = live_dest
 base_url    =
 cat_filter  = !exclude-me
+cache_dir   = live_dest/_cache_
 
 [rig3_live]
 theme = default

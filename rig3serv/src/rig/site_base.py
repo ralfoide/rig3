@@ -145,13 +145,12 @@ class SiteBase(object):
         self._CopyMedia()
         site_items = []
 
-        stats.start("1-parse")
+        s = stats.Start("1-parse")
 
         for source in self._site_settings.source_list:
             self._ProcessSourceItems(source, site_items)
 
-        stats.stop("1-parse")
-        stats.inc ("1-parse", len(site_items))
+        s.Stop(len(site_items))
 
         categories = self._CollectCategories(site_items)
 
@@ -159,13 +158,12 @@ class SiteBase(object):
                self._site_settings.public_name,
                len(site_items), len(categories))
 
-        stats.start("2-gen")
+        s = stats.Start("2-gen")
 
         self.GeneratePages(categories, site_items)
         # TODO: self.DeleteOldGeneratedItems()
 
-        stats.stop("2-gen")
-        stats.inc ("2-gen", len(site_items))
+        s.Stop(len(site_items))
 
     def _CopyMedia(self):
         """

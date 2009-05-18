@@ -36,6 +36,11 @@ class MockSiteDefault(SiteDefault):
         self._write_file_params = []
         super(MockSiteDefault, self).__init__(log, dry_run, site_settings)
 
+        # override the Cache.Clear method by ours
+        self._cache_clear_count = 0
+        self._org_cache_clear = self._cache.Clear
+        setattr(self._cache, "Clear", self._cache_clear_override)
+
     def _TemplateDir(self):
         """"
         Uses testdata/templates/ instead of templates/
@@ -80,28 +85,52 @@ class MockSiteDefault(SiteDefault):
         """
         return [ p[tuple_index] for p in self._write_file_params ]
 
+    def _cache_clear_override(self):
+        """
+        Override self._cache.Clear to count the number of calls then
+        call the original implementation.
+        """
+        self._cache_clear_count += 1
+        self._org_cache_clear()
+
+    def CacheClearCount(self, reset):
+        """
+        Returns the number of cache clear done so far.
+        If reset is true, resets the count to 0.
+        """
+        c = self._cache_clear_count
+        if reset:
+            self._cache_clear_count = 0
+        return c
 
 #------------------------
 class SiteDefaultTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
-        source = SourceDirReader(self.Log(),
-                                 site_settings=None,
-                                 source_settings=None,
-                                 path=os.path.join(self.getTestDataPath(), "album"))
-        self.sis = SiteSettings(public_name="Test Album",
-                                source_list=[ source ],
-                                dest_dir=self._tempdir,
-                                theme=DEFAULT_THEME,
-                                base_url="http://www.example.com")
-        self.sos = SourceSettings(rig_base="http://example.com/photos/index.php")
+        self._cachedir = self.MakeTempDir()
+        self.sis, self.sos = self._computSisSos()
 
         self.keywords = self.sis.AsDict()
         self.keywords.update(self.sos.AsDict())
 
+    def _computSisSos(self):
+        source = SourceDirReader(self.Log(),
+                                 site_settings=None,
+                                 source_settings=None,
+                                 path=os.path.join(self.getTestDataPath(), "album"))
+        sis = SiteSettings(public_name="Test Album",
+                           source_list=[ source ],
+                           dest_dir=self._tempdir,
+                           cache_dir=self._cachedir,
+                           theme=DEFAULT_THEME,
+                           base_url="http://www.example.com")
+        sos = SourceSettings(rig_base="http://example.com/photos/index.php")
+        return sis, sos
+
     def tearDown(self):
         self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testSimpleFileName(self):
         m = MockSiteDefault(self, self.Log(), False, self.sis)
@@ -713,6 +742,42 @@ class SiteDefaultTest(RigTestCase):
             datetime(2000, 1, 4, 0, 0) ],
           [ j.date
             for j in m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0]["entries"] ])
+
+    def testClearCache(self):
+        """
+        Tests the ClearCache method which computes a coherency key and only
+        clears the cache when settings or templates change.
+        """
+        m = MockSiteDefault(self, self.Log(), False, self.sis)
+
+        # Start with an empty cache dir and a zero cache clear count
+        self.RemoveDir(self._cachedir)
+        m.CacheClearCount(reset=True)
+
+        # Check if we need to clear the cache will actually try to clear it
+        # since the magic key won't exist in it
+        m._ClearCache(self.sis)
+        self.assertEquals(1, m.CacheClearCount(reset=False))
+
+        # Trying to clear again shall do nothing since the parameters have
+        # not changed and the key is now in the cache. This uses the exact
+        # same SiteSettings object as earlier.
+        m._ClearCache(self.sis)
+        self.assertEquals(1, m.CacheClearCount(reset=False))
+
+        # Recompute a new SiteSettings object with exactly the same values
+        # and test again. This makes sure the key doesn't depend on objects
+        # internal representation which include their pointer (i.e. the
+        # default behavior of object.__repr__)
+        new_sis, _ = self._computSisSos()
+        m._ClearCache(new_sis)
+        self.assertEquals(1, m.CacheClearCount(reset=False))
+
+        # Alter some site setting, this time the cache should get cleared
+        new_sis.theme = "AnotherTheme"
+        m._ClearCache(new_sis)
+        self.assertEquals(2, m.CacheClearCount(reset=False))
+
 
 #------------------------
 # Local Variables:

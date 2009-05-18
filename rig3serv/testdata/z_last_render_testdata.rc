@@ -21,8 +21,10 @@ reverse_categories = bar
 theme = default
 public_name = Test Default
 dest_dir    = test_dest/default
+cache_dir   = test_cache/default
 
 [test_magic]
 theme = magic
 public_name = Test Magic
 dest_dir    = test_dest/magic
+cache_dir   = test_cache/magic

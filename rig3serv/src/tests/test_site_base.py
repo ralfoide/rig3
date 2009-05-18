@@ -75,6 +75,7 @@ class SiteBaseTest(RigTestCase):
 
     def setUp(self):
         self._tempdir = self.MakeTempDir()
+        self._cachedir = self.MakeTempDir()
         source = SourceDirReader(self.Log(),
                                  site_settings=None,
                                  source_settings=None,
@@ -82,12 +83,14 @@ class SiteBaseTest(RigTestCase):
         self.sis = SiteSettings(public_name="Test Album",
                                 source_list=[ source ],
                                 dest_dir=self._tempdir,
+                                cache_dir=self._cachedir,
                                 theme=DEFAULT_THEME,
                                 base_url="http://www.example.com")
         self.sos = SourceSettings(rig_base="http://example.com/photos/")
 
     def tearDown(self):
         self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testInit(self):
         """

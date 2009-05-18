@@ -148,6 +148,8 @@ class IncludeExclude(object):
         self._exclude = cat_exclude
         self._include = cat_include
 
+    def __repr__(self):
+        return "<%s: Inc=%s, Exc=%s>" % (self.__class__.__name__, self._include, self._exclude)
 
 #------------------------
 class SiteSettings(object):
@@ -156,6 +158,7 @@ class SiteSettings(object):
     - public_name (str): Site name, as published on the generated page. Free text.
     - source_list (list SourceBase): List of SourceBase readers
     - dest_dir (str): Path of where to generate content. Can be relative or absolute.
+    - cache_dir (str): Path the temp content cache. Can be relative or absolute.
     - theme (str): Name of the theme to use, must match a directory in templates.
     - template_dir (str): Path of the templates directory. Can be relative or absolute.
     - base_url (str): URL where the site will be published, in case templates wants to use that.
@@ -193,6 +196,7 @@ class SiteSettings(object):
                  public_name="",
                  source_list=[],
                  dest_dir=None,
+                 cache_dir=None,
                  theme=DEFAULT_THEME,
                  template_dir=None,
                  base_url=None,
@@ -218,6 +222,7 @@ class SiteSettings(object):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
+        self.cache_dir = cache_dir
         self.theme = theme
         self.template_dir = template_dir
         self.base_url = base_url

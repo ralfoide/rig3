@@ -25,9 +25,9 @@ Options:
     -n, --dry-run: Dry-run, do nothing, print what would be done
     -v, --verbose: Verbose logging
     -q, --quiet:   Quiet logging
-    -c, --config:  Configuration file (default: %(_configPaths)s) 
+    -c, --config:  Configuration file (default: %(_configPaths)s)
 """
-    
+
     def __init__(self):
         self._log = None
         self._sites_settings = None
@@ -77,11 +77,15 @@ Options:
         self.ProcessSites()
 
     def ProcessSites(self):
+        st = stats.Start("0-Total Time")
+        
         s = self._sites_settings
         for site_id in s.Sites():
             site = CreateSite(self._log, self._dry_run, s.GetSiteSettings(site_id))
             site.Process()
-        stats.display()
+
+        st.Stop(len(s.Sites()))
+        stats.Display()
 
     def Close(self):
         """

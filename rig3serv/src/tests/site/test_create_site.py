@@ -17,10 +17,16 @@ from rig.site_base import SiteBase
 class CreateSiteTest(RigTestCase):
 
     def setUp(self):
-        self.m = SiteSettings(self.Log())
+        self._tempdir = self.MakeTempDir()
+        self._cachedir = self.MakeTempDir()
+        self.m = SiteSettings("CreateSiteTest",
+                              dest_dir=self._tempdir,
+                              cache_dir=self._cachedir)
 
     def tearDown(self):
         self.m = None
+        self.RemoveDir(self._tempdir)
+        self.RemoveDir(self._cachedir)
 
     def testCreateSite_Default(self):
         self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
