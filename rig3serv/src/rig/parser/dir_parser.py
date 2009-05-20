@@ -36,8 +36,8 @@ class RelPath(Hashable):
         else:
             return False
 
-    def rig_hash(self, md=None):
-        return self.update_hash(md, self.abs_path)
+    def RigHash(self, md=None):
+        return self.UpdateHash(md, self.abs_path)
 
     def __str__(self):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)

@@ -19,8 +19,8 @@ class MyHash(Hashable):
         super(MyHash, self).__init__()
         self._value = value
 
-    def rig_hash(self, md=None):
-        md = self.update_hash(md, self._value)
+    def RigHash(self, md=None):
+        md = self.UpdateHash(md, self._value)
         return md
 
 
@@ -41,25 +41,25 @@ class HashableTest(RigTestCase):
 
     def testNeedsOverride(self):
         """
-        Test that Hashable.rig_hash raises an error if not overridden
+        Test that Hashable.RigHash raises an error if not overridden
         """
         try:
             m = Hashable()
-            m.rig_hash()
+            m.RigHash()
         except NotImplementedError, e:
             self.assertEquals(
-                  "Object <class 'rig.hashable.Hashable'> should override rig_hash",
+                  "Object <class 'rig.hashable.Hashable'> should override RigHash",
                   str(e))
             return
-        self.fail("Hashable.rig_hash() failed to raise an error when not overridden")
+        self.fail("Hashable.RigHash() failed to raise an error when not overridden")
 
     def testOverrideWorks(self):
         """
-        Tests that overriding Hashable.rig_hash doesn't raise an exception and
+        Tests that overriding Hashable.RigHash doesn't raise an exception and
         returns the expected value
         """
         m = MyHash("blah")
-        h = m.rig_hash()
+        h = m.RigHash()
 
         # The md5 is not really an object so we can't quite test its type
         # using isinstance(). Check the value directly then.
@@ -73,13 +73,13 @@ class HashableTest(RigTestCase):
 
         m = md5.new("some string")
         self.assertMd5Equals(m,
-              MyHash("some string").rig_hash())
+              MyHash("some string").RigHash())
 
         m = md5.new()
         m.update("some")
         m.update(" string")
         self.assertMd5Equals(m,
-              MyHash([ "some", " string" ]).rig_hash())
+              MyHash([ "some", " string" ]).RigHash())
 
         m = md5.new()
         m.update("1")
@@ -89,7 +89,7 @@ class HashableTest(RigTestCase):
         m.update("3")
         m.update("4"),
         self.assertMd5Equals(m,
-              MyHash({ 1: "one", 2: "two", 3: 4 }).rig_hash())
+              MyHash({ 1: "one", 2: "two", 3: 4 }).RigHash())
 
 
 #------------------------

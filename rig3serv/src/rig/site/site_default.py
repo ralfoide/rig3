@@ -609,48 +609,49 @@ class SiteDefault(SiteBase):
         permalink_url, permalink_name = self._Permalink(date.year, date.month, title)
         keywords["permalink_url"] = permalink_url
         keywords["permalink_name"] = permalink_name
+        keywords["_cache_key"] = self._cache.GetKey(keywords)
 
         def _generate_content(_template, _keywords, _img_params, _extra_keywords=None):
             # we need to make sure we can't contaminate the caller's dictionaries
             # so we just duplicate them here. Also we make sure not to use any
             # variables which are declared in the outer method.
             if _extra_keywords:
-                temp = dict(_extra_keywords)
-                temp.update(_keywords)
-                _keywords = temp
+                _temp = dict(_extra_keywords)
+                _temp.update(_keywords)
+                _keywords = _temp
             else:
                 _keywords = dict(_keywords)
 
             if _img_params:
-                s = stats.Start("2.1 Gen Img")
-                html_img = self._GenerateImages(_img_params["rel_dir"],
-                                                _img_params["all_files"],
-                                                _keywords)
-                s.Stop()
-                if html_img:
-                    _keywords["sections"]["images"] = html_img
+                _s = stats.Start("2.1 Gen Img")
+                _html_img = self._GenerateImages(_img_params["rel_dir"],
+                                                 _img_params["all_files"],
+                                                 _keywords)
+                _s.Stop()
+                if _html_img:
+                    _keywords["sections"]["images"] = _html_img
 
-            sload = stats.Start("2.2 Gen Content Load")
-            smiss = stats.Start("2.3 Gen Content Miss")
+            _sload = stats.Start("2.2 Gen Content Load")
+            _smiss = stats.Start("2.3 Gen Content Miss")
 
-            cache_key = [ _template, _keywords ]
-            content = _DEBUG_CACHE and self._cache.Find(cache_key) or None
+            _cache_key = [ _template, _keywords["_cache_key"], _extra_keywords ]
+            _content = _DEBUG_CACHE and self._cache.Find(cache_key) or None
 
-            if content is not None:
-                sload.Stop()
+            if _content is not None:
+                _sload.Stop()
             else:
-                smiss.Stop()
-                s = stats.Start("2.4 Gen Content Render")
+                _smiss.Stop()
+                _s = stats.Start("2.4 Gen Content Render")
 
-                content = self._FillTemplate(_template, **_keywords)
+                _content = self._FillTemplate(_template, **_keywords)
 
-                s.Stop()
-                s = stats.Start("2.5 Gen Content Store")
+                _s.Stop()
+                _s = stats.Start("2.5 Gen Content Store")
 
                 if _DEBUG_CACHE: self._cache.Store(content, cache_key)
 
-                s.Stop()
-            return content
+                _s.Stop()
+            return _content
 
         return SiteItem(source_item,
                         date,

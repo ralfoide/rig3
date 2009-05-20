@@ -40,8 +40,8 @@ class SourceSettings(Hashable):
     def __eq__(self, rhs):
         return (isinstance(rhs, SourceSettings) and self.__dict__ == rhs.__dict__)
 
-    def rig_hash(self, md=None):
-        return self.update_hash(md, self.__dict__)
+    def RigHash(self, md=None):
+        return self.UpdateHash(md, self.__dict__)
 
     def __repr__(self):
         try:
@@ -77,10 +77,10 @@ class SourceItem(Hashable):
     def __ne__(self, rhs):
         return not self.__eq__(rhs)
 
-    def rig_hash(self, md=None):
-        md = self.update_hash(md, self.date)
-        md = self.update_hash(md, self.source_settings)
-        md = self.update_hash(md, self.categories)
+    def RigHash(self, md=None):
+        md = self.UpdateHash(md, self.date)
+        md = self.UpdateHash(md, self.source_settings)
+        md = self.UpdateHash(md, self.categories)
         return md
 
 
@@ -109,11 +109,11 @@ class SourceDir(SourceItem):
                 self.rel_dir == rhs.rel_dir and
                 self.all_files == rhs.all_files)
 
-    def rig_hash(self, md=None):
-        md = super(SourceDir, self).rig_hash(md)
-        md = self.update_hash(md, self.rel_dir.realpath())
+    def RigHash(self, md=None):
+        md = super(SourceDir, self).RigHash(md)
+        md = self.UpdateHash(md, self.rel_dir.realpath())
         for f in self.all_files:
-            md = self.update_hash(md, f)
+            md = self.UpdateHash(md, f)
         return md
 
     def __repr__(self):
@@ -144,9 +144,9 @@ class SourceFile(SourceItem):
         return (isinstance(rhs, SourceFile) and
                 self.rel_file == rhs.rel_file)
 
-    def rig_hash(self, md=None):
-        md = super(SourceFile, self).rig_hash(md)
-        md = self.update_hash(md, self.rel_file.realpath())
+    def RigHash(self, md=None):
+        md = super(SourceFile, self).RigHash(md)
+        md = self.UpdateHash(md, self.rel_file.realpath())
         return md
 
     def __repr__(self):

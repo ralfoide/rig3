@@ -202,7 +202,7 @@ class SiteBase(object):
         dups = {}
 
         for source_item in source.Parse(self._site_settings.dest_dir):
-            item_hash = source_item.rig_hash().hexdigest()
+            item_hash = source_item.RigHash().hexdigest()
             if not item_hash in dups:
                 dups[item_hash] = source_item
                 site_item = self.GenerateItem(source_item)

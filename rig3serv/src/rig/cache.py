@@ -24,6 +24,9 @@ class Cache(object):
         if not cache_dir:
             raise ValueError("Missing cache dir parameter for Cache")
 
+    def GetKey(self, key):
+        return self._Hash(key)
+
     def Contains(self, key):
         h = self._Hash(key)
         p = self._Path(h)

@@ -14,6 +14,7 @@ from rig.settings_base import SettingsBase
 from rig.source_item import SourceSettings
 from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.site_base import DEFAULT_THEME
+from rig.hashable import Hashable, ImmutableHashable
 
 _CAT_FILTER_SEP = re.compile("[, \t\f]")
 
@@ -21,12 +22,13 @@ DEFAULT_ITEMS_PER_PAGE = 20  # Default for settings.num_item_index and settings.
 
 
 #------------------------
-class IncludeExclude(object):
+class IncludeExclude(Hashable):
     ALL = "*"
     NOTAG = "$"
     EXCLUDE = "!"
 
     def __init__(self, include=None, exclude=None):
+        super(IncludeExclude, self).__init__()
         self._include = include
         self._exclude = exclude
 
@@ -150,6 +152,12 @@ class IncludeExclude(object):
 
     def __repr__(self):
         return "<%s: Inc=%s, Exc=%s>" % (self.__class__.__name__, self._include, self._exclude)
+
+    def RigHash(self, md=None):
+        md = self.UpdateHash(md, self._include)
+        md = self.UpdateHash(md, self._exclude)
+        return md
+
 
 #------------------------
 class SiteSettings(object):
@@ -302,6 +310,7 @@ class SiteSettings(object):
             return "[%s: %s]" % (self.__class__.__name__, self.__dict__)
         except:
             return super(RelPath, self).__repr__()
+
 
 #------------------------
 class SitesSettings(SettingsBase):

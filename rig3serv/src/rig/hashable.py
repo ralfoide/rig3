@@ -3,7 +3,7 @@
 """
 Rig3 module: Base class for a hashable object.
 
-Hashes as computed as md5 using the rig_hash method.
+Hashes as computed as md5 using the RigHash method.
 
 Part of Rig3.
 License GPL.
@@ -21,24 +21,24 @@ class Hashable(object):
     def __init__(self):
         pass
 
-    def rig_hash(self, md=None):
-        raise NotImplementedError("Object %s should override rig_hash" % self.__class__)
+    def RigHash(self, md=None):
+        raise NotImplementedError("Object %s should override RigHash" % self.__class__)
 
-    def update_hash(self, md, obj):
+    def UpdateHash(self, md, obj):
         if md is None:
             md = md5.new()
 
         if isinstance(obj, Hashable):
-            obj.rig_hash(md)
+            obj.RigHash(md)
 
         elif isinstance(obj, (list, tuple)):
             for v in obj:
-                self.update_hash(md, v)
+                self.UpdateHash(md, v)
 
         elif isinstance(obj, dict):
             for k, v in obj.iteritems():
-                self.update_hash(md, k)
-                self.update_hash(md, v)
+                self.UpdateHash(md, k)
+                self.UpdateHash(md, v)
 
         elif isinstance(obj, (str, unicode)):
             md.update(str(obj))
@@ -49,25 +49,41 @@ class Hashable(object):
         return md
 
     def __hash__(self):
-        return hash(self.rig_hash().hexdigest())
+        return hash(self.RigHash().hexdigest())
 
     def __cmp__(self, other):
-        a = self.rig_hash()
+        a = self.RigHash()
         if isinstance(other, Hashable):
-            other = other.rig_hash()
+            other = other.RigHash()
         return cmp(a, other)
 
     def __eq__(self, other):
-        a = self.rig_hash()
+        a = self.RigHash()
         if isinstance(other, Hashable):
-            other = other.rig_hash()
+            other = other.RigHash()
         return a == other
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<%s: hash=%s>" % (self.__class__.__name__, self.rig_hash().hexdigest())
+        return "<%s: hash=%s>" % (self.__class__.__name__, self.RigHash().hexdigest())
+
+
+#------------------------
+class ImmutableHashable(Hashable):
+    def __init__(self):
+        self._rig_hash = None
+        super(ImmutableHashable, self).__init__()
+
+    def RigHash(self, md=None):
+        if self._rig_hash is None:
+            self._rig_hash = self.RigImmutableHash(md)
+        return self._rig_hash
+
+    def RigImmutableHash(self, md=None):
+        raise NotImplementedError("Object %s should override RigImmutableHash" % self.__class__)
+
 
 #------------------------
 # Local Variables:
