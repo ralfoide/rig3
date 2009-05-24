@@ -35,6 +35,7 @@
 
 ---- Done Version 0.3 ----
 
+20090524 Tests:    Unit tests for cache and hash_store
 20090524 Engine:   Cache izu generation (enabled by default)
 20090517 Engine:   Experiment with caching (not enabled, no benefit yet)
 20090517 Engine:   Use md5 hashes instead of CRC32 internally. Too weak.

@@ -263,7 +263,7 @@ write [[myvar.[[selector]]]]. If we really had to, it wouldn't be too hard
 to support, but my experience is that this is rarely needed and I don't see the
 need for it -- I'm not writing the most universal templating system here, just
 the minimum for what I need.
- 
+
 
 ----
 20071029 Template System, revisited
@@ -275,7 +275,7 @@ I ended up implementing these tags:
 - [[for var in expr]] ... [[end]]
 - [[if expr]] ... [[end]]
 - [[expr]]
- 
+
 Note that "expr" is exactly that: a free string evaluated as a python expression.
 For the "for", it's expected to return some iteratable (generator or list), for "if" it's
 interpreted as a boolean using "not not x" and the last one mean that any unrecognized tag
@@ -331,7 +331,7 @@ appropriate. Currently this header contains:
 - The title
 - A category (currently empty because of a bug but can be fixed). Or more
   exactly a list of category keywords.
-- The author's name 
+- The author's name
 
 The izu index should have the following structure:
 - An izu header on the first line (same tags).
@@ -432,7 +432,7 @@ The first idea is to have an heuristic as follow:
 - if there are some - ratings, show these as thumbnails (say 64 pixels)
 - otherwise show nothing
 If any of the +/- ratings are movies (.mov/.wmv), show the .jpg thumbnail instead if it exists.
-  
+
 
 ----
 20071104 Site vs template logic
@@ -465,7 +465,7 @@ entry in a separate file.
 
 Eventually, each template should be able to choose from. That's why I need to
 refactor the Site class: part of the logic is template dependent and should be
-handled as such. 
+handled as such.
 
 ----
 20071121 Next Steps
@@ -498,7 +498,7 @@ Some more changes needed by MM:
 - List categories to be included and/or excluded from automatic generation
 - For some categories, mark them as "private" and remove links to main blog.
 - Generate a TOC on top or bottom of some pages.
- 
+
 One way to do this is to specify site prefs:
 - Which indexes to generate: index, rss, public_cat, private_cat (cat=categories)
 - What are public categories: all, cat1, cat2... all is a special keyword here, it's the default.
@@ -528,14 +528,14 @@ New site settings:
 - rig_img_url: string format with <album> and <img> parameters
 - rig_album_url: string format with <album> parameter
 - link_to_rig_album: False. Should images link to the rig album?
-- link_to_rig_img: True. Should images link to the corresponding rig image? 
+- link_to_rig_img: True. Should images link to the corresponding rig image?
 - category_filter: None or list of category names (strings, case-insensitive) to accept
 - permalinks: True. Boolean, true if should have permalinks
 - toc: False. Boolean, true if we want a TOC at the top of the index
 - rss: True. Boolean, generate an RSS feed.
 
 ----
-20071201 Site Refactor 
+20071201 Site Refactor
 
 I need a way to split the rig.Site class in two parts, but so far I lack a clear
 terminology for it so let's try:
@@ -688,7 +688,7 @@ is mostly trivial and may be even cheaper than performing one more disk access.
 In the second scenario where we only store the generated permalinks, we can
 make a minimal optimization but not regenerating the permalink if the source
 timestamp is older than the permalink and the permalink template hasn't changed
-either. 
+either.
 
 So that means that globally, partial updates are not very interesting.
 
@@ -699,7 +699,7 @@ as cheap as possible, so that we can run it often.
 On the destination part, this is easy, we can get the timestamp of the main
 index.html, since it's guaranteed to be generated every time.
 However on the source part, this is a bit more tricky: we still need to
-visit all the source directories and stat their files. 
+visit all the source directories and stat their files.
 
 On a Linux system a file or directory has an access time (irrelevant for us),
 a modification time (file written or a file created/deleted in a directory)
@@ -718,14 +718,14 @@ source item list -- at that point we do not actually read any content yet.
 However that means for multi-item files, we'll just want to keep the reference to
 the file but not parse it yet, we'll want to defer parsing later, possibly just
 before we do the site generation (or even better, let the site generator start
-the parsing so that it can optimize the case if needed.) 
+the parsing so that it can optimize the case if needed.)
 
 Note that we should still defer the "last generation timestamp" to the actual
 site generators. For most of them, they can simply get the main index.html timestamp
 and return it. The whole skip-if-untouched should be done on a site-per-site basis.
- 
+
 ----
-20080116 Details for category_filter 
+20080116 Details for category_filter
 
 category_filter is a space-separated list of categories to include in given
 site. The special symbol "*" matches all categories. The special symbol "$"
@@ -736,7 +736,7 @@ The default category filter (i.e. its absence) is "*", so that it matches everyt
 
 Example: category_filter=public cats !dogs !parrots $ funny
 will match all posts that have categories public or cats or funny or not category
-and will exclude those which have dogs and parrots. 
+and will exclude those which have dogs and parrots.
 
 Note that:
   category_filter=!dogs
@@ -993,7 +993,7 @@ them and compare the hash to the last run.
 Python uses 32-bit hashes for its objects internally. For dictionnary the
 hash is used for the bucket then a list of object ids is used (from my own
 observation, I haven't looked at actual implementation details). Although
-the internal 32-bit hasehs are convenient, they are a bit weak. SHA1 seems
+the internal 32-bit hashes are convenient, they are a bit weak. SHA1 seems
 overkill here and it is still computationally intensive so something like
 MD5 will be the best alternative.
 

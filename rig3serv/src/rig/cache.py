@@ -18,7 +18,25 @@ from rig import stats
 #------------------------
 class Cache(object):
     """
-    Cache
+    Cache storage for rig3.
+
+    The cache stores Python objects as binary pickle files in the local
+    file system cache directory.
+
+    For each object to store, you need a key, which is an Python structure
+    (including list, dict, primitives). Computing a key means being able
+    to compute a MD5 of the combined __repr__ of these objects. Computing
+    a key can be expensive -- lists and dicts are traversed recursively and
+    must NOT contain circular references.
+
+    There are 2 APIs to use the cache:
+    - At the lower level, GetKey() to pre-compute a key. Contains() indicates
+      if the cache already contains an item. Find() checks if the cache has
+      an item, reads it and unpickles it. Store() takes an item, pickes it
+      and store it.
+    - At the higher level you have Compute() which does the most common
+      operation: check if an item exists and if it does reads it and unpickle
+      it. If not, call a lambda to generate the new value and stores it.
     """
     def __init__(self, log, cache_dir):
         self._log = log
@@ -46,6 +64,7 @@ class Cache(object):
         """
         Returns (True, path) if a cache entry exists for this key.
         Otherwise returns (False, path).
+        Does not affect counters.
         """
         h = self._Hash(key)
         p = self._Path(h)
@@ -57,6 +76,7 @@ class Cache(object):
     def Find(self, key):
         """
         Reads some pickle data. Returns None if not found.
+        Increments either the miss or the read counters.
         """
         found, p = self.Contains(key)
         if found:
@@ -68,6 +88,7 @@ class Cache(object):
     def _Read(self, p):
         """
         Internal method to read an entry at the given path "p" and un-pickle it.
+        Increments the read counter.
         """
         f = None
         try:
@@ -81,6 +102,7 @@ class Cache(object):
     def Store(self, content, key):
         """
         Stores some data as a pickle.
+        Increments the write counter.
         """
         h = self._Hash(key)
         p = self._Path(h)
@@ -89,6 +111,7 @@ class Cache(object):
     def _Write(self, content, p):
         """
         Internal helper to store an entry at the given path "p" using a pickle.
+        Increments the write counter.
         """
         if not os.path.exists(p):
             d = os.path.dirname(p)
@@ -106,6 +129,7 @@ class Cache(object):
         """
         Empties the cache. The implementation simply removes the
         cache dir recursively if it exists.
+        Does not affect the counters.
         """
         self._RemoveDir(self._cache_dir)
 
@@ -119,6 +143,8 @@ class Cache(object):
           to compute the value, stores it in the cache and returns the value.
         - If stat_prefix is a string (not None), also updates stat counters
           for load, miss, render and store.
+
+        Increments either the (miss + write) counters or the read counter.
         """
 
         # Short-circuit when disabling the cache, for testing or experimenting
