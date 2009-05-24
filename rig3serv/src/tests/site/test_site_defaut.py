@@ -778,53 +778,6 @@ class SiteDefaultTest(RigTestCase):
         m._ClearCache(new_sis)
         self.assertEquals(2, m.CacheClearCount(reset=False))
 
-    def testGenContentCacheKey(self):
-
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
-
-        sis1, sos1 = self._computeSisSos()
-        keywords1 = sis1.AsDict()
-        keywords1.update(sos1.AsDict())
-
-        date1 = datetime.today()
-
-        keywords1["title"] = "title"
-        keywords1["sections"] = { "en": "test", "fr": "blah" }
-        keywords1["date"] = date1
-        keywords1["date_iso"] = m._DateToIso(date1)
-        keywords1["tags"] = { 1: 2, 3: 4 }
-        keywords1["categories"] = ["foo", "blah"]
-        keywords1["permalink_url"] = "permalink_url"
-        keywords1["permalink_name"] = "permalink_name"
-        keywords1["_cache_key"] = m._cache.GetKey(keywords1)
-
-        extra1 = None
-
-        _cache_key1 = [ "_template", keywords1["_cache_key"], extra1 ]
-
-
-        sis2, sos2 = self._computeSisSos()
-        keywords2 = sis2.AsDict()
-        keywords2.update(sos2.AsDict())
-
-        date2 = datetime.today()
-
-        keywords2["title"] = "title"
-        keywords2["sections"] = { "en": "test", "fr": "blah" }
-        keywords2["date"] = date2
-        keywords2["date_iso"] = m._DateToIso(date2)
-        keywords2["tags"] = { 1: 2, 3: 4 }
-        keywords2["categories"] = ["foo", "blah"]
-        keywords2["permalink_url"] = "permalink_url"
-        keywords2["permalink_name"] = "permalink_name"
-        keywords2["_cache_key"] = m._cache.GetKey(keywords2)
-
-        extra2 = None
-
-        _cache_key2 = [ "_template", keywords2["_cache_key"], extra2 ]
-
-        self.assertEquals(_cache_key2, _cache_key1)
-
 
 #------------------------
 # Local Variables:
