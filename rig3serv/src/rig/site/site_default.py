@@ -98,6 +98,7 @@ class SiteDefault(SiteBase):
         self._last_gen_ts = datetime.today()
 
         self._enable_cache = os.getenv("DISABLE_RIG3_CACHE") is None
+        self._debug_cache = os.getenv("DEBUG_RIG3_CACHE") is not None
 
         if self._enable_cache:
             self._ClearCache(site_settings)
@@ -628,6 +629,9 @@ class SiteDefault(SiteBase):
                 _key_temp_dict["last_gen_ts"] = None
                 _key_temp_dict["last_content_iso"] = None
                 _cache_key.append(_key_temp_dict)
+
+            if self._debug_cache:
+                print "DEBUG CACHE KEY GEN1:", repr(_cache_key)
 
             _content = self._cache.Compute(
                    _cache_key,
