@@ -95,8 +95,19 @@ class SiteDefault(SiteBase):
     def __init__(self, log, dry_run, site_settings):
         super(SiteDefault, self).__init__(log, dry_run, site_settings)
         self._cache = Cache(log, site_settings.cache_dir)
+        self._last_gen_ts = datetime.today()
 
-        self._ClearCache(site_settings)
+        self._enable_cache = os.getenv("DISABLE_RIG3_CACHE") is None
+
+        if self._enable_cache:
+            self._ClearCache(site_settings)
+        else:
+            self._log.Info("Cache is disabled.")
+
+    def Dispose(self):
+        if self._enable_cache:
+            self._cache.DisplayCounters(self._log)
+        super(SiteDefault, self).Dispose()
 
     def MakeDestDirs(self):
         """
@@ -203,7 +214,7 @@ class SiteDefault(SiteBase):
 
         keywords["curr_url"] = keywords.get("base_url", "") + base_url
         keywords["rel_base_url"] = rel_base
-        keywords["last_gen_ts"] = datetime.today()
+        keywords["last_gen_ts"] = self._last_gen_ts
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
         keywords["toc_categories"] = self._site_settings.toc_categories.Filter(all_categories)
@@ -303,7 +314,7 @@ class SiteDefault(SiteBase):
         keywords["title"] = title
 
         keywords["rel_base_url"] = rel_base
-        keywords["last_gen_ts"] = datetime.today()
+        keywords["last_gen_ts"] = self._last_gen_ts
         keywords["month_pages"] = month_pages
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
@@ -327,7 +338,10 @@ class SiteDefault(SiteBase):
 
         keywords["entries"] = entries
         keywords["last_content_ts"] = older_date
-        keywords["last_content_iso"] = self._DateToIso(keywords["last_gen_ts"])
+        if older_date:
+            keywords["last_content_iso"] = self._DateToIso(older_date)
+        else:
+            keywords["last_content_iso"] = self._DateToIso(self._last_gen_ts)
 
         # Finally generate the whole feed
         content = self._FillTemplate(SiteDefault._TEMPLATE_ATOM_FEED, **keywords)
@@ -418,7 +432,7 @@ class SiteDefault(SiteBase):
 
         keywords["curr_url"] = keywords.get("base_url", "") + base_url
         keywords["rel_base_url"] = rel_base
-        keywords["last_gen_ts"] = datetime.today()
+        keywords["last_gen_ts"] = self._last_gen_ts
         keywords["all_categories"] = all_categories
         keywords["curr_category"] = curr_category
         keywords["toc_categories"] = self._site_settings.toc_categories.Filter(all_categories)
@@ -510,55 +524,31 @@ class SiteDefault(SiteBase):
 
         date, title = self._DateAndTitleFromTitle(title)
         if not date:
-            date = datetime.today()
+            date = self._last_gen_ts
         sections = {}
         tags = {}
 
         keywords = self._site_settings.AsDict()
         keywords.update(source_item.source_settings.AsDict())
 
-        # RM 20090517 debug cache, not enabled by default
-        _DEBUG_CACHE = os.getenv("DEBUG_CACHE") is not None
-
         if izu_file:
             self._log.Info("[%s] Render '%s' to HTML", self._site_settings.public_name,
                            izu_file)
-
-            # Note: preliminary testing indicate that caching here is not
-            # beneficial. On my test blog it takes 3.50 ms to render
-            # an izu2html here. It takes 3 ms to compute the key and get a cache
-            # miss and another 1.50 ms to store a cache item. It then takes
-            # 3.71s to load an item.
-            # Summary: miss = 3 ms (find) + 3.50 ms (render) + 1.50 ms (store) = 8 ms
-            #          hit  = 3.50 ms
-            # So in this case since hit time == render time, the cache is slower.
-            sload = stats.Start("1.1 izu2html Load")
-            smiss = stats.Start("1.1 izu2html Miss")
 
             cache_key = [ izu_file,
                           self._Timestamp(izu_file),
                           keywords["rig_base"],
                           keywords["img_gen_script"] ]
-            pickled = _DEBUG_CACHE and self._cache.Find(cache_key) or None
 
-            if pickled is not None:
-                tags, sections = pickled
-                sload.Stop()
-            else:
-                smiss.Stop()
-                s = stats.Start("1.2 izu2html Render")
-
-                izu_parser = IzuParser(self._log,
-                                       keywords["rig_base"],
-                                       keywords["img_gen_script"])
-                tags, sections = izu_parser.RenderFileToHtml(izu_file)
-
-                s.Stop()
-                s = stats.Start("1.3 izu2html Store")
-
-                if _DEBUG_CACHE: self._cache.Store([ tags, sections ], cache_key)
-
-                s.Stop()
+            tags, sections = self._cache.Compute(
+                     cache_key,
+                     lambda: \
+                        IzuParser(self._log,
+                                  keywords["rig_base"],
+                                  keywords["img_gen_script"]) \
+                          .RenderFileToHtml(izu_file),
+                     stat_prefix="1.1 izu2html",
+                     use_cache=self._enable_cache)
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):
@@ -631,26 +621,20 @@ class SiteDefault(SiteBase):
                 if _html_img:
                     _keywords["sections"]["images"] = _html_img
 
-            _sload = stats.Start("2.2 Gen Content Load")
-            _smiss = stats.Start("2.3 Gen Content Miss")
+            _cache_key = [ _template, _keywords["_cache_key"] ]
+            if _extra_keywords:
+                _key_temp_dict = _extra_keywords.copy()
+                # invalidate some timestamps that changes at every run
+                _key_temp_dict["last_gen_ts"] = None
+                _key_temp_dict["last_content_iso"] = None
+                _cache_key.append(_key_temp_dict)
 
-            _cache_key = [ _template, _keywords["_cache_key"], _extra_keywords ]
-            _content = _DEBUG_CACHE and self._cache.Find(cache_key) or None
+            _content = self._cache.Compute(
+                   _cache_key,
+                   lambda: self._FillTemplate(_template, **_keywords),
+                   stat_prefix="2.2 Gen Content",
+                   use_cache=self._enable_cache)
 
-            if _content is not None:
-                _sload.Stop()
-            else:
-                _smiss.Stop()
-                _s = stats.Start("2.4 Gen Content Render")
-
-                _content = self._FillTemplate(_template, **_keywords)
-
-                _s.Stop()
-                _s = stats.Start("2.5 Gen Content Store")
-
-                if _DEBUG_CACHE: self._cache.Store(content, cache_key)
-
-                _s.Stop()
             return _content
 
         return SiteItem(source_item,

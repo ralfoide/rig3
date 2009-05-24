@@ -78,11 +78,12 @@ Options:
 
     def ProcessSites(self):
         st = stats.Start("0-Total Time")
-        
+
         s = self._sites_settings
         for site_id in s.Sites():
             site = CreateSite(self._log, self._dry_run, s.GetSiteSettings(site_id))
             site.Process()
+            site.Dispose()
 
         st.Stop(len(s.Sites()))
         stats.Display()

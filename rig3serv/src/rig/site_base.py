@@ -87,7 +87,16 @@ class SiteBase(object):
         self._dry_run = dry_run
         self._site_settings = site_settings
 
-    # Derived class must implement this to define the desired behavoior
+    # Derived class must implement this to define the desired behavior
+
+    def Dispose(self):
+        """
+        Callers should call this when they will no longer need to use a site.
+
+        Subclassing: Derived classes should override this to release any
+        temporary resources.
+        """
+        pass
 
     def MakeDestDirs(self):
         """
