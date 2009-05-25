@@ -631,7 +631,7 @@ class SiteDefault(SiteBase):
                 _cache_key.append(_key_temp_dict)
 
             if self._debug_cache:
-                print "DEBUG CACHE KEY GEN1:", repr(_cache_key)
+                self._log.Debug("CACHE KEY GEN1: %s", repr(_cache_key))
 
             _content = self._cache.Compute(
                    _cache_key,
@@ -1002,12 +1002,19 @@ class SiteDefault(SiteBase):
         consequently clear the cache.
         """
         rig_version = Version()
-        cache_coherency_key = [
-            site_settings,
-            self._Timestamp(self._TemplateThemeDirs(theme=site_settings.theme)),
-            rig_version.VersionString(),
-            rig_version.SvnRevision()
-            ]
+        cache_coherency_key = {
+            "site settings": site_settings,
+            "theme": site_settings.theme,
+            "theme dirs": self._TemplateThemeDirs(theme=site_settings.theme),
+            "theme TS": self._Timestamp(self._TemplateThemeDirs(theme=site_settings.theme)),
+            "rig3 vers str": rig_version.VersionString(),
+            "rig3 svn rev": rig_version.SvnRevision()
+            }
+
+        if self._debug_cache:
+            self._log.Debug("Cache Coherency key[%s] = %s",
+                            self._cache.GetKey(cache_coherency_key),
+                            repr(cache_coherency_key))
 
         f = self._cache.Find(cache_coherency_key)
 
