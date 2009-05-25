@@ -16,15 +16,15 @@ cat_filter   = !exclude-me
 tracking_code = <i>tracking code here</i>
 toc_categories = bar
 reverse_categories = bar
+# same cache base dir can be used if sites have different public_names
+cache_dir   = test_cache
 
 [test_default]
 theme = default
 public_name = Test Default
 dest_dir    = test_dest/default
-cache_dir   = test_cache/default
 
 [test_magic]
 theme = magic
 public_name = Test Magic
 dest_dir    = test_dest/magic
-cache_dir   = test_cache/magic

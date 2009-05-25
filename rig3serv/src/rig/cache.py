@@ -30,10 +30,10 @@ class Cache(object):
     must NOT contain circular references.
 
     There are 2 APIs to use the cache:
-    - At the lower level, GetKey() to pre-compute a key. Contains() indicates
-      if the cache already contains an item. Find() checks if the cache has
-      an item, reads it and unpickles it. Store() takes an item, pickes it
-      and store it.
+    - At the lower level:
+      - GetKey() to pre-compute a key.
+      - Find() checks if the cache has an item, reads it and unpickles it.
+      - Store() takes an item, pickes it and store it.
     - At the higher level you have Compute() which does the most common
       operation: check if an item exists and if it does reads it and unpickle
       it. If not, call a lambda to generate the new value and stores it.
@@ -41,9 +41,11 @@ class Cache(object):
     def __init__(self, log, cache_dir):
         self._log = log
         self._cache_dir = cache_dir
+        self._cached = {}
         self._count_read = 0
         self._count_miss = 0
         self._count_write = 0
+        self._count_reused = 0
         if not cache_dir:
             raise ValueError("Missing cache dir parameter for Cache")
 
@@ -54,8 +56,9 @@ class Cache(object):
         """
         Displays some stats about the number of operations done.
         """
-        log.Info("Cache: Read %d, Missed %d, Wrote %d.",
-                 self._count_read, self._count_miss, self._count_write)
+        log.Info("Cache: Read %d, Missed %d, Wrote %d, Reused %d.",
+                 self._count_read, self._count_miss,
+                 self._count_write, self._count_reused)
 
     def GetKey(self, key):
         """
@@ -75,11 +78,10 @@ class Cache(object):
             return True, p
         return False, p
 
-
     def Find(self, key):
         """
         Reads some pickle data. Returns None if not found.
-        Increments either the miss or the read counters.
+        Increments either the miss or read or reused counters.
         """
         found, p = self.Contains(key)
         if found:
@@ -93,14 +95,21 @@ class Cache(object):
         Internal method to read an entry at the given path "p" and un-pickle it.
         Increments the read counter.
         """
+        if p in self._cached:
+            self._count_reused += 1
+            return self._cached[p]
+
         f = None
         try:
             self._count_read += 1
             f = file(p, "rb")
-            return cPickle.load(f)
+            content = cPickle.load(f)
+
+            self._cached[p] = content
+
+            return content
         finally:
             if f: f.close()
-
 
     def Store(self, content, key):
         """
@@ -116,6 +125,8 @@ class Cache(object):
         Internal helper to store an entry at the given path "p" using a pickle.
         Increments the write counter.
         """
+        self._cached[p] = content
+
         if not os.path.exists(p):
             d = os.path.dirname(p)
             if not os.path.exists(d):
@@ -135,6 +146,7 @@ class Cache(object):
         Does not affect the counters.
         """
         self._RemoveDir(self._cache_dir)
+        self._cached = {}
 
     def Compute(self, key, lambda_expr, stat_prefix=None, use_cache=True):
         """

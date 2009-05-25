@@ -49,6 +49,7 @@ class CacheTest(RigTestCase):
         self.assertEquals(0, self.m._count_miss)
         self.assertEquals(0, self.m._count_read)
         self.assertEquals(0, self.m._count_write)
+        self.assertEquals(0, self.m._count_reused)
 
         # contains does not affect the counters
         self.m.Contains("foo")
@@ -56,6 +57,7 @@ class CacheTest(RigTestCase):
         self.assertEquals(0, self.m._count_miss)
         self.assertEquals(0, self.m._count_read)
         self.assertEquals(0, self.m._count_write)
+        self.assertEquals(0, self.m._count_reused)
 
         # generates a miss
         self.m.Find("foo")
@@ -63,20 +65,42 @@ class CacheTest(RigTestCase):
         self.assertEquals(1, self.m._count_miss)
         self.assertEquals(0, self.m._count_read)
         self.assertEquals(0, self.m._count_write)
+        self.assertEquals(0, self.m._count_reused)
 
         # generates a write
         self.m.Store([ "some", "value" ], "foo")
+        self.m.Store([ "some", "value" ], "foo2")
 
         self.assertEquals(1, self.m._count_miss)
         self.assertEquals(0, self.m._count_read)
-        self.assertEquals(1, self.m._count_write)
+        self.assertEquals(2, self.m._count_write)
+        self.assertEquals(0, self.m._count_reused)
 
-        # generates a read
+        # generates a read/reuse
         self.m.Find("foo")
 
         self.assertEquals(1, self.m._count_miss)
-        self.assertEquals(1, self.m._count_read)
-        self.assertEquals(1, self.m._count_write)
+        self.assertEquals(0, self.m._count_read)
+        self.assertEquals(2, self.m._count_write)
+        self.assertEquals(1, self.m._count_reused)
+
+        # generates a new read
+        self.m.Find("foo2")
+
+        self.assertEquals(1, self.m._count_miss)
+        self.assertEquals(0, self.m._count_read)
+        self.assertEquals(2, self.m._count_write)
+        self.assertEquals(2, self.m._count_reused)
+
+        # Use a fresh cache (to remove the internal memory cache)
+        # and read again
+        self.m = Cache(self.Log(), self._cachedir)
+        self.m.Find("foo")
+        self.m.Find("foo2")
+        self.assertEquals(0, self.m._count_miss)
+        self.assertEquals(2, self.m._count_read)
+        self.assertEquals(0, self.m._count_write)
+        self.assertEquals(0, self.m._count_reused)
 
     def testCompute(self):
         self.assertEquals(None, self.m.Find("foo"))

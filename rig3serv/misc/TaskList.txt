@@ -35,6 +35,8 @@
 
 ---- Done Version 0.3 ----
 
+20090525 Engine:   Keep new cache entries in memory. Experiment shows 0.05 ms/load saving.
+20090525 Engine:   Use hash_store to keep cache coherency key
 20090524 Engine:   Fix cache clear by adding md5 of site public_name in cache path
 20090524 Tests:    Unit tests for cache and hash_store
 20090524 Engine:   Cache izu generation (enabled by default)
