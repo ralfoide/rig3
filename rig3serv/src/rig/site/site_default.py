@@ -1013,7 +1013,7 @@ class SiteDefault(SiteBase):
 
         if self._debug_cache:
             self._log.Debug("Cache Coherency key[%s] = %s",
-                            self._cache.GetKey(cache_coherency_key),
+                            self._cache.Contains(cache_coherency_key),
                             repr(cache_coherency_key))
 
         f = self._cache.Find(cache_coherency_key)
