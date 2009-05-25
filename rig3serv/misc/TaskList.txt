@@ -2,7 +2,6 @@
 
 20081130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
 
-
 20080930 Engine:   Remove the "dirs" and "files" source types
 
 20080907 Bug:      "reverse_categories = !kw1,!kw2" not working (MM#2)
@@ -35,6 +34,7 @@
 
 ---- Done Version 0.3 ----
 
+20090525 Engine:   Use cache for generated images HTML content
 20090525 Engine:   Keep new cache entries in memory. Experiment shows 0.05 ms/load saving.
 20090525 Engine:   Use hash_store to keep cache coherency key
 20090524 Engine:   Fix cache clear by adding md5 of site public_name in cache path

@@ -623,11 +623,9 @@ class SiteDefault(SiteBase):
                 _keywords = dict(_keywords)
 
             if _img_params:
-                _s = stats.Start("2.1 Gen Img")
                 _html_img = self._GenerateImages(_img_params["rel_dir"],
                                                  _img_params["all_files"],
                                                  _keywords)
-                _s.Stop()
                 if _html_img:
                     _keywords["sections"]["images"] = _html_img
 
@@ -700,7 +698,11 @@ class SiteDefault(SiteBase):
             if m:
                 num_images += 1
                 index = m.group("index")
-                entry = images[index] = images.get(index, { "top_rating": self._RATING_BASE, "top_name": None, "files": [] })
+                entry = images[index] = images.get(index,
+                                                   { "top_rating": self._RATING_BASE,
+                                                     "top_name": None,
+                                                     "files": [],
+                                                     "ts": [] })
                 rating = self._GetRating(m.group("rating"))
                 num_normal += (rating == self._RATING_DEFAULT and 1 or 0)
                 num_good += (rating == self._RATING_GOOD and 1 or 0)
@@ -709,11 +711,29 @@ class SiteDefault(SiteBase):
                     entry["top_rating"] = rating
                     entry["top_name"] = filename
                 entry["files"].append(filename)
+                entry["ts"].append(self._Timestamp(os.path.join(source_dir.realpath(),
+                                                                filename)))
 
+        nums = (num_excellent, num_good, num_images, num_normal)
+
+        cache_key = [ source_dir,
+                      all_files,
+                      images,
+                      keywords.get("_cache_key", None) ]
+
+        c = self._cache.Compute(
+                    key=cache_key,
+                    lambda_expr=lambda : self.__GenerateHtmlForImages(source_dir, nums, images, keywords),
+                    stat_prefix="2.1 Gen Img",
+                    use_cache=self._enable_cache)
+        return c
+
+    def __GenerateHtmlForImages(self, source_dir, nums, images, keywords):
         # TODO: the heuristics below are lousy. Works for me, and even that
         # is questionable and all these constants... pfff. Need something
         # better. Maybe some inline-python mini-rules in the prefs?
 
+        num_excellent, num_good, num_images, num_normal = nums
         series = []
         if num_excellent or num_good:
 

@@ -38,6 +38,8 @@ class Cache(object):
       operation: check if an item exists and if it does reads it and unpickle
       it. If not, call a lambda to generate the new value and stores it.
     """
+    __debug_miss = os.getenv("DEBUG_RIG3_CACHE") is not None
+
     def __init__(self, log, cache_dir):
         self._log = log
         self._cache_dir = cache_dir
@@ -88,6 +90,8 @@ class Cache(object):
             return self._Read(p)
         else:
             self._count_miss += 1
+            if Cache.__debug_miss:
+                self._log.Debug("Cache Miss: Key=%s", repr(key))
         return None
 
     def _Read(self, p):
@@ -178,17 +182,15 @@ class Cache(object):
         found, p = self.Contains(key)
         if found:
             pickled = self._Read(p)
-        else:
-            pickled = None
-            self._count_miss += 1
-
-        if pickled is not None:
             if sload:
                 sload.Stop()
             return pickled
 
         if smiss:
             smiss.Stop()
+        self._count_miss += 1
+        if Cache.__debug_miss:
+            self._log.Debug("Cache Miss(%s): Key=%s", stat_prefix, repr(key))
 
         s = stat_prefix and stats.Start(stat_prefix + " Render") or None
 
