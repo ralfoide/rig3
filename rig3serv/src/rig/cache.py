@@ -47,6 +47,9 @@ class Cache(object):
         if not cache_dir:
             raise ValueError("Missing cache dir parameter for Cache")
 
+    def SetCacheDir(self, cache_dir):
+        self._cache_dir = cache_dir
+
     def DisplayCounters(self, log):
         """
         Displays some stats about the number of operations done.

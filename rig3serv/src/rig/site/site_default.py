@@ -95,6 +95,9 @@ class SiteDefault(SiteBase):
     def __init__(self, log, dry_run, site_settings):
         super(SiteDefault, self).__init__(log, dry_run, site_settings)
         self._cache = Cache(log, site_settings.cache_dir)
+        self._cache.SetCacheDir(
+                os.path.join(site_settings.cache_dir,
+                             self._cache.GetKey(site_settings.public_name)))
         self._last_gen_ts = datetime.today()
 
         self._enable_cache = os.getenv("DISABLE_RIG3_CACHE") is None
