@@ -30,6 +30,7 @@ from rig.version import Version
 from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 from rig.cache import Cache
+from rig.hash_store import HashStore
 from rig import stats
 
 #------------------------
@@ -94,22 +95,27 @@ class SiteDefault(SiteBase):
 
     def __init__(self, log, dry_run, site_settings):
         super(SiteDefault, self).__init__(log, dry_run, site_settings)
+        self._last_gen_ts = datetime.today()
+
         self._cache = Cache(log, site_settings.cache_dir)
         self._cache.SetCacheDir(
                 os.path.join(site_settings.cache_dir,
                              self._cache.GetKey(site_settings.public_name)))
-        self._last_gen_ts = datetime.today()
+
+        self._hash_store = HashStore(log, self._cache)
 
         self._enable_cache = os.getenv("DISABLE_RIG3_CACHE") is None
         self._debug_cache = os.getenv("DEBUG_RIG3_CACHE") is not None
 
         if self._enable_cache:
+            self._hash_store.Load()
             self._ClearCache(site_settings)
         else:
             self._log.Info("Cache is disabled.")
 
     def Dispose(self):
         if self._enable_cache:
+            self._hash_store.Save()
             self._cache.DisplayCounters(self._log)
         super(SiteDefault, self).Dispose()
 
@@ -633,8 +639,9 @@ class SiteDefault(SiteBase):
                 _key_temp_dict["last_content_iso"] = None
                 _cache_key.append(_key_temp_dict)
 
-            if self._debug_cache:
-                self._log.Debug("CACHE KEY GEN1: %s", repr(_cache_key))
+            #DEBUG, not needed anymore
+            #if self._debug_cache:
+            #    self._log.Debug("CACHE KEY GEN1: %s", repr(_cache_key))
 
             _content = self._cache.Compute(
                    _cache_key,
@@ -1013,18 +1020,22 @@ class SiteDefault(SiteBase):
             "rig3 vers str": rig_version.VersionString(),
             "rig3 svn rev": rig_version.SvnRevision()
             }
+        hash_key = self._cache.GetKey(cache_coherency_key)
+
+        f = self._hash_store.Contains(hash_key)
 
         if self._debug_cache:
-            self._log.Debug("Cache Coherency key[%s] = %s",
-                            self._cache.Contains(cache_coherency_key),
+            self._log.Debug("Cache Coherency key [site=%s, found=%s, hash=%s] = %s",
+                            site_settings.public_name,
+                            f,
+                            hash_key,
                             repr(cache_coherency_key))
 
-        f = self._cache.Find(cache_coherency_key)
-
         if not f:
-            self._log.Info("Clear cache for site %s", site_settings.public_name)
+            self._log.Info("Clear Cache for Site %s", site_settings.public_name)
             self._cache.Clear()
-            self._cache.Store("1", cache_coherency_key)
+            self._hash_store.Clear()
+            self._hash_store.Add(hash_key)
 
 
 

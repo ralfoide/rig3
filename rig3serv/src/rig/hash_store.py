@@ -50,6 +50,9 @@ class HashStore(object):
     def Add(self, key):
         self._hash_store[key] = 1
 
+    def Clear(self):
+        self._hash_store = {}
+
 
 #------------------------
 # Local Variables:

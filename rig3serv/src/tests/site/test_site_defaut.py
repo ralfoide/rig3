@@ -39,7 +39,7 @@ class MockSiteDefault(SiteDefault):
         # override the Cache.Clear method by ours
         self._cache_clear_count = 0
         self._org_cache_clear = self._cache.Clear
-        setattr(self._cache, "Clear", self._cache_clear_override)
+        setattr(self._cache, "Clear", self._CacheClearOverride)
 
     def _TemplateDir(self):
         """"
@@ -85,7 +85,7 @@ class MockSiteDefault(SiteDefault):
         """
         return [ p[tuple_index] for p in self._write_file_params ]
 
-    def _cache_clear_override(self):
+    def _CacheClearOverride(self):
         """
         Override self._cache.Clear to count the number of calls then
         call the original implementation.
@@ -750,30 +750,34 @@ class SiteDefaultTest(RigTestCase):
         """
         m = MockSiteDefault(self, self.Log(), False, self.sis)
 
-        # Start with an empty cache dir and a zero cache clear count
+        # Start with an empty cache dir and a zero cache clear count.
+        # We also need to clear the hash store, which contains the
+        # cache coherency key.
         self.RemoveDir(self._cachedir)
+        m._hash_store.Clear()
         m.CacheClearCount(reset=True)
 
         # Check if we need to clear the cache will actually try to clear it
-        # since the magic key won't exist in it
+        # since the magic key won't exist in the hash store.
         m._ClearCache(self.sis)
         self.assertEquals(1, m.CacheClearCount(reset=False))
 
         # Trying to clear again shall do nothing since the parameters have
-        # not changed and the key is now in the cache. This uses the exact
-        # same SiteSettings object as earlier.
+        # not changed and the key is still in the hash store. This uses the
+        # exact same SiteSettings object as earlier.
         m._ClearCache(self.sis)
         self.assertEquals(1, m.CacheClearCount(reset=False))
 
         # Recompute a new SiteSettings object with exactly the same values
         # and test again. This makes sure the key doesn't depend on objects
         # internal representation which include their pointer (i.e. the
-        # default behavior of object.__repr__)
+        # default behavior of object.__repr__) or volatile timestamps.
         new_sis, _ = self._computeSisSos()
         m._ClearCache(new_sis)
         self.assertEquals(1, m.CacheClearCount(reset=False))
 
         # Alter some site setting, this time the cache should get cleared
+        # since the old key (still in the hash store) is invalid.
         new_sis.theme = "AnotherTheme"
         m._ClearCache(new_sis)
         self.assertEquals(2, m.CacheClearCount(reset=False))
