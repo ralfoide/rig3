@@ -25,7 +25,7 @@ from rig.parser.izu_parser import IzuParser
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
 from rig.source_item import SourceDir, SourceFile
-from rig.parser.dir_parser import RelPath
+from rig.parser.dir_parser import RelPath, PathTimestamp
 from rig.version import Version
 from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
@@ -93,10 +93,13 @@ class SiteDefault(SiteBase):
     _TEMPLATE_IMG_TABLE    = "image_table.html"   # template for image table in HTML
 
 
-    def __init__(self, log, dry_run, site_settings):
-        super(SiteDefault, self).__init__(log, dry_run, site_settings)
+    def __init__(self, log, dry_run, force, site_settings):
+        super(SiteDefault, self).__init__(log, dry_run, force, site_settings)
         self._last_gen_ts = datetime.today()
 
+        # Customize the cache directory by hashing the site's public name in it.
+        # This makes the cache site-specific for people who still want to have
+        # just one global cache_dir in their config file.
         self._cache = Cache(log, site_settings.cache_dir)
         self._cache.SetCacheDir(
                 os.path.join(site_settings.cache_dir,
@@ -105,13 +108,14 @@ class SiteDefault(SiteBase):
         self._hash_store = HashStore(log, self._cache)
 
         self._enable_cache = os.getenv("DISABLE_RIG3_CACHE") is None
-        self._debug_cache = os.getenv("DEBUG_RIG3_CACHE") is not None
+        self._debug_cache  = os.getenv("DEBUG_RIG3_CACHE")   is not None
 
         if self._enable_cache:
             self._hash_store.Load()
             self._ClearCache(site_settings)
         else:
-            self._log.Info("Cache is disabled.")
+            self._log.Info("[%s] Cache is disabled.",
+                           self._site_settings.public_name)
 
     def Dispose(self):
         if self._enable_cache:
@@ -148,6 +152,18 @@ class SiteDefault(SiteBase):
         if len(categories) == 1:
             categories = []
 
+        # Do we have to generate anything at all?
+        hash_key = self._cache.GetKey([ categories, items ])
+
+        if self._hash_store.Contains(hash_key):
+            if self._force:
+                self._log.Info("[%s] No new content found, forcing generation",
+                               self._site_settings.public_name)
+            else:
+                self._log.Info("[%s] No new content found, skipping generation",
+                               self._site_settings.public_name)
+                return
+
         # Generate monthly pages and get a cached version of each item
         month_pages = self._GenerateMonthPages("", "", None, categories, items)
         # Generate an index page with all posts (whether they have a category or not)
@@ -163,6 +179,8 @@ class SiteDefault(SiteBase):
                                         categories, items, month_pages)
                 self._GenerateAtomFeed ([ "cat", c ], "../../", c,
                                         categories, items, month_pages)
+
+        self._hash_store.Add(hash_key)
 
     def _GenerateIndexPage(self, path, rel_base,
                                 curr_category, all_categories,
@@ -542,22 +560,24 @@ class SiteDefault(SiteBase):
         keywords.update(source_item.source_settings.AsDict())
 
         if izu_file:
-            self._log.Info("[%s] Render '%s' to HTML", self._site_settings.public_name,
-                           izu_file)
+            def _render():
+                self._log.Info("[%s] Render '%s' to HTML",
+                               self._site_settings.public_name,
+                               izu_file)
+                p = IzuParser(self._log,
+                                  keywords["rig_base"],
+                                  keywords["img_gen_script"])
+                return p.RenderFileToHtml(izu_file)
 
             cache_key = [ izu_file,
-                          self._Timestamp(izu_file),
+                          izu_file.Timestamp(),
                           keywords["rig_base"],
                           keywords["img_gen_script"] ]
 
             tags, sections = self._cache.Compute(
                      cache_key,
-                     lambda: \
-                        IzuParser(self._log,
-                                  keywords["rig_base"],
-                                  keywords["img_gen_script"]) \
-                          .RenderFileToHtml(izu_file),
-                     stat_prefix="1.1 izu2html",
+                     lambda: _render(),
+                     stat_prefix="1.1 Izu",
                      use_cache=self._enable_cache)
 
             for k, v in sections.iteritems():
@@ -637,14 +657,10 @@ class SiteDefault(SiteBase):
                 _key_temp_dict["last_content_iso"] = None
                 _cache_key.append(_key_temp_dict)
 
-            #DEBUG, not needed anymore
-            #if self._debug_cache:
-            #    self._log.Debug("CACHE KEY GEN1: %s", repr(_cache_key))
-
             _content = self._cache.Compute(
                    _cache_key,
                    lambda: self._FillTemplate(_template, **_keywords),
-                   stat_prefix="2.2 Gen Content",
+                   stat_prefix="2.2 Content",
                    use_cache=self._enable_cache)
 
             return _content
@@ -683,7 +699,9 @@ class SiteDefault(SiteBase):
         """
         rig_base = keywords["rig_base"]
         if not rig_base:
-            self._log.Info("No rig_base, no images generated for %s", source_dir.rel_curr)
+            self._log.Info("[%s], No rig_base, no images generated for %s",
+                           self._site_settings.public_name,
+                           source_dir.rel_curr)
             return None
 
         images = {}
@@ -711,8 +729,8 @@ class SiteDefault(SiteBase):
                     entry["top_rating"] = rating
                     entry["top_name"] = filename
                 entry["files"].append(filename)
-                entry["ts"].append(self._Timestamp(os.path.join(source_dir.realpath(),
-                                                                filename)))
+                entry["ts"].append(PathTimestamp(os.path.join(source_dir.realpath(),
+                                                              filename)))
 
         nums = (num_excellent, num_good, num_images, num_normal)
 
@@ -724,7 +742,7 @@ class SiteDefault(SiteBase):
         c = self._cache.Compute(
                     key=cache_key,
                     lambda_expr=lambda : self.__GenerateHtmlForImages(source_dir, nums, images, keywords),
-                    stat_prefix="2.1 Gen Img",
+                    stat_prefix="2.1 Images",
                     use_cache=self._enable_cache)
         return c
 
@@ -899,8 +917,14 @@ class SiteDefault(SiteBase):
         This method is extracted so that it can be mocked in unit tests.
         """
         dest_file = os.path.join(dest_dir, leafname)
-        self._log.Info("[%s] Write %s", self._site_settings.public_name, dest_file)
-        if not self._dry_run:
+        if self._dry_run:
+            self._log.Info("[%s] (Dry-Run) Would write %s",
+                           self._site_settings.public_name,
+                           dest_file)
+        else:
+            self._log.Info("[%s] Write %s",
+                           self._site_settings.public_name,
+                           dest_file)
             f = file(dest_file, mode="wb")
             f.write(data)
             f.close()
@@ -993,36 +1017,6 @@ class SiteDefault(SiteBase):
         """
         return date(_date.year, _date.month, 1)
 
-    def _Timestamp(self, path):
-        """
-        Returns the timestamp of a file or directory.
-        For a file return the last modification time.
-        For a dir, returns the oldest mod time of the recursive content.
-        """
-        if isinstance(path, list):
-            older_ts = 0
-            for i in path:
-                older_ts = max(older_ts, self._Timestamp(i))
-            return older_ts
-
-        if isinstance(path, RelPath):
-            path = path.realpath()
-
-        if not isinstance(path, (str, unicode)):
-            raise ValueError("_Timestamp path is not str or unicode: %s" % type(path))
-
-        if os.path.isdir(path):
-            older_ts = os.path.getmtime(path)
-            for i in os.listdir(path):
-                if not i in [ ".git", ".svn", "_svn", ".cvs" ]:
-                    older_ts = max(older_ts, self._Timestamp(os.path.join(path, i)))
-            return older_ts
-
-        try:
-            return os.path.getmtime(path)
-        except OSError:
-            return None
-
     def _ClearCache(self, site_settings):
         """
         Computes a "cache coherency" key that combines the current site
@@ -1036,7 +1030,7 @@ class SiteDefault(SiteBase):
             "site settings": site_settings,
             "theme": site_settings.theme,
             "theme dirs": self._TemplateThemeDirs(theme=site_settings.theme),
-            "theme TS": self._Timestamp(self._TemplateThemeDirs(theme=site_settings.theme)),
+            "theme TS": PathTimestamp(self._TemplateThemeDirs(theme=site_settings.theme)),
             "rig3 vers str": rig_version.VersionString(),
             "rig3 svn rev": rig_version.SvnRevision()
             }
@@ -1052,7 +1046,8 @@ class SiteDefault(SiteBase):
                             repr(cache_coherency_key))
 
         if not f:
-            self._log.Info("Clear Cache for Site %s", site_settings.public_name)
+            self._log.Info("[%s] Clear Cache",
+                           self._site_settings.public_name)
             self._cache.Clear()
             self._hash_store.Clear()
             self._hash_store.Add(hash_key)

@@ -75,12 +75,16 @@ class Rig3Test(RigTestCase):
 
     def testParseArgs_N(self):
         self.assertFalse(self.m._dry_run)
-        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.m.ParseArgs([ "blah", "-n" ])
         self.assertFalse(self.m._usageAndExitCalled)
-        self.assertEquals(self.m._verbose, Log.LEVEL_NORMAL)
         self.assertTrue(self.m._dry_run)
-        
+
+    def testParseArgs_F(self):
+        self.assertFalse(self.m._force)
+        self.m.ParseArgs([ "blah", "-f" ])
+        self.assertFalse(self.m._usageAndExitCalled)
+        self.assertTrue(self.m._force)
+
     def testParseArgs_C(self):
         self.assertNotEquals([ "/foo.rc" ], self.m._configPaths)
         self.m.ParseArgs([ "blah", "-c", "/foo.rc" ])

@@ -30,11 +30,11 @@ class MockSiteDefault(SiteDefault):
 
     Also traps the last _Filltemplate parameters.
     """
-    def __init__(self, test_case, log, dry_run, site_settings):
+    def __init__(self, test_case, log, dry_run, force, site_settings):
         self._test_case = test_case
         self._fill_template_params = {}
         self._write_file_params = []
-        super(MockSiteDefault, self).__init__(log, dry_run, site_settings)
+        super(MockSiteDefault, self).__init__(log, dry_run, force, site_settings)
 
         # override the Cache.Clear method by ours
         self._cache_clear_count = 0
@@ -133,7 +133,7 @@ class SiteDefaultTest(RigTestCase):
         self.RemoveDir(self._cachedir)
 
     def testSimpleFileName(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
         self.assertEquals("filename_txt", m._SimpleFileName("filename.txt"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc---de   f-g h"))
         self.assertEquals("abc-de-f-g-h", m._SimpleFileName("abc///de\\\\f/g\\h"))
@@ -153,7 +153,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertEquals("the-unit-test-is-the-proof", m._SimpleFileName("the unit test is the proof"))
 
     def testFillTemplate(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         keywords = dict(self.keywords)
         keywords["title"] = "MyTitle"
@@ -215,7 +215,7 @@ class SiteDefaultTest(RigTestCase):
             html)
 
     def testDateAndTitleFromTitle(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         self.assertEquals((None, "27"),        m._DateAndTitleFromTitle("27"))
         self.assertEquals((None, "2007"),      m._DateAndTitleFromTitle("2007"))
@@ -252,7 +252,7 @@ class SiteDefaultTest(RigTestCase):
 
 
     def testDateAndTitleFromTitle_ErrorCases(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         # Hour is invalid: 44>23... log warning and ignore hour in this case
         self.assertEquals((datetime(2007, 10, 27), ""),
@@ -272,7 +272,7 @@ class SiteDefaultTest(RigTestCase):
                           m._DateAndTitleFromTitle("99991027"))
 
     def testGenerateItems_Izu(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "blog1")
         item = m.GenerateItem(SourceDir(datetime.today(),
                                         RelDir(source_dir, "2007-10-07_Folder 1"),
@@ -284,7 +284,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals([ "foo", "bar", "other" ], item.categories, sort=True)
 
     def testGenerateItems_Html(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
         source_dir = os.path.join(self.getTestDataPath(), "album", "blog2")
         item = m.GenerateItem(SourceDir(datetime.today(),
                                         RelDir(source_dir, "2006-05_Movies"),
@@ -297,7 +297,7 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals([ "videos" ], item.categories, sort=True)
 
     def testImgPattern(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
         self.assertEquals(None, m._IMG_PATTERN.match("myimage.jpg"))
         self.assertEquals(None, m._IMG_PATTERN.match("PICT1200.jpg"))
         self.assertEquals(None, m._IMG_PATTERN.match("R12345-Some Name.bmp"))
@@ -329,7 +329,7 @@ class SiteDefaultTest(RigTestCase):
                               m._IMG_PATTERN.match("Z31415.Web Version.web.wmv").groupdict())
 
     def testGetRigLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         expected = (
             '<a title="2007-11-08 Album Title" '
@@ -373,7 +373,7 @@ class SiteDefaultTest(RigTestCase):
                           -1))
 
     def testGenerateImages(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         keywords = self.keywords
 
@@ -401,7 +401,7 @@ class SiteDefaultTest(RigTestCase):
             m._GenerateImages(RelDir("base", ""), [ "J1234-image.jpg" ], keywords))
 
     def testGenerateIndexPage(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         m._GenerateIndexPage("", "", [], [], [], [])
         params = m._fill_template_params
@@ -433,7 +433,7 @@ class SiteDefaultTest(RigTestCase):
                             "Missing [%s] in %s" % (key, params))
 
     def testRigAlbumLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         keywords = self.keywords
         keywords.update(SourceSettings(rig_base=None).AsDict())
@@ -444,7 +444,7 @@ class SiteDefaultTest(RigTestCase):
                           m._RigAlbumLink(keywords, "my album"))
 
     def testRigImgLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         keywords = self.keywords
         keywords.update(SourceSettings(rig_base=None).AsDict())
@@ -455,7 +455,7 @@ class SiteDefaultTest(RigTestCase):
                           m._RigImgLink(keywords, "my album", "my image.jpg"))
 
     def testRigThumbLink(self):
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         keywords = self.keywords
         keywords.update(SourceSettings(rig_base=None).AsDict())
@@ -469,7 +469,7 @@ class SiteDefaultTest(RigTestCase):
         """
         Printing an empty list of items only generates an index page
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
         self.assertListEquals([], m.GetWriteFileData(m._LEAFNAME))
 
         m.GeneratePages(categories=[], items=[])
@@ -479,7 +479,7 @@ class SiteDefaultTest(RigTestCase):
         """
         Printing 3 times + 1 the number of items per page generates 4 pages
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = []
@@ -516,7 +516,7 @@ class SiteDefaultTest(RigTestCase):
         Print items with only one category, this does not generate
         category indexes.
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first" ]
@@ -541,7 +541,7 @@ class SiteDefaultTest(RigTestCase):
         """
         With two categories, we get category pages too
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first", "second" ]
@@ -579,7 +579,7 @@ class SiteDefaultTest(RigTestCase):
         """
         More categories: 4 main pages but each category has only 2 pages
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = [ "first", "second", "three" ]
@@ -617,7 +617,7 @@ class SiteDefaultTest(RigTestCase):
         """
         self.sis.use_curr_month_in_index = True
         self.sis.num_item_page = 2
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = []
@@ -655,7 +655,7 @@ class SiteDefaultTest(RigTestCase):
         # plus 2 from the next month
 
         self.sis.num_item_page = 7
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         m.GeneratePages(cats, items)
 
@@ -685,7 +685,7 @@ class SiteDefaultTest(RigTestCase):
         """
         self.sis.use_curr_month_in_index = False
         self.sis.num_item_page = 2
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         items = []
         cats = []
@@ -720,7 +720,7 @@ class SiteDefaultTest(RigTestCase):
         # plus 2 from the next month
 
         self.sis.num_item_page = 7
-        m = MockSiteDefault(self, self.Log(), False, self.sis).MakeDestDirs()
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
         m.GeneratePages(cats, items)
 
@@ -748,7 +748,7 @@ class SiteDefaultTest(RigTestCase):
         Tests the ClearCache method which computes a coherency key and only
         clears the cache when settings or templates change.
         """
-        m = MockSiteDefault(self, self.Log(), False, self.sis)
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis)
 
         # Start with an empty cache dir and a zero cache clear count.
         # We also need to clear the hash store, which contains the

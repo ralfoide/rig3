@@ -26,6 +26,7 @@ Options:
     -v, --verbose: Verbose logging
     -q, --quiet:   Quiet logging
     -c, --config:  Configuration file (default: %(_configPaths)s)
+    -f, --force:   Force generation even if cache is hot and unmodified
 """
 
     def __init__(self):
@@ -33,6 +34,7 @@ Options:
         self._sites_settings = None
         self._verbose = Log.LEVEL_NORMAL
         self._dry_run = False
+        self._force = False
         self._configPaths = [ "/etc/rig3.rc",
                               os.path.expanduser(os.path.join("~", ".rig3rc")) ]
 
@@ -51,9 +53,10 @@ Options:
         """
         try:
             options, args = getopt.getopt(argv[1:],
-                                          "hHvqc:n",
+                                          "hHvqc:nf",
                                           ["help", "verbose", "quiet", "config=",
-                                           "dry-run", "dry_run", "dryrun"])
+                                           "dry-run", "dry_run", "dryrun",
+                                           "force"])
             for opt, value in options:
                 if opt in ["-h",  "-H", "--help"]:
                     self._UsageAndExit()
@@ -65,6 +68,8 @@ Options:
                     self._configPaths = [ value ]
                 elif opt in ["-n", "--dry-run", "--dry_run", "--dryrun"]:
                     self._dry_run = True
+                elif opt in ["-f", "--force"]:
+                    self._force = True
         except getopt.error, msg:
             self._UsageAndExit(msg)
 
@@ -81,12 +86,15 @@ Options:
 
         s = self._sites_settings
         for site_id in s.Sites():
-            site = CreateSite(self._log, self._dry_run, s.GetSiteSettings(site_id))
+            site = CreateSite(self._log,
+                              self._dry_run,
+                              self._force,
+                              s.GetSiteSettings(site_id))
             site.Process()
             site.Dispose()
 
         st.Stop(len(s.Sites()))
-        stats.Display()
+        stats.Display(self._log)
 
     def Close(self):
         """

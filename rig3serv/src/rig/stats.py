@@ -43,7 +43,7 @@ def Stop(key, n=1):
     return s
 
 #------------------------
-def Display():
+def Display(log):
     if not _MAP:
         return
     keys = _MAP.keys()
@@ -53,8 +53,12 @@ def Display():
         key_len = max(key_len, len(k))
     for k in keys:
         s = _MAP[k]
-        print "%-*s: %4d items in %6.2f s" % (key_len, k, s.count, s.accum), \
-              s.count > 1 and (" (%6.2f ms/item)" % (1000.0 * s.accum / s.count)) or ""
+        log.Info("%-*s: %4d items in %6.2f s%s",
+                 key_len,
+                 k,
+                 s.count,
+                 s.accum,
+                 s.count > 1 and (" (%6.2f ms/item)" % (1000.0 * s.accum / s.count)) or "")
 
 #------------------------
 # Local Variables:

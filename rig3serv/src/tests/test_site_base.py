@@ -30,10 +30,10 @@ class MockSiteBase(SiteBase):
 
     Also traps the last _Filltemplate parameters.
     """
-    def __init__(self, test_case, log, dry_run, settings):
+    def __init__(self, test_case, log, dry_run, force, settings):
         self._test_case = test_case
         self._fill_template_params = {}
-        super(MockSiteBase, self).__init__(log, dry_run, settings)
+        super(MockSiteBase, self).__init__(log, dry_run, force, settings)
 
     def _TemplateDir(self):
         """"
@@ -52,8 +52,8 @@ class MockSiteBase2(MockSiteBase):
     Like MockSiteBase except GenerateItem is hacked to return its argument.
     Used to test _ProcessSourceItems.
     """
-    def __init__(self, test_case, log, dry_run, settings):
-        super(MockSiteBase2, self).__init__(test_case, log, dry_run, settings)
+    def __init__(self, test_case, log, dry_run, force, settings):
+        super(MockSiteBase2, self).__init__(test_case, log, dry_run, force, settings)
 
     def GenerateItem(self, source_item):
         return source_item
@@ -101,8 +101,10 @@ class SiteBaseTest(RigTestCase):
                          source_list=[ source ],
                          dest_dir=self._tempdir,
                          theme=DEFAULT_THEME)
-        m = MockSiteBase(self, self.Log(), False, sis)
+        m = MockSiteBase(self, self.Log(), False, True, sis)
         self.assertNotEquals(None, m)
+        self.assertFalse(m._dry_run)
+        self.assertTrue(m._force)
         self.assertEquals("Site Name", m._site_settings.public_name)
         self.assertEquals(
             [ SourceDirReader(self.Log(), None, None, "/tmp/source/data") ],
@@ -119,11 +121,11 @@ class SiteBaseTest(RigTestCase):
         self.assertSearch(SiteBase.VALID_FILES, "T12896_tiny_jpeg.jpg")
 
     def testAlbum(self):
-        m = MockSiteBase(self, self.Log(), False, self.sis)
+        m = MockSiteBase(self, self.Log(), False, True, self.sis)
         m.Process()
 
     def testTemplateDir(self):
-        m = SiteBase(self.Log(), False, self.sis)
+        m = SiteBase(self.Log(), False, True, self.sis)
         td = m._TemplateDir()
         self.assertNotEquals("", td)
         self.assertTrue(os.path.exists(td))
@@ -135,7 +137,7 @@ class SiteBaseTest(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(td, "default", SiteDefault._TEMPLATE_HTML_ENTRY)))
 
     def testCopyMedia(self):
-        m = MockSiteBase(self, self.Log(), False, self.sis)
+        m = MockSiteBase(self, self.Log(), False, True, self.sis)
         m._CopyMedia()
 
         self.assertTrue(os.path.isdir (os.path.join(self._tempdir, "media")))
@@ -170,7 +172,7 @@ class SiteBaseTest(RigTestCase):
              SourceDir(today, RelDir("/base", "dir1"), [ "all", "files" ], self.sos),
              SourceDir(today, RelDir("/base", "dir2"), [ "all", "files" ], self.sos),
              ])
-        m2 = MockSiteBase2(self, self.Log(), False, self.sis)
+        m2 = MockSiteBase2(self, self.Log(), False, True, self.sis)
 
         in_out_items = []
         m2._ProcessSourceItems(source, in_out_items)

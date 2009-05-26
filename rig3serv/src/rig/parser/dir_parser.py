@@ -16,6 +16,33 @@ from rig.hashable import Hashable
 _EXCLUDE = ".rig3-exclude"
 
 #------------------------
+def PathTimestamp(path):
+    if isinstance(path, list):
+        older_ts = 0
+        for i in path:
+            older_ts = max(older_ts, PathTimestamp(i))
+        return older_ts
+
+    if isinstance(path, RelPath):
+        path = path.realpath()
+
+    if not isinstance(path, (str, unicode)):
+        raise ValueError("PathTimestamp: arg is not str or unicode: %s" % type(path))
+
+    if os.path.isdir(path):
+        older_ts = os.path.getmtime(path)
+        for i in os.listdir(path):
+            if not i in [ ".git", ".svn", "_svn", ".cvs" ]:
+                older_ts = max(older_ts, PathTimestamp(os.path.join(path, i)))
+        return older_ts
+
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return None
+
+
+#------------------------
 class RelPath(Hashable):
     """
     Represents a 'relative' path, with a base and a relative sub path.
@@ -93,6 +120,15 @@ class RelPath(Hashable):
         if rp is None:
             rp = self._realpath = os.path.realpath(self.abs_path)
         return rp
+
+    def Timestamp(self):
+        """
+        Returns the timestamp of a file or directory.
+        For a file return the last modification time (unix "mtime")
+        For a dir, returns the oldest mod time of the recursive content.
+        """
+        return PathTimestamp(self.realpath())
+
 
 # RelDir and RelFile are strictly equivalent to RelPath. The difference
 # is purely semantic.

@@ -22,13 +22,13 @@ THEMES = {
 }
 
 #------------------------
-def CreateSite(log, dry_run, settings):
+def CreateSite(log, dry_run, force, settings):
     """
     Instantiate the site generator for a specific template.
     """
     theme = settings.theme
     if theme in THEMES:
-        return THEMES[theme](log, dry_run, settings)
+        return THEMES[theme](log, dry_run, force, settings)
     else:
         err = "Theme '%s' is not defined. Known themes: %s" % (
               theme, THEMES.keys())

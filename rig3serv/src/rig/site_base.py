@@ -34,6 +34,7 @@ import errno
 
 from rig.parser.dir_parser import DirParser, RelDir
 from rig.template.template import Template
+from rig.hashable import Hashable
 from rig.version import Version
 from rig import stats
 
@@ -41,7 +42,7 @@ DEFAULT_THEME = "default"
 
 
 #------------------------
-class SiteItem(object):
+class SiteItem(Hashable):
     """
     Represents an item:
     - list of categories (list of string)
@@ -52,6 +53,7 @@ class SiteItem(object):
     - source_item (SourceItem)
     """
     def __init__(self, source_item, date, title, permalink, content_gen, categories=None):
+        super(SiteItem, self).__init__()
         self.source_item = source_item
         self.date = date
         self.title = title
@@ -61,14 +63,41 @@ class SiteItem(object):
 
     def __eq__(self, rhs):
         """
-        Two site items are equal if they have the same date, content_gen,
+        Two site items are equal if they have the same date,
         categories and relative filename.
+
+        Note: avoid comparing content_gen since it's a lambda and in the
+        current implementation is basically a function pointer with no
+        obvious relation to the method implementation.
         """
         if isinstance(rhs, SiteItem):
             return (self.date == rhs.date and
-                    self.content_gen == rhs.content_gen and
                     self.categories == rhs.categories)
         return False
+
+    def RigHash(self, md=None):
+        # Note: do not hash content_gen as it's an internal pointer that
+        # changes between runs.
+        md = self.UpdateHash(md, self.source_item)
+        md = self.UpdateHash(md, self.date)
+        md = self.UpdateHash(md, self.title)
+        md = self.UpdateHash(md, self.categories)
+        md = self.UpdateHash(md, self.permalink)
+        return md
+
+    def __repr__(self):
+        try:
+            # Note: do not display content_gen as it's an internal pointer that
+            # changes between runs.
+            return "[%s: %s, %s, %s, %s, %s]" % (
+                     self.__class__.__name__,
+                     self.source_item,
+                     self.date,
+                     self.title,
+                     self.categories,
+                     self.permalink)
+        except:
+            return super(SiteItem, self).__repr__()
 
 
 #------------------------
@@ -82,9 +111,10 @@ class SiteBase(object):
     DIR_PATTERN = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)[ _-] *(?P<name>.*) *$")
     VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
 
-    def __init__(self, log, dry_run, site_settings):
+    def __init__(self, log, dry_run, force, site_settings):
         self._log = log
         self._dry_run = dry_run
+        self._force = force
         self._site_settings = site_settings
 
     # Derived class must implement this to define the desired behavior
@@ -170,7 +200,6 @@ class SiteBase(object):
         s = stats.Start("2-gen")
 
         self.GeneratePages(categories, site_items)
-        # TODO: self.DeleteOldGeneratedItems()
 
         s.Stop(len(site_items))
 

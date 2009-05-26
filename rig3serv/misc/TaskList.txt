@@ -34,6 +34,8 @@
 
 ---- Done Version 0.3 ----
 
+20090525 Engine:   Skip generation when content has not changed. Override with -f.
+20090525 Engine:   Optimize the case when nothing new needs to be generated
 20090525 Engine:   Use cache for generated images HTML content
 20090525 Engine:   Keep new cache entries in memory. Experiment shows 0.05 ms/load saving.
 20090525 Engine:   Use hash_store to keep cache coherency key

@@ -29,19 +29,19 @@ class CreateSiteTest(RigTestCase):
         self.RemoveDir(self._cachedir)
 
     def testCreateSite_Default(self):
-        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
+        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, True, self.m))
 
     def testCreateSite_Ralf(self):
         self.m.theme = "ralf"
-        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
+        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, True, self.m))
 
     def testCreateSite_Magic(self):
         self.m.theme = "magic"
-        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, self.m))
+        self.assertIsInstance(SiteBase, CreateSite(self.Log(), False, True, self.m))
 
     def testCreateSite_Other(self):
         self.m.theme = "bogus theme name"
-        self.assertRaises(NotImplementedError, CreateSite, self.Log(), False, self.m)
+        self.assertRaises(NotImplementedError, CreateSite, self.Log(), False, True, self.m)
 
 #------------------------
 # Local Variables:

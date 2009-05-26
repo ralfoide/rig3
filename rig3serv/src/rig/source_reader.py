@@ -15,7 +15,7 @@ import re
 from datetime import datetime
 
 from rig.source_item import SourceDir, SourceFile
-from rig.parser.dir_parser import DirParser, RelFile
+from rig.parser.dir_parser import DirParser, RelFile, PathTimestamp
 
 
 #------------------------
@@ -281,7 +281,8 @@ class SourceDirReader(SourceReaderBase):
         """
         c = os.path.getctime(dir)
         m = os.path.getmtime(dir)
-        return max(c, m)
+        t = PathTimestamp(dir)
+        return max(c, m, t)
 
 
 #------------------------

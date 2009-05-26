@@ -17,7 +17,7 @@ _NAME = "rig"
 _FILENAME = "default.log"
 
 _SKIP_PATH_RE = re.compile(r"(?:logging[/\\]__init__\.py|rig[/\\]log\.py)$")
-        
+
 #------------
 class _LogFormatter(logging.Formatter):
   """
@@ -72,37 +72,43 @@ class Log(object):
                  file=_FILENAME,
                  verbose_level=LEVEL_NORMAL,
                  use_stderr=True,
-                 format="%(levelname)s %(filename)s:%(lineno)3s [%(asctime)s] %(message)s",
+                 format=None,
                  date="%Y/%m/%d %H:%M:%S"):
         """
         Configures (or reconfigures) the logger with this information.
-    
+
         The 'file' argument can be a string: the filename of where to log to
         (opened as rw). Otherwise it is a file-like object, i.e. a stream which
         would be an already opened file or a StringIO object.
-        
+
         'file' can also be None, in which case this creates a logger that does
         actually not log anything. Mostly useful for quiet unit tests.
-    
+
         Set 'use_stderr' to false to prevent the logger from output to sys.stderr.
         This is the default. It is detected if 'file' is also set to sys.stderr to
         avoid logging twice to stderr.
-    
+
         This convenience method allows the unit test to override some parameters,
         most notably the file argument.
         """
         self._logger = logger = logging.getLogger(name)
-    
+
+        if format is None:
+            if verbose_level == Log.LEVEL_NORMAL:
+                format="[%(asctime)s] %(message)s"
+            else:
+                format="%(levelname)s %(filename)s:%(lineno)3s [%(asctime)s] %(message)s"
+
         for handler in logger.handlers:
             logger.removeHandler(handler)
-    
+
         if isinstance(file, (str, unicode)):
             h = logging.FileHandler(file, mode="w")
         else:
             h = logging.StreamHandler(file)
         logger.addHandler(h)
         h.setFormatter(_LogFormatter(format, date))
-    
+
         if file != sys.stderr and use_stderr:
             h = logging.StreamHandler(sys.stderr)
             logger.addHandler(h)
@@ -150,7 +156,7 @@ class Log(object):
     def Debug(self, msg, *args):
         """
         Log a debug-level message.
-    
+
         This will be logged only when IsVerbose is true.
         """
         self._logger.debug(msg, *args)
@@ -158,7 +164,7 @@ class Log(object):
     def Info(self, msg, *args):
         """
         Log an info-level message.
-    
+
         This will be logged only when IsVerbose is true.
         """
         self._logger.info(msg, *args)
@@ -166,7 +172,7 @@ class Log(object):
     def Warning(self, msg, *args):
         """
         Log a warning-level message.
-    
+
         This will be logged whether IsVerbose is false or true.
         """
         self._logger.warning(msg, *args)
@@ -177,7 +183,7 @@ class Log(object):
     def Error(self, msg, *args):
         """
         Log an error-level message.
-    
+
         This will be logged whether IsVerbose is false or true.
         """
         self._logger.error(msg, *args)
@@ -185,7 +191,7 @@ class Log(object):
     def Exception(self, msg, *args):
         """
         Log an exception-level message.
-    
+
         This will be logged whether IsVerbose is false or true.
         """
         self._logger.exception(msg, *args)
@@ -193,13 +199,13 @@ class Log(object):
     def Log(self, level, msg, *args):
         """
         Log a message with a specific level.
-    
+
         Level should be one of the logging's module levels:
         logging.DEBUG, logging.WARNING, logging.INFO, logging.ERROR.
-    
+
         This is similar to calling any of the corresponding convenience
         methods except the level can be made dynamic at runtime.
-    
+
         Log levels DEBUG and INFO have no effect unless IsVerbose is true.
         """
         self._logger.log(level, msg, *args)

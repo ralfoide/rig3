@@ -47,7 +47,7 @@ class SourceSettings(Hashable):
         try:
             return "[%s: %s]" % (self.__class__.__name__, self.__dict__)
         except:
-            return super(RelPath, self).__repr__()
+            return super(SourceSettings, self).__repr__()
 
 
 #------------------------

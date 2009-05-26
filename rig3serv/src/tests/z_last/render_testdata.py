@@ -50,7 +50,7 @@ class RenderTestdata(RigTestCase):
         """
         t = self._testdata
         rc = os.path.join(t, "z_last_render_testdata.rc")
-        args = [ "rig3", "-c", rc ]
+        args = [ "rig3", "-c", rc, "--force" ]
         self.m.ParseArgs(args)
         self.m.Run()
         self.m.Close()
@@ -64,7 +64,7 @@ class RenderTestdata(RigTestCase):
         self.assertTrue(os.path.exists(os.path.join(d, "index.html")))
         self.assertTrue(os.path.exists(os.path.join(d, "atom.xml")))
         self.assertTrue(os.path.exists(os.path.join(d, "media", "style.css")))
-        
+
 
 
 #------------------------

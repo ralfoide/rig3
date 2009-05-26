@@ -14,7 +14,7 @@ from rig.settings_base import SettingsBase
 from rig.source_item import SourceSettings
 from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.site_base import DEFAULT_THEME
-from rig.hashable import Hashable, ImmutableHashable
+from rig.hashable import Hashable
 
 _CAT_FILTER_SEP = re.compile("[, \t\f]")
 
@@ -309,7 +309,7 @@ class SiteSettings(object):
         try:
             return "[%s: %s]" % (self.__class__.__name__, self.__dict__)
         except:
-            return super(RelPath, self).__repr__()
+            return super(SiteSettings, self).__repr__()
 
 
 #------------------------
