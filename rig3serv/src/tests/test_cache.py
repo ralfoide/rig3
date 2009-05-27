@@ -46,6 +46,9 @@ class CacheTest(RigTestCase):
         self.assertListEquals([ "some", "value" ], self.m.Find("foo"))
 
     def testCounters(self):
+
+        self.m._do_reuse = True
+
         self.assertEquals(0, self.m._count_miss)
         self.assertEquals(0, self.m._count_read)
         self.assertEquals(0, self.m._count_write)

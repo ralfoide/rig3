@@ -64,7 +64,9 @@ class RelPath(Hashable):
             return False
 
     def RigHash(self, md=None):
-        return self.UpdateHash(md, self.abs_path)
+        md = self.UpdateHash(md, self.realpath())
+        md = self.UpdateHash(md, self.Timestamp())
+        return md
 
     def __str__(self):
         return "[%s => %s]" % (self.abs_base, self.rel_curr)

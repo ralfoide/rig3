@@ -48,6 +48,7 @@ class Cache(object):
         self._count_miss = 0
         self._count_write = 0
         self._count_reused = 0
+        self._do_reuse = False
         if not cache_dir:
             raise ValueError("Missing cache dir parameter for Cache")
 
@@ -58,9 +59,12 @@ class Cache(object):
         """
         Displays some stats about the number of operations done.
         """
-        log.Info("Cache: Read %d, Missed %d, Wrote %d, Reused %d.",
-                 self._count_read, self._count_miss,
-                 self._count_write, self._count_reused)
+        log.Info("Cache: Read %d, Missed %d, Wrote %d, %s %d.",
+                 self._count_read,
+                 self._count_miss,
+                 self._count_write,
+                 self._do_reuse and "Reuse" or "No-reuse",
+                 self._count_reused)
 
     def GetKey(self, key):
         """
@@ -99,7 +103,7 @@ class Cache(object):
         Internal method to read an entry at the given path "p" and un-pickle it.
         Increments the read counter.
         """
-        if p in self._cached:
+        if self._do_reuse and p in self._cached:
             self._count_reused += 1
             return self._cached[p]
 
@@ -109,7 +113,8 @@ class Cache(object):
             f = file(p, "rb")
             content = cPickle.load(f)
 
-            self._cached[p] = content
+            if self._do_reuse:
+                self._cached[p] = content
 
             return content
         finally:
@@ -129,7 +134,8 @@ class Cache(object):
         Internal helper to store an entry at the given path "p" using a pickle.
         Increments the write counter.
         """
-        self._cached[p] = content
+        if self._do_reuse:
+            self._cached[p] = content
 
         if not os.path.exists(p):
             d = os.path.dirname(p)

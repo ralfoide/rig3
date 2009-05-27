@@ -521,10 +521,54 @@ class SiteDefault(SiteBase):
         Arguments:
         - source_item: An instance of SourceItem.
         """
+        may_have_images, all_files, izu_file, html_file, title, rel_dir = \
+                                            self.__GenItem_GetFiles(source_item)
+
+        # TODO keep 2 keyword dicts: the main site_settings which does NOT
+        # need to be hashed for the cache (cache gets cleared on settings)
+        # and a 2nd keyword local for here. Pre-Hash the 2nd then merge
+        # then in the 2-gen methods hash the _extra_keywords separately
+        keywords = self._site_settings.AsDict()
+        keywords.update(source_item.source_settings.AsDict())
+
+        section_args = [ source_item,
+                         may_have_images,
+                         izu_file,
+                         html_file,
+                         rel_dir,
+                         keywords ]
+
+        sections, tags = self._cache.Compute(
+                 section_args,
+                 lambda: self.__GenItem_GetSections(*section_args),
+                 stat_prefix="1.1 Izu",
+                 use_cache=self._enable_cache)
+
+        if sections is None:
+            return None
+
+        # Are item categories accepted on this site?
+        cats = tags.get("cat", {}).keys()
+        if not self._site_settings.cat_filter.Matches(cats):
+            return None
+        cats.sort()
+
+        return self.__GenItem_CreateSiteItem(source_item,
+                                             may_have_images,
+                                             all_files,
+                                             rel_dir,
+                                             keywords,
+                                             sections,
+                                             tags,
+                                             cats,
+                                             title)
+
+    def __GenItem_GetFiles(self, source_item):
         may_have_images = False
         all_files = None
         izu_file = None
         html_file = None
+        rel_dir = None
 
         if isinstance(source_item, SourceDir):
             rel_dir = source_item.rel_dir
@@ -550,35 +594,27 @@ class SiteDefault(SiteBase):
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
 
-        date, title = self._DateAndTitleFromTitle(title)
-        if not date:
-            date = self._last_gen_ts
+        return may_have_images, all_files, izu_file, html_file, title, rel_dir
+
+    def __GenItem_GetSections(self,
+                              source_item,
+                              may_have_images,
+                              izu_file,
+                              html_file,
+                              rel_dir,
+                              keywords):
         sections = {}
         tags = {}
 
-        keywords = self._site_settings.AsDict()
-        keywords.update(source_item.source_settings.AsDict())
-
         if izu_file:
-            def _render():
-                self._log.Info("[%s] Render '%s' to HTML",
-                               self._site_settings.public_name,
-                               izu_file)
-                p = IzuParser(self._log,
-                                  keywords["rig_base"],
-                                  keywords["img_gen_script"])
-                return p.RenderFileToHtml(izu_file)
+            self._log.Info("[%s] Render '%s' to HTML",
+                           self._site_settings.public_name,
+                           izu_file)
 
-            cache_key = [ izu_file,
-                          izu_file.Timestamp(),
-                          keywords["rig_base"],
-                          keywords["img_gen_script"] ]
-
-            tags, sections = self._cache.Compute(
-                     cache_key,
-                     lambda: _render(),
-                     stat_prefix="1.1 Izu",
-                     use_cache=self._enable_cache)
+            p = IzuParser(self._log,
+                              keywords["rig_base"],
+                              keywords["img_gen_script"])
+            tags, sections = p.RenderFileToHtml(izu_file)
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):
@@ -602,17 +638,27 @@ class SiteDefault(SiteBase):
                                    keywords["rig_base"],
                                    keywords["img_gen_script"])
             tags = izu_parser.ParseFirstLine(sections["html"])
-            self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
+            #DEBUG--self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
             self._log.Debug("No content for source %s", source_item)
-            return None
+            return None, None
 
-        # Are item categories accepted on this site?
-        cats = tags.get("cat", {}).keys()
-        if not self._site_settings.cat_filter.Matches(cats):
-            return None
-        cats.sort()
+        return sections, tags
 
+    def __GenItem_CreateSiteItem(self,
+                                 source_item,
+                                 may_have_images,
+                                 all_files,
+                                 rel_dir,
+                                 keywords,
+                                 sections,
+                                 tags,
+                                 cats,
+                                 title):
+        # TODO split here
+        date, title = self._DateAndTitleFromTitle(title)
+        if not date:
+            date = self._last_gen_ts
         date = tags.get("date", date)     # override directory's date
         title = tags.get("title", title)  # override directory's title
 
@@ -631,47 +677,47 @@ class SiteDefault(SiteBase):
         keywords["permalink_name"] = permalink_name
         keywords["_cache_key"] = self._cache.GetKey(keywords)
 
-        def _generate_content(_template, _keywords, _img_params, _extra_keywords=None):
-            # we need to make sure we can't contaminate the caller's dictionaries
-            # so we just duplicate them here. Also we make sure not to use any
-            # variables which are declared in the outer method.
-            if _extra_keywords:
-                _temp = dict(_extra_keywords)
-                _temp.update(_keywords)
-                _keywords = _temp
-            else:
-                _keywords = dict(_keywords)
-
-            if _img_params:
-                _html_img = self._GenerateImages(_img_params["rel_dir"],
-                                                 _img_params["all_files"],
-                                                 _keywords)
-                if _html_img:
-                    _keywords["sections"]["images"] = _html_img
-
-            _cache_key = [ _template, _keywords["_cache_key"] ]
-            if _extra_keywords:
-                _key_temp_dict = _extra_keywords.copy()
-                # invalidate some timestamps that changes at every run
-                _key_temp_dict["last_gen_ts"] = None
-                _key_temp_dict["last_content_iso"] = None
-                _cache_key.append(_key_temp_dict)
-
-            _content = self._cache.Compute(
-                   _cache_key,
-                   lambda: self._FillTemplate(_template, **_keywords),
-                   stat_prefix="2.2 Content",
-                   use_cache=self._enable_cache)
-
-            return _content
-
         return SiteItem(source_item,
                         date,
                         title,
                         permalink_url,
                         categories=cats,
                         content_gen=lambda template, extra=None: \
-                            _generate_content(template, keywords, img_params, extra))
+                            self.__GenItem_GenContent(template, keywords, img_params, extra))
+
+    def __GenItem_GenContent(self, _template, _keywords, _img_params, _extra_keywords=None):
+        # we need to make sure we can't contaminate the caller's dictionaries
+        # so we just duplicate them here. Also we make sure not to use any
+        # variables which are declared in the outer method.
+        if _extra_keywords:
+            _temp = dict(_extra_keywords)
+            _temp.update(_keywords)
+            _keywords = _temp
+        else:
+            _keywords = dict(_keywords)
+
+        if _img_params:
+            _html_img = self._GenerateImages(_img_params["rel_dir"],
+                                             _img_params["all_files"],
+                                             _keywords)
+            if _html_img:
+                _keywords["sections"]["images"] = _html_img
+
+        _cache_key = [ _template, _keywords["_cache_key"] ]
+        if _extra_keywords:
+            _key_temp_dict = _extra_keywords.copy()
+            # invalidate some timestamps that changes at every run
+            _key_temp_dict["last_gen_ts"] = None
+            _key_temp_dict["last_content_iso"] = None
+            _cache_key.append(_key_temp_dict)
+
+        _content = self._cache.Compute(
+               _cache_key,
+               lambda: self._FillTemplate(_template, **_keywords),
+               stat_prefix="2.2 Content",
+               use_cache=self._enable_cache)
+
+        return _content
 
     def _GenerateImages(self, source_dir, all_files, keywords):
         """
@@ -741,12 +787,12 @@ class SiteDefault(SiteBase):
 
         c = self._cache.Compute(
                     key=cache_key,
-                    lambda_expr=lambda : self.__GenerateHtmlForImages(source_dir, nums, images, keywords),
+                    lambda_expr=lambda : self.__GenImage_CreateHtml(source_dir, nums, images, keywords),
                     stat_prefix="2.1 Images",
                     use_cache=self._enable_cache)
         return c
 
-    def __GenerateHtmlForImages(self, source_dir, nums, images, keywords):
+    def __GenImage_CreateHtml(self, source_dir, nums, images, keywords):
         # TODO: the heuristics below are lousy. Works for me, and even that
         # is questionable and all these constants... pfff. Need something
         # better. Maybe some inline-python mini-rules in the prefs?

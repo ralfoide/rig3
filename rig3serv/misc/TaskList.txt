@@ -34,6 +34,8 @@
 
 ---- Done Version 0.3 ----
 
+20090526 Engine:   Rework caching in the 1-parse case (in GenItem_GetSections)
+20090526 Engine:   Reorganize SiteDefault.GenerateItem to be more readable
 20090525 Engine:   Skip generation when content has not changed. Override with -f.
 20090525 Engine:   Optimize the case when nothing new needs to be generated
 20090525 Engine:   Use cache for generated images HTML content
