@@ -13,7 +13,6 @@
 20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
 
 20071225 Template: Placeholder ralf theme (deriving from default)
-20071225 Engine:   Site settings, Override integrated dir/file regexp filters
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
 
 20071123 Engine:   Source izu-blog files
@@ -34,6 +33,7 @@
 
 ---- Done Version 0.3 ----
 
+20090623 Engine:   Add img_pattern and date_ymd_pattern to the config rc file
 20090526 Engine:   Rework caching in the 1-parse case (in GenItem_GetSections)
 20090526 Engine:   Reorganize SiteDefault.GenerateItem to be more readable
 20090525 Engine:   Skip generation when content has not changed. Override with -f.

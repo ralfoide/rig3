@@ -66,10 +66,13 @@ class SiteDefault(SiteBase):
     EXT_HTML = ".html"
     INDEX_IZU = "index" + EXT_IZU
     INDEX_HTML = "index" + EXT_HTML
+
+    # This can be overridden by SiteSetting.date_ymd_pattern
     _DATE_YMD = re.compile(r"^(?P<year>\d{4})[/-]?(?P<month>\d{2})[/-]?(?P<day>\d{2})?"
                           r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?"
                           r"(?P<rest>.*$)")
 
+    # This can be overridden by SiteSetting.img_pattern
     _IMG_PATTERN = re.compile(r"^(?P<index>[A-Z]{0,2}\d{2,})(?P<rating>[ \._+=-])(?P<name>.+?)"
                               r"(?P<ext>\.(?:jpe?g|(?:original\.|web\.)mov|(?:web\.)wmv|mpe?g|avi))$")
 
@@ -750,6 +753,12 @@ class SiteDefault(SiteBase):
                            source_dir.rel_curr)
             return None
 
+        img_pattern = None
+        if keywords:
+            img_pattern = keywords.get("img_pattern")
+        if not img_pattern:
+            img_pattern = self._IMG_PATTERN
+
         images = {}
         # images: index => { "top_rating": number,
         #                    "files": [ pattern.groupdict + "full": leaf name ] }
@@ -758,7 +767,7 @@ class SiteDefault(SiteBase):
         num_images = 0
         num_normal = 0
         for filename in all_files:
-            m = self._IMG_PATTERN.match(filename)
+            m = img_pattern.match(filename)
             if m:
                 num_images += 1
                 index = m.group("index")
@@ -1013,7 +1022,7 @@ class SiteDefault(SiteBase):
         result = template.Generate(keywords, template_dirs=template_dirs)
         return result
 
-    def _DateAndTitleFromTitle(self, title):
+    def _DateAndTitleFromTitle(self, title, keywords=None):
         """
         Parses the a title and extract a date and the real title.
         Returns:
@@ -1022,7 +1031,14 @@ class SiteDefault(SiteBase):
         """
         dt = None
         ti = title
-        m = self._DATE_YMD.match(title)
+
+        date_ymd_pattern = None
+        if keywords:
+            date_ymd_pattern = keywords.get("date_ymd_pattern")
+        if not date_ymd_pattern:
+            date_ymd_pattern = self._DATE_YMD
+
+        m = date_ymd_pattern.match(title)
 
         if m:
             ti = (m.group("rest") or "")

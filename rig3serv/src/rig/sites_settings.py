@@ -199,6 +199,12 @@ class SiteSettings(object):
         than this length are mangled with a hash to make them unique. Set to 0
         to deactivate.
     - use_curr_month_in_index (boolean): True if index should use current month
+    - date_ymd_pattern: The compiled regex to find date & title in an album name.
+                        See SiteDefault._DATE_YMD for the default and the required
+                        syntax (especially the named regex groups).
+    - img_pattern: The compiled regex to find images and their rating.
+                   See SiteDefault._IMG_PATTERN for the default and the required
+                   syntax (especially the named regex groups).
     """
     def __init__(self,
                  public_name="",
@@ -226,7 +232,9 @@ class SiteSettings(object):
                  blog_dir_pattern=None,
                  blog_dir_valid_files=None,
                  mangled_name_len=50,
-                 use_curr_month_in_index=True):
+                 use_curr_month_in_index=True,
+                 date_ymd_pattern=None,
+                 img_pattern=None):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -253,6 +261,12 @@ class SiteSettings(object):
         self.blog_dir_valid_files = blog_dir_valid_files
         self.mangled_name_len = mangled_name_len
         self.use_curr_month_in_index = self.ParseBool(use_curr_month_in_index)
+        self.date_ymd_pattern = None
+        if date_ymd_pattern:
+            self.date_ymd_pattern = re.compile(date_ymd_pattern)
+        self.img_pattern = None
+        if img_pattern:
+            self.img_pattern = re.compile(img_pattern)
 
     def AsDict(self):
         """
