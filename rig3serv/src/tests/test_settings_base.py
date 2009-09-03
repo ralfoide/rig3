@@ -4,7 +4,21 @@
 Unit tests for Settings
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -36,7 +50,7 @@ class SettingsBaseTest(RigTestCase):
         self.assertSame(r, self.m)
 
         # SettingsBase.ConfigParser() is like self._parser
-        self.assertSame(self.m._parser, self.m.ConfigParser()) 
+        self.assertSame(self.m._parser, self.m.ConfigParser())
 
         # Default variables, inherited by all sections
         self.assertDictEquals(
@@ -58,9 +72,9 @@ class SettingsBaseTest(RigTestCase):
             [ ("key1", "value1"),
               ("global_default_key", "global_value_default") ],
             self.m._parser.items("section1"))
-        
+
         # The settings_base.rc file entry for [site1] has multiple definitions
-        # for the same variable. Only the last definition is used. 
+        # for the same variable. Only the last definition is used.
         self.assertListEquals(
             [ ("sources", "/tmp/data/site1/last"),
               ("global_default_key", "global_value_default") ],

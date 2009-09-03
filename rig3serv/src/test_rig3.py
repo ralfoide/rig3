@@ -6,6 +6,21 @@ Unit tests for rig3
 Creates a test suite with all the tests under the "tests/" directory
 and then invokes unittest.TestProgram with it. This means all the command
 line options of unittest.TestProgram are still available.
+
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
@@ -30,7 +45,7 @@ class CustomTestProgram(unittest.TestProgram):
         if self.test is None or self.test.countTestCases() == 0:
             self.test = self._tests
         unittest.TestProgram.runTests(self)
-        
+
 
 #------------
 def get_tests():
@@ -64,7 +79,7 @@ def get_tests():
     loader = unittest.TestLoader()
     tests = loader.loadTestsFromNames(modules)
     return tests
-    
+
 
 #------------------------
 if __name__ == "__main__":

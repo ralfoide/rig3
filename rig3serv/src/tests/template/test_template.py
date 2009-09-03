@@ -4,7 +4,21 @@
 Unit tests for Template
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -27,12 +41,12 @@ class MockParse(Template):
         self.filename = None
         self.source = None
         super(MockParse, self).__init__(log, file=file, source=source)
-    
+
     def _Parse(self, filename, source):
         self.filename = filename
         self.source = source
 
-        
+
 #------------------------
 class _TagTag(Tag):
     def __init__(self):
@@ -94,7 +108,7 @@ class TemplateTest(RigTestCase):
 
     def testGetNextNode_Tags(self):
         m = MockParse(self.Log(), source="")
-        t = m._tags["tag"] = _TagTag()        
+        t = m._tags["tag"] = _TagTag()
         b = Buffer("file", "[[tag\r\n  param1 \t\t\r\n param2  \f\f \r\n]]", linesep="\r\n")
         self.assertEquals(NodeTag(t,  "param1 \t\t\r\n param2", content=None),
                           m._GetNextNode(b))

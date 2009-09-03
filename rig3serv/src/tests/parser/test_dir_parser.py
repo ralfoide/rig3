@@ -4,7 +4,21 @@
 Unit tests for DirParser
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -17,11 +31,11 @@ from rig.parser.dir_parser import DirParser, RelPath, RelDir, _EXCLUDE
 
 #------------------------
 class RelPathTest(RigTestCase):
-    
+
     def setUp(self):
         self.m = RelPath(os.path.join("base", "dir"),
                          os.path.join("sub", "dir", "blah"))
-    
+
     def testStr(self):
         s = str(self.m)
         self.assertIsInstance(str, s)
@@ -54,7 +68,7 @@ class RelPathTest(RigTestCase):
     def testEqAndHash(self):
         m2 = RelPath(os.path.join("base", "dir"),
                      os.path.join("sub", "dir", "blah"))
-        
+
         self.assertNotSame(self.m, m2)
         self.assertEquals(self.m, m2)
         self.assertEquals(hash(self.m), hash(m2))
@@ -64,7 +78,7 @@ class RelPathTest(RigTestCase):
         self.assertNotSame(self.m, m3)
         self.assertNotEquals(self.m, m3)
         self.assertNotEquals(hash(self.m), hash(m3))
-        
+
 
 #------------------------
 class MockDirParser(DirParser):
@@ -87,7 +101,7 @@ class MockSubDir(MockDirParser):
         super(MockSubDir, self).__init__(log, mock_dirs)
         self._abs_source_dir = abs_source_dir
         self._abs_dest_dir = abs_dest_dir
-        
+
     def ParseMockDir(self, rel_curr_dir):
         self._ParseRec(rel_curr_dir)
         return self  # for chaining
@@ -200,7 +214,7 @@ class DirParserTest(RigTestCase):
             (RelDir("base",              "dir1b"),           RelDir("dest",              "dir1b"),           [ "file3", "file4" ] ),
             (RelDir("base", os.path.join("dir1b", "dir2b")), RelDir("dest", os.path.join("dir1b", "dir2b")), [ "file7", "file8" ] )
             ]
-        
+
         actual = [i for i in m.TraverseDirs()]
         self.assertListEquals(expected, actual)
 
@@ -218,7 +232,7 @@ class DirParserTest(RigTestCase):
 
         ex = StringIO("a")
         self.assertListEquals([ "blah", "foo" ],
-            m._RemoveExclude("base", 
+            m._RemoveExclude("base",
                    [ "abc", "blah", "foo", _EXCLUDE ], ex))
 
         ex = StringIO("[a|b]")

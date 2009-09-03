@@ -4,7 +4,21 @@
 Rig3 module: Template generator
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -29,7 +43,7 @@ class Tag(object):
 
     def Tag(self):
         return self._tag
-    
+
     def HasContent(self):
         return self._has_content
 
@@ -50,7 +64,7 @@ class TagComment(Tag):
     """
     def __init__(self):
         super(TagComment, self).__init__(tag="#", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         return ""
 
@@ -64,7 +78,7 @@ class TagRaw(Tag):
     """
     def __init__(self):
         super(TagRaw, self).__init__(tag="raw", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
@@ -83,7 +97,7 @@ class TagHtml(Tag):
     """
     def __init__(self):
         super(TagHtml, self).__init__(tag="html", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
@@ -99,13 +113,13 @@ class TagXml(Tag):
     Tag that represents an expression expansion with xml encoding.
     Template syntax:
       [[xml python_expression]]
-      
+
     Note: this is implemented exactly like the [[html]] tag. The difference
     is purely semantic.
     """
     def __init__(self):
         super(TagXml, self).__init__(tag="xml", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
@@ -124,7 +138,7 @@ class TagUrl(Tag):
     """
     def __init__(self):
         super(TagUrl, self).__init__(tag="url", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
@@ -155,19 +169,19 @@ class TagFor(Tag):
     """
     def __init__(self):
         super(TagFor, self).__init__(tag="for", has_content=True)
-    
+
     def Generate(self, log, tag_node, context):
         params = tag_node.Parameters()
-        
+
         matches = _RE_FIRST_WORD.match(params)
         var, params = matches.group(1), matches.group(2)
         assert var != ""
-        
+
         matches = _RE_FIRST_WORD.match(params)
         word, params = matches.group(1), matches.group(2)
         assert word == "in"
         assert params != ""
-        
+
         result = eval("[%s for %s in %s]" % (var, var, params), dict(context))
         s = ""
         content = tag_node.Content()
@@ -189,7 +203,7 @@ class TagIf(Tag):
     """
     def __init__(self):
         super(TagIf, self).__init__(tag="if", has_content=True)
-    
+
     def Generate(self, log, tag_node, context):
         result = eval(tag_node.Parameters(), dict(context))
         if not not result:
@@ -202,16 +216,16 @@ class TagInsert(Tag):
     """
     Tag that represents a template insertion. The expression must
     evaluate to the path of the template to use.
-    
+
     Template syntax:
       [[insert python_expression]]
     """
     def __init__(self):
         super(TagInsert, self).__init__(tag="insert", has_content=False)
-    
+
     def Generate(self, log, tag_node, context):
         filename = eval(tag_node.Parameters(), dict(context))
-        
+
         if not not filename:
             template_file = None
 
@@ -225,7 +239,7 @@ class TagInsert(Tag):
                     template_file = full
                     break
 
-            if not template_file:            
+            if not template_file:
                 # if there's a template_filename setting in the context
                 # (set by Template.Generate()) and we can match a relative
                 # file, try to do so.

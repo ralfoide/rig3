@@ -4,7 +4,21 @@
 Rig3 module: Template generator
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -34,7 +48,7 @@ class Template(object):
     - if file is present, it must be a filename or a file object to be read from.
     - otherwise, source must be defined and it must be a string with the content
       of the template to parse.
-    If there's a parsing error, a SyntaxError exception is thrown. 
+    If there's a parsing error, a SyntaxError exception is thrown.
     If neither file nor source is defined, TypeError is thrown.
     """
     def __init__(self, log, file=None, source=None):
@@ -50,10 +64,10 @@ class Template(object):
         Generate the template using the parsed content and the given
         keywords, which is a dictionary of variables to be used by the
         template.
-        
+
         A copy of the keywords dictionary is made so that the calling one
         be not modified.
-        
+
         template_dirs is a list(string) of directories where to look
         for templates when using the [[insert]] tag.
         """
@@ -113,15 +127,15 @@ class Template(object):
         buffer = Buffer(os.path.basename(filename), source, 0)
         self._nodes = self._GetNodeList(buffer, end_expected=False)
         return self
-    
+
     def _GetNodeList(self, buffer, end_expected):
         """
         Parses the buffer for a node list.
-        
+
         If end_expected is true, this is parsing a tag's content and
         expects to find an end-tag marker ([[end]]). It will raise a
         SyntaxError if such a marker is not found in the buffer.
-        
+
         If end_expected is false, this is parsing a full buffer and it
         expects NOT to find such an end-tag marker. It will raise a
         SyntaxError if such a marker is found.

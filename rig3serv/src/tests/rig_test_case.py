@@ -4,7 +4,21 @@
 Extended TestCase for rig3 tests.
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -70,13 +84,13 @@ class RigTestCase(unittest.TestCase):
         new, we are pretty much guaranteed it will be empty.
         """
         return os.path.realpath(tempfile.mkdtemp())
-    
+
     def RemoveDir(self, dir_path):
         """
         Assuming dir_path points to an existing directory, removes all
         files and sub-directories recursively, then removes the actual
         directory itself.
-        
+
         This is different from os.removedirs() which can only deal with
         *empty* directories :-(
         """
@@ -112,7 +126,7 @@ class RigTestCase(unittest.TestCase):
         msg = "%s\nExpected: %s\nActual  : %s" % \
               (msg or "assertNotEquals failed", expected, actual)
         super(RigTestCase, self).assertNotEquals(expected, actual, msg)
-    
+
     def assertNotEqual(self, expected, actual, msg=None):
         raise NotImplementedError("Please use assertNotEquals instead of assertNotEqual.")
 
@@ -201,7 +215,7 @@ class RigTestCase(unittest.TestCase):
         Asserts that two lists are equal.
         This also asserts that both expected and actual values are
         really list.
-        
+
         Sometimes the order of lists should not matter. The 'sort' argument
         controls that:
         - False: the default list equality is used, which is by default order-sensitive.
@@ -250,7 +264,7 @@ class RigTestCase(unittest.TestCase):
         However the expected_regexp string is considered as a regexp and a
         strict match is expected with the actual string -- that is it must
         match the *beginning* of actual. Use a $ anchor to also force matching
-        the end. 
+        the end.
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertHtmlMatches failed", repr(expected_regexp), repr(actual))
@@ -268,7 +282,7 @@ class RigTestCase(unittest.TestCase):
         search is performed with the actual string -- that is it needs
         not match the *beginning* of actual. When used with a ^ anchor, this
         behaves likes assertHtmlMatches. Use a $ anchor to also force matching
-        the end. 
+        the end.
         """
         msg = "%s\nExpected: %s\nActual : %s" % \
                 (msg or "assertHtmlSearch failed", repr(expected_regexp), repr(actual))
@@ -280,7 +294,7 @@ class RigTestCase(unittest.TestCase):
         self.assertSearch(expected_regexp, actual, msg)
 
     # Internal Utilities
-    
+
     def NormalizeHtml(self, str):
         """
         Normalize HTML for comparison. The strings are "normalized" to help make

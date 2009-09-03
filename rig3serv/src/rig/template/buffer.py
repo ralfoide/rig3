@@ -4,7 +4,21 @@
 Rig3 module: Template generator
 
 Part of Rig3.
-License GPL.
+Copyright (C) 2007-2009 ralfoide gmail com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 __author__ = "ralfoide at gmail com"
 
@@ -19,7 +33,7 @@ class Buffer(object):
     """
     A buffer wraps a data string with a "current position" offset.
     All operations advance the offset.
-    
+
     If the offset is 0 and the linesep argument is defined (which defaults
     to os.linesep), then all line separators will be converted to be uniform.
     Set linesep to None if you want to avoid line separator conversion.
@@ -41,19 +55,19 @@ class Buffer(object):
         """
         This method tries to convert all line endings in the buffer to the
         'default' of the given platform.
-        
+
         The buffer is expected to contain line separators consistent with:
         - only \n, aka unix mode
         - only \r, aka MacOS mode
         - only \r\n pairs, aka DOS/Windows mode
-        
+
         If the linesep argument is defined, it redefines the current Buffer's
         linesep. Otherwise the default (as given to the constructor) is used.
-        
+
         The operation happens in-place to the whole data buffer, independant of the
         current offset position. If offset is not 0, it will raise an exception and
         do nothing since it would ruin the current offset (no attempt is made to fix it).
-        
+
         Returns self (the Buffer) so that you can chain commands.
         """
         if self.offset != 0:
@@ -86,10 +100,10 @@ class Buffer(object):
         or the end of the buffer must have been reached.
         If consume is True, the content is 'consumed' (i.e. offset is moved to end)
         if found. If whitespace is requested, it also consumes the whitespace.
-        
+
         Line numbers: Since this methods will never pass over a line separator,
         it doesn't touch Buffer.lineno
-        
+
         Returns false if the end of the buffer has been reached or if the
         given word is empty.
         """
@@ -114,7 +128,7 @@ class Buffer(object):
         """
         Advances the buffer up to the first occurence of the given word
         (not included) or to the end of the buffer.
-        
+
         Line numbers: The method returns *everything* between the current position
         and the first occurence of word, including line separators. If linesep is
         defined, these are scanned for when the buffer is consumed and the
@@ -148,10 +162,10 @@ class Buffer(object):
         """
         Returns the next word in the buffer and consumes it.
         Returns an empty if the end of the buffer has already been reached.
-        
+
         Words are any sequence of characters separated by spaces or line
         separators, or the [[ and ]] tags markers.
-        
+
         Whitespace at the beginning of the buffer's current position is
         consumed and not returned. Whitespace at the end of the word is left
         intact.
