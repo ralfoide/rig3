@@ -189,7 +189,8 @@ class SiteBaseTest(RigTestCase):
         m2 = MockSiteBase2(self, self.Log(), False, True, self.sis)
 
         in_out_items = []
-        m2._ProcessSourceItems(source, in_out_items)
+        dups = {}
+        m2._ProcessSourceItems(source, in_out_items, dups)
 
         self.assertListEquals(
              [

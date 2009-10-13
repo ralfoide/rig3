@@ -46,10 +46,8 @@ import re
 import os
 import errno
 
-from rig.parser.dir_parser import DirParser, RelDir
 from rig.template.template import Template
 from rig.hashable import Hashable
-from rig.version import Version
 from rig import stats
 
 DEFAULT_THEME = "default"
@@ -200,8 +198,12 @@ class SiteBase(object):
 
         s = stats.Start("1-parse")
 
+        dups = {}
+
         for source in self._site_settings.source_list:
-            self._ProcessSourceItems(source, site_items)
+            self._ProcessSourceItems(source, site_items, dups)
+
+        del dups
 
         s.Stop(len(site_items))
 
@@ -239,20 +241,24 @@ class SiteBase(object):
             self._CopyDir(media, os.path.join(self._site_settings.dest_dir, self.MEDIA_DIR),
                           filter_ext={ ".css": _apply_template })
 
-    def _ProcessSourceItems(self, source, in_out_items):
+    def _ProcessSourceItems(self, source, in_out_items, dups):
         """
         Process all items from a given source and queue them into the
         in_out_items list.
 
         This basically converts a list of SourceItem into a list of SiteItem.
 
+        'dups' is a int-out hash set where all items processed are kept
+        indexed by their rig hash. The hash set is shared accross all the
+        sources of the same site, thus allowing to avoid duplicate entries in
+        the site. However this only works for symlinked entries since the
+        real path of the entry is computed in the hash.
+
         Subclassing: Derived classes can override this if needed.
         The base implementation is expected to be good enough.
 
         Returns in_out_items, which is a list of SiteItems.
         """
-        dups = {}
-
         for source_item in source.Parse(self._site_settings.dest_dir):
             item_hash = source_item.RigHash().hexdigest()
             if not item_hash in dups:
