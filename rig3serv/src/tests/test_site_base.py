@@ -31,7 +31,6 @@ from rig.site_base import SiteBase
 from rig.site_base import DEFAULT_THEME
 from rig.site.site_default import SiteDefault
 from rig.sites_settings import SiteSettings
-from rig.parser.dir_parser import DirParser, RelDir
 from rig.source_reader import SourceDirReader
 from rig.source_item import SourceFile, SourceDir, SourceSettings
 from rig.parser.dir_parser import RelFile, RelDir

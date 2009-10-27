@@ -26,7 +26,6 @@ import os
 
 from tests.rig_test_case import RigTestCase
 
-import rig3
 from rig.source_item import SourceSettings
 from rig.source_reader import SourceDirReader, SourceFileReader, SourceBlogReader
 from rig.sites_settings import SitesSettings, SiteSettings, IncludeExclude

@@ -29,10 +29,7 @@ import os
 import cgi
 import zlib
 import time
-import errno
 import urllib
-import operator
-import cPickle
 from datetime import date, datetime
 
 from rig.parser.izu_parser import IzuParser
@@ -41,11 +38,9 @@ from rig.template.template import Template
 from rig.source_item import SourceDir, SourceFile
 from rig.parser.dir_parser import RelPath, PathTimestamp
 from rig.version import Version
-from rig.sites_settings import SiteSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 from rig.cache import Cache
 from rig.hash_store import HashStore
-from rig import stats
 
 #------------------------
 class ContentEntry(object):
@@ -593,14 +588,13 @@ class SiteDefault(SiteBase):
             may_have_images = True
             title = rel_dir.basename()
             if self.INDEX_IZU in all_files:
-                main_filename = izu_file = rel_dir.join(self.INDEX_IZU)
+                izu_file = rel_dir.join(self.INDEX_IZU)
             elif self.INDEX_HTML in all_files:
-                main_filename = html_file = rel_dir.join(self.INDEX_HTML)
+                html_file = rel_dir.join(self.INDEX_HTML)
 
         elif isinstance(source_item, SourceFile):
             rel_file = source_item.rel_file
             title = rel_file.basename()
-            main_filename = rel_file
             if rel_file.rel_curr.endswith(self.EXT_IZU):
                 izu_file = rel_file
                 title = title[:-1 * len(self.EXT_IZU)]  # remove ext from title

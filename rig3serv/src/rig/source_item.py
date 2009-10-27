@@ -22,9 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
-from datetime import datetime
 from rig.hashable import Hashable
-from rig.parser.dir_parser import RelDir, RelFile
 
 
 #------------------------
