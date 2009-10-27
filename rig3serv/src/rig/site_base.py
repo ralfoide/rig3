@@ -259,9 +259,17 @@ class SiteBase(object):
 
         Returns in_out_items, which is a list of SiteItems.
         """
+        dup_on_realpath = self._site_settings.dup_on_realpath
+
         for source_item in source.Parse(self._site_settings.dest_dir):
-            item_hash = source_item.RigHash().hexdigest()
-            if not item_hash in dups:
+            if dup_on_realpath:
+                item_hash = source_item.ContentHash().hexdigest()
+            else:
+                item_hash = source_item.RigHash().hexdigest()
+            self._log.Debug("New Source Item [#%s]: %s", item_hash, repr(source_item))
+            if item_hash in dups:
+                self._log.Info("Skipping dup source item %s", source_item.PrettyRepr())
+            else:
                 dups[item_hash] = source_item
                 site_item = self.GenerateItem(source_item)
                 if site_item:

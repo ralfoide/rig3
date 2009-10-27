@@ -998,3 +998,41 @@ overkill here and it is still computationally intensive so something like
 MD5 will be the best alternative.
 
 ----
+20091026 Blog Dedupping
+
+One of the current issues is the following:
+- a site config with a couple sources.
+- one of the sources has symlinks on the other source.
+
+That will result in duplicated blogs entries since both sources have
+duplicated content. But it's OK because the content is the same, so they will
+map to the same cache entry, right? Well not at all since the cache mixes
+the content with *all* the sources and sites options. For example content
+might *look* the same but images might be generated using a different rig_base.
+
+We could detect the dup using solely a hash based on the main index.izu
+file, or as an alternative based on hash of the real path (after resolving
+symlinks for system that support them.) But there's no guarantee that the
+generated content, after izu processing and template rendering might look
+the same.
+
+There's no easy solution for that one. It means that it has to be an
+option. The question is where to put an override option for this special case:
+it could be a wide site option, a source option or a per-post option.
+
+Per-post is not actually an easy option because at that point we don't have
+access to the izu tags. Per source might be odd since by definition more than
+one source is involved in this case, so if one source requires dedupping but
+not the other one the result will be non-obvious and might depend on the
+processing order.
+
+So the most logical choice is to make this a site pref.
+In SourceItem-derived classes, we'll add a GetContentHash method that
+will return a hash based on "content" of the source, in this case merely
+the real path of the file or directory. For a directory we should also
+hash the alternate files (e.g. the pictures) if any.
+Then if the site pref dup_on_realpath is set to true we can filter these
+hashes out.
+
+----
+

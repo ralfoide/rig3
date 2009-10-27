@@ -92,11 +92,28 @@ class SourceItem(Hashable):
         return not self.__eq__(rhs)
 
     def RigHash(self, md=None):
+        """
+        Computes a hash that depends on the real path of the item *and*
+        its source settings.
+        """
         md = self.UpdateHash(md, self.date)
         md = self.UpdateHash(md, self.source_settings)
         md = self.UpdateHash(md, self.categories)
         return md
 
+    def ContentHash(self, md=None):
+        """
+        Computes a hash that depends on the real path of the item but not
+        its source settings.
+        """
+        return md
+
+    def PrettyRepr(self):
+        """
+        Returns a "pretty representation" of the item as a string,
+        suitable for Log.Info.
+        """
+        return self.__class__.__name__
 
 #------------------------
 class SourceDir(SourceItem):
@@ -124,7 +141,21 @@ class SourceDir(SourceItem):
                 self.all_files == rhs.all_files)
 
     def RigHash(self, md=None):
+        """
+        Computes a hash that depends on the real path of the directory
+        and its inner file list (like ContentHash) but *also* depends on
+        the items date, source settings and categories.
+        """
         md = super(SourceDir, self).RigHash(md)
+        md = self.ContentHash(md)
+        return md
+
+    def ContentHash(self, md=None):
+        """
+        Computes a hash that only depends on the real path of the directory
+        and its inner file list.
+        """
+        md = super(SourceDir, self).ContentHash(md)
         md = self.UpdateHash(md, self.rel_dir.realpath())
         for f in self.all_files:
             md = self.UpdateHash(md, f)
@@ -137,6 +168,14 @@ class SourceDir(SourceItem):
                                              self.all_files,
                                              self.categories,
                                              self.source_settings)
+
+    def PrettyRepr(self):
+        """
+        Returns a "pretty representation" of the item as a string,
+        suitable for Log.Info, namely the directory relative path.
+        """
+        return self.rel_dir.rel_curr
+
 
 #------------------------
 class SourceFile(SourceItem):
@@ -159,7 +198,20 @@ class SourceFile(SourceItem):
                 self.rel_file == rhs.rel_file)
 
     def RigHash(self, md=None):
+        """
+        Computes a hash that depends on the real path of the file (like
+        ContentHash) but *also* depends on the items date, source settings
+        and categories.
+        """
         md = super(SourceFile, self).RigHash(md)
+        md = self.ContentHash(md)
+        return md
+
+    def ContentHash(self, md=None):
+        """
+        Computes a hash that only depends on the real path of the file.
+        """
+        md = super(SourceFile, self).ContentHash(md)
         md = self.UpdateHash(md, self.rel_file.realpath())
         return md
 
@@ -169,6 +221,13 @@ class SourceFile(SourceItem):
                                          self.rel_file,
                                          self.categories,
                                          self.source_settings)
+
+    def PrettyRepr(self):
+        """
+        Returns a "pretty representation" of the item as a string,
+        suitable for Log.Info, namely the file relative path.
+        """
+        return self.rel_file.rel_curr
 
 
 # TODO:  SourceBlog

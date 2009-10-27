@@ -201,11 +201,11 @@ class SiteSettings(object):
     - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
     - html_header (string): Path to HTML header. Default is "html_header.html"
     - toc_categories(IncludeExclude): An inclusion-exclusion list of categories for
-                    which to insert a TOC to their pages.
-                    Default is none of them.
+                   which to insert a TOC to their pages.
+                   Default is none of them.
     - reverse_categories(IncludeExclude): An inclusion-exclusion list of categories
-                    to display in reverse date order (i.e. incremental).
-                    Default is to display in decrementing date.
+                   to display in reverse date order (i.e. incremental).
+                   Default is to display in decrementing date.
     - blog_file_pattern (string): Regex for files valid as blog entries.
     - blog_dir_pattern (string): Regex for directories valid as blog entries.
     - blog_dir_valid_files (string): Regex for accepted files inside a blog directory entry.
@@ -214,11 +214,13 @@ class SiteSettings(object):
         to deactivate.
     - use_curr_month_in_index (boolean): True if index should use current month
     - date_ymd_pattern: The compiled regex to find date & title in an album name.
-                        See SiteDefault._DATE_YMD for the default and the required
-                        syntax (especially the named regex groups).
+                   See SiteDefault._DATE_YMD for the default and the required
+                   syntax (especially the named regex groups).
     - img_pattern: The compiled regex to find images and their rating.
                    See SiteDefault._IMG_PATTERN for the default and the required
                    syntax (especially the named regex groups).
+    - dup_on_realpath(bool): When true, use real path of source entries to de-dup
+                   *regardless* of the various source settings.
     """
     def __init__(self,
                  public_name="",
@@ -248,7 +250,8 @@ class SiteSettings(object):
                  mangled_name_len=50,
                  use_curr_month_in_index=True,
                  date_ymd_pattern=None,
-                 img_pattern=None):
+                 img_pattern=None,
+                 dup_on_realpath=False):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -281,6 +284,7 @@ class SiteSettings(object):
         self.img_pattern = None
         if img_pattern:
             self.img_pattern = re.compile(img_pattern)
+        self.dup_on_realpath = self.ParseBool(dup_on_realpath)
 
     def AsDict(self):
         """
@@ -308,10 +312,11 @@ class SiteSettings(object):
         value = self.__dict__[key]
         if isinstance(value, IncludeExclude):
             value.Set(key, new_value)
+        elif isinstance(value, bool):
+            # Note: must test bool before int because a bool is also an int!
+            value = self.ParseBool(new_value)
         elif isinstance(value, int):
             value = int(new_value)
-        elif isinstance(value, bool):
-            value = settings.ParseBool(new_value)
         elif isinstance(value, (str, unicode, type(None))):
             value = str(new_value)
         elif isinstance(value, list):
@@ -323,9 +328,9 @@ class SiteSettings(object):
 
     def ParseBool(self, value):
         """
-        Parses a value and interpret it as a boolean.
+        Parses a value and interprets it as a boolean.
         If value is a bool type, returns the value itself.
-        If value is a string, returns true if the string is "1" or "true".
+        If value is a string, returns true if the string.lower is "1" or "true".
         """
         if isinstance(value, bool):
             return value
@@ -372,6 +377,7 @@ class SitesSettings(SettingsBase):
         """
         s = SiteSettings()
         vars = self.Items(site_name)
+        self._log.Debug("Site Settings: %s", vars)
         self._ProcessDefaults(s, vars)
         self._ProcessSources(s, vars)
         return s

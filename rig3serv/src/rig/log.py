@@ -34,41 +34,41 @@ _SKIP_PATH_RE = re.compile(r"(?:logging[/\\]__init__\.py|rig[/\\]log\.py)$")
 
 #------------
 class _LogFormatter(logging.Formatter):
-  """
-  Overrides logging.Formatter to add our specific keywords
-  """
-
-  def __init__(self, fmt=None, datefmt=None):
-    logging.Formatter.__init__(self, fmt, datefmt)
-
-  def format(self, record):
     """
-    Override logging.Formatter.format() in order to correctly set the
-    %(lineno)s, %(filename)s, %(module)s and %(pathname)s variables. The
-    original caller's filename as detected by the logging module will always be
-    this file, rig.helper.Log, whereas we want the caller of the rig's Log
-    module. We simply recompute the values and store them in the record's
-    object where it will be picked up by the string formatter.
+    Overrides logging.Formatter to add our specific keywords
     """
-    f = sys._getframe(1)
-    while f:
-      co = f.f_code
-      pathname = os.path.normcase(co.co_filename)
 
-      # skip ourselves and the logging module calls
-      if _SKIP_PATH_RE.search(pathname) is None:
-        # got the first "real" caller, update the record
-        record.lineno = f.f_lineno
-        record.pathname = pathname
-        try:
-          record.filename = os.path.basename(pathname)
-          record.module = os.path.splitext(record.filename)[0]
-        except:
-          pass
-        break
-      f = f.f_back
+    def __init__(self, fmt=None, datefmt=None):
+        logging.Formatter.__init__(self, fmt, datefmt)
 
-    return logging.Formatter.format(self, record)
+    def format(self, record):
+        """
+        Override logging.Formatter.format() in order to correctly set the
+        %(lineno)s, %(filename)s, %(module)s and %(pathname)s variables. The
+        original caller's filename as detected by the logging module will always be
+        this file, rig.helper.Log, whereas we want the caller of the rig's Log
+        module. We simply recompute the values and store them in the record's
+        object where it will be picked up by the string formatter.
+        """
+        f = sys._getframe(1)
+        while f:
+            co = f.f_code
+            pathname = os.path.normcase(co.co_filename)
+
+            # skip ourselves and the logging module calls
+            if _SKIP_PATH_RE.search(pathname) is None:
+                # got the first "real" caller, update the record
+                record.lineno = f.f_lineno
+                record.pathname = pathname
+                try:
+                    record.filename = os.path.basename(pathname)
+                    record.module = os.path.splitext(record.filename)[0]
+                except:
+                    pass
+                break
+            f = f.f_back
+
+        return logging.Formatter.format(self, record)
 
 
 
@@ -165,7 +165,7 @@ class Log(object):
         Indicates if the logger is in verbose mode (debug-level) or
         normal mode (info/warning-level).
         """
-        return self._logger.level < LEVEL_NORMAL
+        return self._logger.level < Log.LEVEL_NORMAL
 
     def Debug(self, msg, *args):
         """

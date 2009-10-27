@@ -34,6 +34,7 @@ public_name = Site 2
 base_url	= http://example.com
 sources     = dir:/tmp/data/site2
 dest_dir    = /tmp/generated/site2
+dup_on_realpath = True
 
 # site3 is defined here but not in [serve] > sites so it won't be served
 [site3]
