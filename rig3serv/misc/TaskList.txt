@@ -1,6 +1,12 @@
 ---- TODO ----
 
-20081130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
+20091129 Engine:   Individual pages per post
+20091129 Engine:   Comment support (using Google Social?)
+20091130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
+20091130 Engine:   Merge patch from MM to auto link pix in sub-folders
+20091130 Izu:      YouTube links
+20091130 Izu:      Nested <li>
+20091130 Izu:      In image tag, ability to specify size by overridable pattern
 
 20080930 Engine:   Remove the "dirs" and "files" source types
 
@@ -12,7 +18,6 @@
 
 20080113 Engine:   Support for No-Updates (i.e. do nothing if source has not changed)
 
-20071225 Template: Placeholder ralf theme (deriving from default)
 20071225 Engine:   Site settings, Desired RIG thumbnail size for inline images
 
 20071123 Engine:   Source izu-blog files
@@ -29,6 +34,13 @@
 20071215 Engine:   Investigate PIL support (for resizing, for header_img guess, etc.)
 
 20080215 Prefs:    Disable raw HTML by default
+
+
+---- Done Version 0.4 ----
+
+20100206 Izu:      Support [c] to center full line
+20100206 Izu:      Add MM's [html:foo] tag
+
 
 
 ---- Done Version 0.3 ----

@@ -277,7 +277,7 @@ class IzuParser(object):
         """
         Parses one line of the input stream and detect blocks based on 3
         rules:
-        - blocks completly held in the same line.
+        - blocks completely held in the same line.
         - opened blocks ending on this line.
         - new blocks opened on this line.
 
@@ -442,6 +442,8 @@ class IzuParser(object):
         # --- formatting tags
         line = self._FormatBoldItalicHtmlEmpty(line)
         line = self._FormatSimpleTags(state, line)
+        line = self._FormatHtmlTags(state, line)
+        line = self._FormatCenter(state, line)
         line = self._FormatLinks(state, line)
         line = self._FormatLists(state, line)
 
@@ -546,7 +548,8 @@ class IzuParser(object):
 
     def _FormatSimpleTags(self, state, line):
         """
-        Format simple tags. Currently only [br] and [p].
+        Formats simple tags. Currently only [br] and [p].
+        An alternative line break is to use / as the last character of the line.
         Returns the formatted line.
         """
         # [br] generates an HTML <br> in-place
@@ -560,6 +563,51 @@ class IzuParser(object):
 
     _RE_TAG_BR = re.compile(r"(?<!\[)\[br\]|(?<!/)/$")
     _RE_TAG_P  = re.compile(r"(?<!\[)\[p\]")
+
+    def _FormatHtmlTags(self, state, line):
+        """
+        Formats simple escaped HTML tags, either of the form
+        [html:foo] or [html:/foo] where the expression must be
+        solely an a-z name.
+
+        This replaces all the occurrences of any [html:foo] in the line.
+        """
+        m = True
+        while m:
+            m = self._RE_TAG_HTML.match(line)
+            if m:
+                before = m.group("before") or ""
+                tag    = m.group("tag") or ""
+                after  = m.group("after")  or ""
+                line = "%s<%s>%s" % (before, tag, after)
+
+        return line
+
+    _RE_TAG_HTML = re.compile(r"(?P<before>.*?)(?<!\[)\[html:(?P<tag>/?[a-z]+)\](?P<after>.*)")
+
+    def _FormatCenter(self, state, line):
+        """
+        Formats a [c] that centers the whole line, that is it wraps the
+        text between [c] and the end of the line in a <center></center> tag.
+
+        Since [c] formats all the _remainder_ of the line as a center block,
+        only the first occurrence of [c] is used and any following one is removed.
+        """
+        m = self._RE_TAG_C_LINE.match(line)
+        if m:
+            # Replace the first occurrence of [c], centering the rest of the line
+            before = m.group("before") or ""
+            after  = m.group("after")  or ""
+
+            # Any occurrence found after the first one is removed
+            after = self._RE_TAG_C_ONLY.sub(r"", after)
+
+            line = "%s<center>%s</center>" % (before, after)
+
+        return line
+
+    _RE_TAG_C_LINE = re.compile(r"(?P<before>.*?)(?<!\[)\[c\](?P<after>.*)")
+    _RE_TAG_C_ONLY = re.compile(r"(?<!\[)\[c\]")
 
     def _FormatLinks(self, state, line):
         """

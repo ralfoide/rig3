@@ -157,6 +157,59 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\nthere is a <b>break<p/>in the line</b>\nbut not here.</span>',
             self._Render("there is a __break[p]in the line__\nbut not here."))
 
+    def testC(self):
+        # C preserves whatever is before [c] and centers the rest of the line
+        self.assertEquals(
+            '<span class="izu">\nsome <center>line.</center></span>',
+            self._Render("some [c]line."))
+
+        # it's ok to center the full line.
+        self.assertEquals(
+            '<span class="izu">\n<center>some line.</center></span>',
+            self._Render("[c]some line."))
+
+        # it's ok to center an empty line.
+        self.assertEquals(
+            '<span class="izu">\n<center></center></span>',
+            self._Render("[c]"))
+
+        # only the first occurrence is used, others are removed (note how the
+        # spacing is not normalized).
+        self.assertEquals(
+            '<span class="izu">\nyou can <center>only center once  in a while.</center></span>',
+            self._Render("you can [c]only center once [c] in a while."))
+
+    def testHtmlTags(self):
+        # a typical use case
+        self.assertEquals(
+            '<span class="izu">\nsome <li>line</li>.</span>',
+            self._Render("some [html:li]line[html:/li]."))
+
+        # tags don't have to be balanced
+        self.assertEquals(
+            '<span class="izu">\nsome <li>line.</span>',
+            self._Render("some [html:li]line."))
+
+        # tags don't have to be valid HTML tags
+        self.assertEquals(
+            '<span class="izu">\nsome <whatever>line.</span>',
+            self._Render("some [html:whatever]line."))
+
+        # start of line, space are preserved
+        self.assertEquals(
+            '<span class="izu">\n<look> at me now.</span>',
+            self._Render("[html:look] at me now."))
+
+        # end of line
+        self.assertEquals(
+            '<span class="izu">\nI am so <lonely></span>',
+            self._Render("I am so [html:lonely]"))
+
+        # empty line
+        self.assertEquals(
+            '<span class="izu">\n<ul></span>',
+            self._Render("[html:ul]"))
+
     def testBold(self):
         self.assertEquals(
             '<span class="izu">\n<b>this</b> is <b>in bold</b> but not <b>this</b></span>',
