@@ -96,6 +96,7 @@ class SiteDefault(SiteBase):
                 "+": _RATING_EXCELLENT }
 
     _TEMPLATE_HTML_INDEX   = "html_index.html"    # template for main HTML page
+    _TEMPLATE_HTML_SINGLE  = "html_single.html"   # template for standalone single HTML page
     _TEMPLATE_HTML_MONTH   = "html_month.html"    # template for month HTML page
     _TEMPLATE_HTML_ENTRY   = "html_entry.html"    # template for individual entries in HTML page
     _TEMPLATE_HTML_TOC     = "html_toc.html"      # template for HTML TOC
@@ -151,7 +152,7 @@ class SiteDefault(SiteBase):
         Generates several pages:
         - Index page (max N last entries)
         - Month pages (all entries per month)
-        - Categorie pages (all entries per category)
+        - Category pages (all entries per category)
 
         Input:
         - categories: list of categories accumulated from each entry
@@ -177,20 +178,52 @@ class SiteDefault(SiteBase):
                 return
 
         # Generate monthly pages and get a cached version of each item
-        month_pages = self._GenerateMonthPages("", "", None, categories, items)
+        month_pages = self._GenerateMonthPages(path="",
+                                               rel_base="",
+                                               curr_category=None,
+                                               all_categories=categories,
+                                               items=items,
+                                               max_num_pages=None)
         # Generate an index page with all posts (whether they have a category or not)
-        self._GenerateIndexPage("", "", None, categories, items, month_pages)
-        self._GenerateAtomFeed ("", "", None, categories, items, month_pages)
+        self._GenerateIndexPage(path="",
+                                rel_base="",
+                                curr_category=None,
+                                all_categories=categories,
+                                items=items,
+                                month_pages=month_pages)
+        self._GenerateAtomFeed (path="",
+                                rel_base="",
+                                curr_category=None,
+                                all_categories=categories,
+                                items=items,
+                                month_pages=month_pages)
+        self._GenerateSinglePages(path="",
+                                rel_base="",
+                                curr_category=None,
+                                all_categories=categories,
+                                items=items,
+                                month_pages=month_pages)
 
         # Only generate per-category months pages if we have more than one category
         if categories:
             for c in categories:
-                month_pages = self._GenerateMonthPages([ "cat", c ], "../../", c,
-                                               categories, items)
-                self._GenerateIndexPage([ "cat", c ], "../../", c,
-                                        categories, items, month_pages)
-                self._GenerateAtomFeed ([ "cat", c ], "../../", c,
-                                        categories, items, month_pages)
+                month_pages = self._GenerateMonthPages(path=[ "cat", c ],
+                                                       rel_base="../../",
+                                                       curr_category=c,
+                                                       all_categories=categories,
+                                                       items=items)
+                self._GenerateIndexPage(path=[ "cat", c ],
+                                        rel_base="../../",
+                                        curr_category=c,
+                                        all_categories=categories,
+                                        items=items,
+                                        month_pages=month_pages)
+                self._GenerateAtomFeed (path=[ "cat", c ],
+                                        rel_base="../../",
+                                        curr_category=c,
+                                        all_categories=categories,
+                                        items=items,
+                                        month_pages=month_pages)
 
         self._hash_store.Add(hash_key)
 
@@ -316,7 +349,6 @@ class SiteDefault(SiteBase):
         - month_pages: list(MonthPageItem(url, date)) for each month page generated for the
             same entries. Can be an empty list but not None. MUST be sorted in
             decreasing date order.
-        - max_num_pages: How many pages of most-recent items? 0 or None to create them all.
         """
         base_url = "/".join(path)
         if base_url:
@@ -362,7 +394,6 @@ class SiteDefault(SiteBase):
         keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
                                               version.SvnRevision())
 
-
         entries = []
         older_date = None
         for i in relevant_items:
@@ -392,6 +423,85 @@ class SiteDefault(SiteBase):
         return "%s%04d-%02d/%s" % (curr_url,
                                      date.year, date.month,
                                      name)
+
+    def _GenerateSinglePages(self, path, rel_base,
+                                   curr_category, all_categories,
+                                   items, month_pages):
+        """
+        Generates single pages of items which match the curr_category.
+
+        SiteItems are not re-ordered, it's up to the caller to order the items
+        by decreasing date order.
+
+        - path: A list of sub-directories/sub-path indicating where the files are
+            being created. If the list is empty, the files will be created in the root.
+            This is used also to generate the proper urls.
+        - curr_category: current category to use for this page (acts as a filter)
+            or None to accept all categories (even those with no categories)
+        - all_categories: list of all categories (used for template to create links)
+        - items: list of SiteItem. Items MUST be sorted by decreasing date order.
+        - month_pages: list(MonthPageItem(url, date)) for each month page generated for the
+            same entries. Can be an empty list but not None. MUST be sorted in
+            decreasing date order.
+        """
+        base_url = "/".join(path)
+        if base_url:
+            base_url += "/"
+        base_path = ""
+        if path:
+            base_path = os.path.join(*path)
+            self._MkDestDir(base_path)
+
+        # filter relevant items (or all of them if there's no curr_category)
+        if curr_category is None:
+            relevant_items = items
+        else:
+            relevant_items = []
+            for i in items:
+                for c in i.categories:
+                    if c == curr_category:
+                        relevant_items.append(i)
+                        break
+
+        if self._site_settings.num_item_atom > 0:
+            relevant_items = relevant_items[:self._site_settings.num_item_atom]
+
+        keywords = self._site_settings.AsDict()
+
+        curr_url = keywords.get("base_url", "") + base_url
+        keywords["curr_url"] = curr_url
+
+        if curr_category:
+            title = curr_category.capitalize()
+        else:
+            title = "All Items"
+        keywords["title"] = title
+
+        keywords["rel_base_url"] = rel_base
+        keywords["last_gen_ts"] = self._last_gen_ts
+        keywords["month_pages"] = month_pages
+        keywords["toc_categories"] = self._site_settings.toc_categories.Filter(all_categories)
+        keywords["html_toc"] = SiteDefault._TEMPLATE_HTML_TOC
+        keywords["all_categories"] = all_categories
+        keywords["curr_category"] = curr_category
+        version = Version()
+        keywords["rig3_version"] = "%s-%s" % (version.VersionString(),
+                                              version.SvnRevision())
+
+        for i in relevant_items:
+            # Generate the content of the post
+            content = i.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
+            entry = ContentEntry(content, i.title, i.date, i.permalink)
+            keywords["entry"] = entry
+            keywords["last_content_ts"] = None
+            # Finally generate the single page
+            filename = keywords["filename"] = self._SinglePermalink(i.date, i.title)
+            content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_SINGLE, **keywords)
+            self._WriteFile(content, self._site_settings.dest_dir, os.path.join(base_path, filename))
+
+    def _SinglePermalink(self, date, title):
+        name = self._SimpleFileName(title)
+        return "post_%04d-%02d-%02d_%s.html" % (date.year, date.month, date.day, name)
 
     def _GenerateMonthPages(self, path, rel_base,
                                 curr_category, all_categories,
@@ -436,7 +546,7 @@ class SiteDefault(SiteBase):
                         break
 
         if curr_category in self._site_settings.reverse_categories:
-            # sort by increasing date (thus reverse the name "decreaseing date" order)
+            # sort by increasing date (thus reverse the name "decreasing date" order)
             relevant_items.sort(lambda x, y: cmp(x.date, y.date))
 
         by_months = {}
@@ -517,7 +627,7 @@ class SiteDefault(SiteBase):
     def _MonthPageName(self, year, month):
         return "%04d-%02d.html" % (year, month)
 
-    def _Permalink(self, year, month, title):
+    def _AnchorLink(self, year, month, title):
         name = self._SimpleFileName(title)
         return "%s#%s" % (self._MonthPageName(year, month), name), name
 
@@ -683,15 +793,16 @@ class SiteDefault(SiteBase):
         keywords["date_iso"] = self._DateToIso(date)
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
-        permalink_url, permalink_name = self._Permalink(date.year, date.month, title)
-        keywords["permalink_url"] = permalink_url
-        keywords["permalink_name"] = permalink_name
+        anchorlink_url, anchorlink_name = self._AnchorLink(date.year, date.month, title)
+        keywords["anchorlink_url"] = anchorlink_url
+        keywords["anchorlink_name"] = anchorlink_name
+        keywords["permalink_url"] = self._SinglePermalink(date, title)
         keywords["_cache_key"] = self._cache.GetKey(keywords)
 
         return SiteItem(source_item,
                         date,
                         title,
-                        permalink_url,
+                        anchorlink_url,
                         categories=cats,
                         content_gen=lambda template, extra=None: \
                             self.__GenItem_GenContent(template, keywords, img_params, extra))

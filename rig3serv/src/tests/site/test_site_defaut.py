@@ -512,7 +512,28 @@ class SiteDefaultTest(RigTestCase):
           [ "2000-12.html", "2000-11.html", "2000-10.html", "2000-09.html",
             "2000-08.html", "2000-07.html", "2000-06.html", "2000-05.html",
             "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-12-24_blah.html",
+            "post_2000-12-20_blah.html",
+            "post_2000-12-12_blah.html",
+            "post_2000-12-08_blah.html",
+            "post_2000-12-04_blah.html",
+            "post_2000-11-23_blah.html",
+            "post_2000-11-19_blah.html",
+            "post_2000-11-11_blah.html",
+            "post_2000-11-07_blah.html",
+            "post_2000-11-03_blah.html",
+            "post_2000-10-22_blah.html",
+            "post_2000-10-18_blah.html",
+            "post_2000-10-10_blah.html",
+            "post_2000-10-06_blah.html",
+            "post_2000-10-02_blah.html",
+            "post_2000-09-21_blah.html",
+            "post_2000-09-17_blah.html",
+            "post_2000-09-09_blah.html",
+            "post_2000-09-05_blah.html",
+            "post_2000-09-01_blah.html",
+             ],
           m.GetWriteFileData(m._LEAFNAME))
 
         # check that "all_entries" in index & month pages contain the full list
@@ -548,7 +569,28 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals(
           [ "2000-07.html", "2000-06.html", "2000-05.html",
             "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-07-21_blah.html",
+            "post_2000-07-14_blah.html",
+            "post_2000-07-07_blah.html",
+            "post_2000-06-20_blah.html",
+            "post_2000-06-13_blah.html",
+            "post_2000-06-06_blah.html",
+            "post_2000-05-19_blah.html",
+            "post_2000-05-12_blah.html",
+            "post_2000-05-05_blah.html",
+            "post_2000-04-18_blah.html",
+            "post_2000-04-11_blah.html",
+            "post_2000-04-04_blah.html",
+            "post_2000-03-17_blah.html",
+            "post_2000-03-10_blah.html",
+            "post_2000-03-03_blah.html",
+            "post_2000-02-16_blah.html",
+            "post_2000-02-09_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-01-15_blah.html",
+            "post_2000-01-08_blah.html",
+            ],
           m.GetWriteFileData(m._LEAFNAME))
 
     def testGeneratePages_2Cats(self):
@@ -573,6 +615,26 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals(
           [ "2000-05.html", "2000-04.html", "2000-03.html", "2000-02.html", "2000-01.html",
             "index.html", "atom.xml",
+            "post_2000-05-20_blah.html",
+            "post_2000-05-15_blah.html",
+            "post_2000-05-10_blah.html",
+            "post_2000-05-05_blah.html",
+            "post_2000-04-19_blah.html",
+            "post_2000-04-14_blah.html",
+            "post_2000-04-09_blah.html",
+            "post_2000-04-04_blah.html",
+            "post_2000-03-18_blah.html",
+            "post_2000-03-13_blah.html",
+            "post_2000-03-08_blah.html",
+            "post_2000-03-03_blah.html",
+            "post_2000-02-17_blah.html",
+            "post_2000-02-12_blah.html",
+            "post_2000-02-07_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-01-21_blah.html",
+            "post_2000-01-16_blah.html",
+            "post_2000-01-11_blah.html",
+            "post_2000-01-06_blah.html",
             os.path.join("cat", "first", "2000-05.html"),
             os.path.join("cat", "first", "2000-04.html"),
             os.path.join("cat", "first", "2000-03.html"),
@@ -612,6 +674,26 @@ class SiteDefaultTest(RigTestCase):
         self.assertListEquals(
           [ "2000-03.html", "2000-02.html", "2000-01.html",
             "index.html", "atom.xml",
+            "post_2000-03-27_blah.html",
+            "post_2000-03-26_blah.html",
+            "post_2000-03-24_blah.html",
+            "post_2000-03-23_blah.html",
+            "post_2000-03-21_blah.html",
+            "post_2000-03-20_blah.html",
+            "post_2000-03-18_blah.html",
+            "post_2000-03-17_blah.html",
+            "post_2000-03-15_blah.html",
+            "post_2000-03-14_blah.html",
+            "post_2000-03-12_blah.html",
+            "post_2000-03-11_blah.html",
+            "post_2000-03-09_blah.html",
+            "post_2000-03-08_blah.html",
+            "post_2000-03-07_blah.html",
+            "post_2000-03-06_blah.html",
+            "post_2000-03-05_blah.html",
+            "post_2000-03-04_blah.html",
+            "post_2000-03-03_blah.html",
+            "post_2000-03-02_blah.html",
             os.path.join("cat", "first", "2000-01.html"),
             os.path.join("cat", "first", "index.html"),
             os.path.join("cat", "first", "atom.xml"),
@@ -650,7 +732,18 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertListEquals(
           [ "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-02-05_blah.html",
+            "post_2000-02-04_blah.html",
+            "post_2000-02-03_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-02-01_blah.html",
+            "post_2000-01-05_blah.html",
+            "post_2000-01-04_blah.html",
+            "post_2000-01-03_blah.html",
+            "post_2000-01-02_blah.html",
+            "post_2000-01-01_blah.html"
+             ],
           m.GetWriteFileData(m._LEAFNAME))
 
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
@@ -675,7 +768,18 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertListEquals(
           [ "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-02-05_blah.html",
+            "post_2000-02-04_blah.html",
+            "post_2000-02-03_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-02-01_blah.html",
+            "post_2000-01-05_blah.html",
+            "post_2000-01-04_blah.html",
+            "post_2000-01-03_blah.html",
+            "post_2000-01-02_blah.html",
+            "post_2000-01-01_blah.html"
+            ],
           m.GetWriteFileData(m._LEAFNAME))
 
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
@@ -718,7 +822,18 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertListEquals(
           [ "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-02-05_blah.html",
+            "post_2000-02-04_blah.html",
+            "post_2000-02-03_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-02-01_blah.html",
+            "post_2000-01-05_blah.html",
+            "post_2000-01-04_blah.html",
+            "post_2000-01-03_blah.html",
+            "post_2000-01-02_blah.html",
+            "post_2000-01-01_blah.html"
+            ],
           m.GetWriteFileData(m._LEAFNAME))
 
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
@@ -740,7 +855,18 @@ class SiteDefaultTest(RigTestCase):
 
         self.assertListEquals(
           [ "2000-02.html", "2000-01.html",
-            "index.html", "atom.xml" ],
+            "index.html", "atom.xml",
+            "post_2000-02-05_blah.html",
+            "post_2000-02-04_blah.html",
+            "post_2000-02-03_blah.html",
+            "post_2000-02-02_blah.html",
+            "post_2000-02-01_blah.html",
+            "post_2000-01-05_blah.html",
+            "post_2000-01-04_blah.html",
+            "post_2000-01-03_blah.html",
+            "post_2000-01-02_blah.html",
+            "post_2000-01-01_blah.html"
+            ],
           m.GetWriteFileData(m._LEAFNAME))
 
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
