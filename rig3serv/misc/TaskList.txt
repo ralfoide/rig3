@@ -37,6 +37,7 @@
 
 ---- Done Version 0.4 ----
 
+20100208 Izu:      Correctly generate <p/> and <br/> with ending slash
 20100207 Engine:   Individual pages per post (experimental)
 20100206 Izu:      Support [c] to center full line
 20100206 Izu:      Add MM's [html:foo] tag

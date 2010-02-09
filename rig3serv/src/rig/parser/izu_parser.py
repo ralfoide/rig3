@@ -461,31 +461,32 @@ class IzuParser(object):
 
         # don't append <br> to <br> or <p> to <p>
         has_br = False
-        if state.EndsWith(curr_section, "<br>"):
+        if state.EndsWith(curr_section, "<br>") or state.EndsWith(curr_section, "<br/>"):
             has_br = True
-            while line.startswith("<br>"):
+            while line.startswith("<br>") or line.startswith("<br/>"):
                 line = line[4:]
         has_p = False
-        if state.EndsWith(curr_section, "<p>"):
+        if state.EndsWith(curr_section, "<p>") or state.EndsWith(curr_section, "<p/>"):
             has_p = True
-            while line.startswith("<p>"):
+            while line.startswith("<p>") or line.startswith("<p/>"):
                 line = line[3:]
         if not line:
             return
 
         if (state.SectionNeedsParagraph(curr_section) and
-            not has_br and not has_p and
-            not line.startswith("<p>") and
-            not line.startswith("<table") and
-            not line.startswith("<ul>") and
-            not line.startswith("<pre") and
-            not line.startswith("<blockquote")):
+                not has_br and not has_p and
+                not line.startswith("<p>") and
+                not line.startswith("<p/>") and
+                not line.startswith("<table") and
+                not line.startswith("<ul>") and
+                not line.startswith("<pre") and
+                not line.startswith("<blockquote")):
             state.SetSectionNeedsParagraph(curr_section, False)
-            state.Append(curr_section, "\n<p>")
+            state.Append(curr_section, "\n<p/>")
 
         if (not line.startswith("</") and
-            not line.startswith("\n") and
-            not state.Section(curr_section).endswith("\n")):
+                not line.startswith("\n") and
+                not state.Section(curr_section).endswith("\n")):
             state.Append(curr_section, "\n")
 
         # finally append the line to the section
@@ -554,7 +555,7 @@ class IzuParser(object):
         """
         # [br] generates an HTML <br> in-place
         # A single forward-slash at the end of a line generates a <br> too
-        line = self._RE_TAG_BR.sub("<br>", line)
+        line = self._RE_TAG_BR.sub("<br/>", line)
 
         # [p] generates an HTML <p/> in-place
         line = self._RE_TAG_P.sub(r"<p/>", line)
@@ -777,7 +778,7 @@ class IzuParser(object):
             result += 'src="%(output)s">'
 
         if caption and output.find("<tt>") == -1:
-            result += "<br><tt>%(caption)s</tt>"
+            result += "<br/><tt>%(caption)s</tt>"
 
         result %= { "output": output,
                     "title": title,
@@ -808,7 +809,7 @@ class IzuParser(object):
         if is_link:
             result += '</a>'
         if caption:
-            result += "<br><tt>%(caption)s</tt>"
+            result += "<br/><tt>%(caption)s</tt>"
         result += '[[[end]]'
         result %= { "name":    title,
                     "album":   album,

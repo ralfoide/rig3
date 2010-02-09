@@ -119,7 +119,7 @@ class IzuParserTest(RigTestCase):
 
     def testLines(self):
         self.assertEquals(
-            '<span class="izu">\n[izu-tag]\nLine 1\nLine 2\n<p>\nLine 3</span>',
+            '<span class="izu">\n[izu-tag]\nLine 1\nLine 2\n<p/>\nLine 3</span>',
             self._Render("[izu-tag]\nLine 1\nLine 2\n\nLine 3"))
 
     def testLineContinuation(self):
@@ -134,12 +134,12 @@ class IzuParserTest(RigTestCase):
     def testBr(self):
         # [br] generates a <br> and can be used inside a formatting tag such as __bold__
         self.assertEquals(
-            '<span class="izu">\nthere is a <b>break<br>in the line</b>\nbut not here.</span>',
+            '<span class="izu">\nthere is a <b>break<br/>in the line</b>\nbut not here.</span>',
             self._Render("there is a __break[br]in the line__\nbut not here."))
 
         # / at the end of the lines generates a <br> but it cannot be used inside a formatting tag
         self.assertEquals(
-            '<span class="izu">\nthere is a _break<br>\nin the line_\nbut not here.</span>',
+            '<span class="izu">\nthere is a _break<br/>\nin the line_\nbut not here.</span>',
             self._Render("there is a __break/\nin the line__\nbut not here."))
 
         # A double-slash // does not generate a <br>
@@ -227,7 +227,7 @@ class IzuParserTest(RigTestCase):
 
     def testParagraph(self):
         self.assertEquals(
-            '<span class="izu">\nLine 1,\nline 2\n<p>\nLine 3\n<p>\n<b>Line 4</b>\nLine 5 </span>',
+            '<span class="izu">\nLine 1,\nline 2\n<p/>\nLine 3\n<p/>\n<b>Line 4</b>\nLine 5 </span>',
             self._Render("Line 1,\nline 2\n\nLine 3\n\n\n\n\n__Line 4__\nLine 5 "))
 
         self.assertEquals(
@@ -479,7 +479,7 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
             'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
-            '<br><tt>This is a caption!</tt>'
+            '<br/><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:256:A01234*.jpg|This is a caption!]"))
 
@@ -488,7 +488,7 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
             'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
-            '<br><tt>This is a caption!</tt>'
+            '<br/><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg:A01234*.jpg|This is a caption!]"))
 
@@ -497,7 +497,7 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[if rig_base]]<img title="This is &amp; comment" '
             'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": rig_img_size } ]]">'
-            '<br><tt>This is a caption!</tt>'
+            '<br/><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[This is & comment|rigimg::A01234*.jpg|This is a caption!]"))
 
@@ -506,7 +506,7 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[if rig_base]]<img '
             'src="[[raw rig_thumb_url % '
             '{ "rig_base": rig_base, "album": curr_album, "img": "A01234%20My%20Image.jpg", "size": "256" } ]]">'
-            '<br><tt>This is a caption!</tt>'
+            '<br/><tt>This is a caption!</tt>'
             '[[end]]</span>',
             self._Render("[rigimg:256:A01234*.jpg|This is a caption!]"))
 
@@ -590,14 +590,14 @@ class IzuParserTest(RigTestCase):
         m.SetPopenValues(0, "some-url")
 
         # auto generate an <img> for a url (i.e. something without "<img")
-        self.assertEquals('<img title="title2" src="some-url"><br><tt>caption5</tt>',
+        self.assertEquals('<img title="title2" src="some-url"><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=False, size="size4", caption="caption5"))
 
         # we don't auto-generate <a> for an URL since the only URL is for an
         # image, not a page.
-        self.assertEquals('<img title="title2" src="some-url"><br><tt>caption5</tt>',
+        self.assertEquals('<img title="title2" src="some-url"><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=True, size="size4", caption="caption5"))
@@ -619,7 +619,7 @@ class IzuParserTest(RigTestCase):
                           img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
-        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
+        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=False, size="size4", caption="caption5"))
@@ -653,12 +653,12 @@ class IzuParserTest(RigTestCase):
                           img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<img src"toto"><blah>')
 
-        self.assertEquals('<img src"toto"><blah><br><tt>caption5</tt>',
+        self.assertEquals('<img src"toto"><blah><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=False, size="size4", caption="caption5"))
 
-        self.assertEquals('<img src"toto"><blah><br><tt>caption5</tt>',
+        self.assertEquals('<img src"toto"><blah><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=True, size="size4", caption="caption5"))
@@ -675,12 +675,12 @@ class IzuParserTest(RigTestCase):
                           img_gen_script="/path/to/my/script")
         m.SetPopenValues(0, '<a href="foo"><img src"toto"><blah></a>')
 
-        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
+        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=False, size="size4", caption="caption5"))
 
-        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br><tt>caption5</tt>',
+        self.assertEquals('<a href="foo"><img src"toto"><blah></a><br/><tt>caption5</tt>',
              m._ExternalGenRigUrl(rel_file=RelFile("some", _j_("path", "file1")),
                                   abs_dir="some/path", filename="file1", title="title2",
                                   is_link=True, size="size4", caption="caption5"))
