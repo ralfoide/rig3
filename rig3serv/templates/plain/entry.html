@@ -15,13 +15,14 @@ Parameters:
 ]]
 
 <h2 class="entry title">
-<a name="[[url permalink_name]]" title="Permalink to '[[html title]]'">
+<a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'">
 <a href="[[raw permalink_url]]" title="Permalink to '[[html title]]'">
 <span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a>
 </a>
 </h2>
 
 <i>
+<a href="[[raw anchorlink_url]]" title="#">#</a>
 [[html date.strftime("%Y-%m-%d %H:%M")]]
 [[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
