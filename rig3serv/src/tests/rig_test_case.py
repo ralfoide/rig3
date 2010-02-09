@@ -40,13 +40,14 @@ class RigTestCase(unittest.TestCase):
         self.__log = None
         unittest.TestCase.__init__(self, methodName)
 
-    def SetVerbose(verbose):
+    @staticmethod
+    def setVerbose(verbose):
         """
         Static methods that sets the global verbosity flag.
         """
         global IS_VERBOSE
         IS_VERBOSE = verbose
-    setVerbose = staticmethod(SetVerbose)
+    #setVerbose = staticmethod(SetVerbose) -- we use @staticmethod starting with Python 2.4
 
     def IsVerbose(self):
         """
@@ -307,6 +308,7 @@ class RigTestCase(unittest.TestCase):
         str = re.sub("[\r\n]+", " ", str)
         str = re.sub(" +", " ", str)
         str = re.sub(" <", "<", str)
+        str = re.sub(" >", ">", str)
         str = re.sub("> ", ">", str)
         str = re.sub("</?[a-zA-Z0-9]+", lambda x: x.group(0).lower(), str)
         return str

@@ -85,10 +85,10 @@ class Rig3LiveTest(RigTestCase):
         self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos1/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
-        self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="post_2007-09-09_Izu-File-Item.html" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="cat/bar/post_2007-09-09_Izu-File-Item.html" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
                                index_izu)
         # sub-directories are parsed for file items too
-        self.assertHtmlSearch('<td class="title">\s*<a name="Sub-File-Item" title="Permalink to \'Sub File Item\'"><a href="post_2008-01-02_Sub-File-Item.html" title="Permalink to \'Sub File Item\'"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="Sub-File-Item" title="Permalink to \'Sub File Item\'"><a href="cat/bar/post_2008-01-02_Sub-File-Item.html" title="Permalink to \'Sub File Item\'"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
                                index_izu)
         # posts with no tags/categories are accepted
         self.assertHtmlSearch('<td class="title">\s*<a name="No-Tags" title="Permalink to \'No Tags\'"><a href="post_2007-10-02_No-Tags.html" title="Permalink to \'No Tags\'"><span class="date">2007/10/02</span>No Tags</a></a></td></tr>',

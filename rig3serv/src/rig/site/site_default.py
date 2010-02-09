@@ -197,7 +197,7 @@ class SiteDefault(SiteBase):
                                 all_categories=categories,
                                 items=items,
                                 month_pages=month_pages)
-        self._GenerateSinglePages(path="",
+        self._GenerateSinglePosts(path="",
                                 rel_base="",
                                 curr_category=None,
                                 all_categories=categories,
@@ -219,6 +219,12 @@ class SiteDefault(SiteBase):
                                         items=items,
                                         month_pages=month_pages)
                 self._GenerateAtomFeed (path=[ "cat", c ],
+                                        rel_base="../../",
+                                        curr_category=c,
+                                        all_categories=categories,
+                                        items=items,
+                                        month_pages=month_pages)
+                self._GenerateSinglePosts(path=[ "cat", c ],
                                         rel_base="../../",
                                         curr_category=c,
                                         all_categories=categories,
@@ -263,10 +269,11 @@ class SiteDefault(SiteBase):
         else:
             relevant_items = []
             for i in items:
-                for c in i.categories:
-                    if c == curr_category:
-                        relevant_items.append(i)
-                        break
+                if i.categories:
+                    for c in i.categories:
+                        if c == curr_category:
+                            relevant_items.append(i)
+                            break
 
         if curr_category in self._site_settings.reverse_categories:
             # sort by increasing date (thus reverse the name "decreasing date" order)
@@ -364,10 +371,11 @@ class SiteDefault(SiteBase):
         else:
             relevant_items = []
             for i in items:
-                for c in i.categories:
-                    if c == curr_category:
-                        relevant_items.append(i)
-                        break
+                if i.categories:
+                    for c in i.categories:
+                        if c == curr_category:
+                            relevant_items.append(i)
+                            break
 
         if self._site_settings.num_item_atom > 0:
             relevant_items = relevant_items[:self._site_settings.num_item_atom]
@@ -424,11 +432,14 @@ class SiteDefault(SiteBase):
                                      date.year, date.month,
                                      name)
 
-    def _GenerateSinglePages(self, path, rel_base,
+    def _GenerateSinglePosts(self, path, rel_base,
                                    curr_category, all_categories,
                                    items, month_pages):
         """
-        Generates single pages of items which match the curr_category.
+        Generates single posts of items which match the curr_category.
+
+        If an item has categories, generate one post per category, in the
+        sub-category directory.
 
         SiteItems are not re-ordered, it's up to the caller to order the items
         by decreasing date order.
@@ -458,10 +469,11 @@ class SiteDefault(SiteBase):
         else:
             relevant_items = []
             for i in items:
-                for c in i.categories:
-                    if c == curr_category:
-                        relevant_items.append(i)
-                        break
+                if i.categories:
+                    for c in i.categories:
+                        if c == curr_category:
+                            relevant_items.append(i)
+                            break
 
         if self._site_settings.num_item_atom > 0:
             relevant_items = relevant_items[:self._site_settings.num_item_atom]
@@ -489,13 +501,26 @@ class SiteDefault(SiteBase):
                                               version.SvnRevision())
 
         for i in relevant_items:
-            # Generate the content of the post
+            # Generate the content of the post, specific to the current category
+            if i.categories:
+                # If the post has categories, the current one must be one of them
+                # since it acts as a filter.
+                if not curr_category in i.categories:
+                    continue
+            elif curr_category is not None:
+                # If the post has no categories, we only generate it at the
+                # top level when curr_category is null.
+                continue
+
             content = i.content_gen(SiteDefault._TEMPLATE_HTML_ENTRY, keywords)
             entry = ContentEntry(content, i.title, i.date, i.permalink)
             keywords["entry"] = entry
             keywords["last_content_ts"] = None
-            # Finally generate the single page
-            filename = keywords["filename"] = self._SinglePermalink(i.date, i.title)
+
+            filename = self._SinglePermalink(i.date, i.title)
+            keywords["filename"] = filename
+
+            # Finally generate the single page for the current category
             content = self._FillTemplate(SiteDefault._TEMPLATE_HTML_SINGLE, **keywords)
             self._WriteFile(content, self._site_settings.dest_dir, os.path.join(base_path, filename))
 
@@ -540,10 +565,11 @@ class SiteDefault(SiteBase):
         else:
             relevant_items = []
             for i in items:
-                for c in i.categories:
-                    if c == curr_category:
-                        relevant_items.append(i)
-                        break
+                if i.categories:
+                    for c in i.categories:
+                        if c == curr_category:
+                            relevant_items.append(i)
+                            break
 
         if curr_category in self._site_settings.reverse_categories:
             # sort by increasing date (thus reverse the name "decreasing date" order)

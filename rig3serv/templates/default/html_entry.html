@@ -18,7 +18,13 @@ Parameters:
 <table class="deco">
 <tr><td class="left-top"> </td>
 <td class="title">
-<a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'"><a href="[[raw permalink_url]]" title="Permalink to '[[html title]]'"><span class="date">[[html date.strftime("%Y/%m/%d")]]</span> [[html title]]</a></a></td></tr>
+<a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'"><a
+        href="[[if categories]][[raw (base_url or "") + "cat/" + (curr_category and curr_category or categories[0]) + "/" ]][[end]][[raw permalink_url]]"
+        title="Permalink to '[[html title]]'"
+    ><span class="date">[[html date.strftime("%Y/%m/%d")]]</span>
+    [[html title]]
+    </a>
+</a></td></tr>
 <tr><td class="left-bottom"> </td>
 <td class="right-bottom">
 
