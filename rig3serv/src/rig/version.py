@@ -13,7 +13,7 @@ Note: The following SVN keywords are enabled for substitution:
 To enable substitutions, do something like this:
   $ svn propset svn:keywords "Date Author Revision HeadURL Id" version.py
 
------
+------
 
 Part of Rig3.
 Copyright (C) 2007-2009 ralfoide gmail com

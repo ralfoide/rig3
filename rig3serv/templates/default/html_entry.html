@@ -19,7 +19,7 @@ Parameters:
 <tr><td class="left-top"> </td>
 <td class="title">
 <a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'"><a
-        href="[[if categories]][[raw (base_url or "") + "cat/" + (curr_category and curr_category or categories[0]) + "/" ]][[end]][[raw permalink_url]]"
+        href="[[raw (not curr_category) and (categories and ("cat/" + categories[0] + "/") or "") or ""]][[raw permalink_url]]"
         title="Permalink to '[[html title]]'"
     ><span class="date">[[html date.strftime("%Y/%m/%d")]]</span>
     [[html title]]

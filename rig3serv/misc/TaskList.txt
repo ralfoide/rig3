@@ -37,6 +37,7 @@
 
 ---- Done Version 0.4 ----
 
+20100210 Engine:   Tweak post page generation to avoid absolute links
 20100208 Engine:   Generate post pages per category with absolute permalink URL in template
 20100208 Izu:      Correctly generate <p/> and <br/> with ending slash
 20100207 Engine:   Individual pages per post (experimental)
