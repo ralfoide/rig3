@@ -475,9 +475,6 @@ class SiteDefault(SiteBase):
                             relevant_items.append(i)
                             break
 
-        if self._site_settings.num_item_atom > 0:
-            relevant_items = relevant_items[:self._site_settings.num_item_atom]
-
         keywords = self._site_settings.AsDict()
 
         curr_url = keywords.get("base_url", "") + base_url
