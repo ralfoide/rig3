@@ -1,16 +1,7 @@
-[izu:cat:bar,foo,other]
-You can have sections but it's not mandatory. The ''en'' one is the default.
+[izu:cat:videos]
 
-[s:en]
-blog 1
+Youtube Tag Test, not centered, default size: /
+[youtube:Wvo-g_JvURI]
 
-File item #1 from an izu file.
-Some content in English.
-
-The rig link won't work, it can only access a picture in the same folder
-when using the directory-based items.
-Rig link: [This is a rig link|riglink:T12896*.jpg]
-
-[s:fr]
-Un mot ou deux en francais, avec des accents en ISO 8859-1:
-      ça, où est le pré près du prêt?
+Youtube Tag Test, centered, custom size:
+[c][youtube:TZ860P4iTaM:340x285]
