@@ -3,7 +3,6 @@
 20091129 Engine:   Comment support (using Google Social?)
 20091130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
 20091130 Engine:   Merge patch from MM to auto link pix in sub-folders
-20091130 Izu:      YouTube links
 20091130 Izu:      Nested <li>
 20091130 Izu:      In image tag, ability to specify size by overridable pattern
 
@@ -36,6 +35,8 @@
 
 
 ---- Done Version 0.4 ----
+
+20100211 Izu:      Youtube tag
 
 20100210 Engine:   Tweak post page generation to avoid absolute links
 20100208 Engine:   Generate post pages per category with absolute permalink URL in template

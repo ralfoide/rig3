@@ -1,0 +1,16 @@
+[izu:cat:bar,foo,other]
+You can have sections but it's not mandatory. The ''en'' one is the default.
+
+[s:en]
+blog 1
+
+File item #1 from an izu file.
+Some content in English.
+
+The rig link won't work, it can only access a picture in the same folder
+when using the directory-based items.
+Rig link: [This is a rig link|riglink:T12896*.jpg]
+
+[s:fr]
+Un mot ou deux en francais, avec des accents en ISO 8859-1:
+      ça, où est le pré près du prêt?

@@ -444,6 +444,7 @@ class IzuParser(object):
         line = self._FormatSimpleTags(state, line)
         line = self._FormatHtmlTags(state, line)
         line = self._FormatCenter(state, line)
+        line = self._FormatYoutube(state, line)
         line = self._FormatLinks(state, line)
         line = self._FormatLists(state, line)
 
@@ -609,6 +610,30 @@ class IzuParser(object):
 
     _RE_TAG_C_LINE = re.compile(r"(?P<before>.*?)(?<!\[)\[c\](?P<after>.*)")
     _RE_TAG_C_ONLY = re.compile(r"(?<!\[)\[c\]")
+
+    def _FormatYoutube(self, state, line):
+        """
+        Formats any [[youtube:ID:SXxSY]] tag.
+        The ":SXxSY" part is optional.
+        """
+        m = True
+        while m:
+            m = self._RE_TAG_YOUTUBE.match(line)
+            if m:
+                before = m.group("before") or ""
+                id     = m.group("id") or ""
+                sx     = m.group("sx") or 'youtube_sx'
+                sy     = m.group("sy") or 'youtube_sy'
+                after  = m.group("after")  or ""
+
+                cmd = '[[[raw youtube_html %% { "id": "%s", "sx": %s, "sy": %s } ]]' \
+                        % (id, sx, sy)
+
+                line = "%s%s%s" % (before, cmd, after)
+
+        return line
+
+    _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
 
     def _FormatLinks(self, state, line):
         """

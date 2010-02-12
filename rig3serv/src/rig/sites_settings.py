@@ -251,7 +251,16 @@ class SiteSettings(object):
                  use_curr_month_in_index=True,
                  date_ymd_pattern=None,
                  img_pattern=None,
-                 dup_on_realpath=False):
+                 dup_on_realpath=False,
+                 youtube_html="""<object width="%(sx)s" height="%(sy)s">
+<param name="movie" value="http://www.youtube-nocookie.com/v/%(id)s&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00"></param>
+<param name="allowFullScreen" value="true"></param>
+<param name="allowscriptaccess" value="always"></param>
+<embed src="http://www.youtube-nocookie.com/v/%(id)s&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="%(sx)s" height="%(sy)s"></embed>
+</object>""",
+                 youtube_sx="640",
+                 youtube_sy="385",
+                 ):
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
@@ -285,6 +294,9 @@ class SiteSettings(object):
         if img_pattern:
             self.img_pattern = re.compile(img_pattern)
         self.dup_on_realpath = self.ParseBool(dup_on_realpath)
+        self.youtube_html = youtube_html
+        self.youtube_sx = youtube_sx
+        self.youtube_sy = youtube_sy
 
     def AsDict(self):
         """
