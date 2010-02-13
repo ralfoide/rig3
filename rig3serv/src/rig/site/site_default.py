@@ -816,10 +816,15 @@ class SiteDefault(SiteBase):
         keywords["date_iso"] = self._DateToIso(date)
         keywords["tags"] = dict(tags)
         keywords["categories"] = list(cats)
+        # anchorlink is always relative to the current page
         anchorlink_url, anchorlink_name = self._AnchorLink(date.year, date.month, title)
         keywords["anchorlink_url"] = anchorlink_url
         keywords["anchorlink_name"] = anchorlink_name
-        keywords["permalink_url"] = self._SinglePermalink(date, title)
+        # the last segment of the permalink
+        permalink_url = self._SinglePermalink(date, title)
+        keywords["permalink_url"] = permalink_url
+        keywords["rel_permalink_url"] = permalink_url
+        keywords["abs_permalink_url"] = permalink_url
         keywords["_cache_key"] = self._cache.GetKey(keywords)
 
         return SiteItem(source_item,
@@ -848,6 +853,26 @@ class SiteDefault(SiteBase):
             if _html_img:
                 _keywords["sections"]["images"] = _html_img
 
+        if "curr_category" in _keywords:
+            # We need to update some keywords depending the current category
+            # being generated.
+            curr_category = _keywords["curr_category"]
+            permalink_url = _keywords["permalink_url"]
+            categories    = _keywords["categories"]
+
+            # relative permalink, relative to the current page.
+            # For an index, this links to the sub-category page if the post has categories.
+            rel_permalink_url = (not curr_category) and (categories and ("cat/" + categories[0] + "/") or "") or ""
+            rel_permalink_url += permalink_url
+
+            # absolute permalink, if current url is defined
+            curr_url = _keywords["curr_url"]
+            abs_permalink_url = (curr_url or "") + rel_permalink_url
+
+            _keywords["rel_permalink_url"] = rel_permalink_url
+            _keywords["abs_permalink_url"] = abs_permalink_url
+
+        # Check the generator cache
         _cache_key = [ _template, _keywords["_cache_key"] ]
         if _extra_keywords:
             _key_temp_dict = _extra_keywords.copy()

@@ -10,8 +10,11 @@ Parameters:
 - sections: dict{string name: string content}, the HTML for the various sections.
 	- Expected sections names: html (old html), en, fr and images.
 - rel_base_url: string, Relative url to base of site. May be empty or like ../../
-- permalink_name: string, the permalink simplified name, for anchors
-- permalink_url: string, the permalink URL relative to the base URL
+- anchorlink_name: string, the anchor simplified name
+- anchorlink_url: string, the anchor simplified URL
+- permalink_url: string, the last segment of the permalink
+- rel_permalink_url: string, the permalink relative to the current file (index or category or single post)
+- abs_permalink_url: string, the absolute URL of the permalink
 ]]
 <div class="entry">
 
@@ -19,7 +22,7 @@ Parameters:
 <tr><td class="left-top"> </td>
 <td class="title">
 <a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'"><a
-        href="[[raw (not curr_category) and (categories and ("cat/" + categories[0] + "/") or "") or ""]][[raw permalink_url]]"
+        href="[[html rel_permalink_url]]"
         title="Permalink to '[[html title]]'"
     ><span class="date">[[html date.strftime("%Y/%m/%d")]]</span>
     [[html title]]
@@ -33,6 +36,13 @@ Parameters:
 [[html date.strftime("%Y-%m-%d %H:%M")]]
 [[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
+
+<span style="float:right">
+<!-- Facebook -->
+<a name="fb_share" type="button" share_url="[[html abs_permalink_url]]" title="[[html title]]"
+   href="http://www.facebook.com/sharer.php">Share</a>
+<script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script>
+</span>
 </div>
 
 [[if "en" in sections]]
