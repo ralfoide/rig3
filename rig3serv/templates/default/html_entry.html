@@ -39,9 +39,16 @@ Parameters:
 
 <span style="float:right">
 <!-- Facebook -->
-<a name="fb_share" type="button" share_url="[[html abs_permalink_url]]" title="[[html title]]"
-   href="http://www.facebook.com/sharer.php">Share</a>
-<script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script>
+<a name="fb_share" type="button" share_url="[[html abs_permalink_url]]"
+   title="Share on Facebook: [[html title]]"
+   target="_blank" rel="nofollow external"
+   href="http://www.facebook.com/sharer.php?u=[[url abs_permalink_url]]&t=[[url title]]"
+   ><img src="[[url rel_base_url]]media/facebook.gif" title="Facebook" /></a>
+<!-- Buzz -->
+<a href="http://www.google.com/reader/link?title=[[url title]]&url=[[url abs_permalink_url]]"
+   title="Share on Google Buzz: [[html title]]"
+   target="_blank" rel="nofollow external"
+   ><img src="[[url rel_base_url]]media/google.gif" title="Google Buzz" /></a>
 </span>
 </div>
 
