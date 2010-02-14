@@ -36,6 +36,7 @@
 
 ---- Done Version 0.4 ----
 
+20100213 Template: Experiment with per-post sharing links for FB, Reader/Buzz, Twitter.
 20100211 Izu:      Youtube tag
 
 20100210 Engine:   Tweak post page generation to avoid absolute links

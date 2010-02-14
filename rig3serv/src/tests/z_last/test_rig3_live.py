@@ -82,7 +82,7 @@ class Rig3LiveTest(RigTestCase):
         # check tracking inclusion
         self.assertSearch("<i>tracking code here</i>", index_izu)
         # check that riglinks are properly expanded
-        self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url/photos1/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
+        self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url.alfray.com/photos1/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
         self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="cat/bar/post_2007-09-09_Izu-File-Item.html" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',

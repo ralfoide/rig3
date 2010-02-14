@@ -23,10 +23,10 @@
 sites = rig3_live
 
 [DEFAULT]
-sources1    = blog: album/blog1, rig_base: http://rig.base.url/photos1/index.php
-sources2    = blog: album/blog2, rig_base: http://rig.base.url/photos2/index.php
+sources1    = blog: album/blog1, rig_base: http://rig.base.url.alfray.com/photos1/index.php
+sources2    = blog: album/blog2, rig_base: http://rig.base.url.alfray.com/photos2/index.php
 dest_dir    = live_dest
-base_url    =
+base_url    = http://www.example.alfray.com
 cat_filter  = !exclude-me
 cache_dir   = live_dest/_cache_
 

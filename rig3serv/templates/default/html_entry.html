@@ -38,19 +38,26 @@ Parameters:
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
 
 <span style="float:right">
-<!-- Buzz -->
+<!-- Reader & Buzz -->
 <a href="http://www.google.com/reader/link?title=[[url title]]&url=[[url abs_permalink_url]]"
    onclick="window.open('http://www.google.com/reader/link?title=[[url title]]&url=[[url abs_permalink_url]]', 'GoogleReader','toolbar=no,width=650,height=550'); return false;"
-   title="Share on Google Buzz: [[html title]]"
+   title="Share on Google Reader &amp; Buzz: [[html title]]"
    target="_blank" rel="nofollow external"
-   ><img src="[[url rel_base_url]]media/google.gif" title="Share on Google: [[html title]]" border="0" /></a>
+   ><img src="[[url rel_base_url]]media/fav_google.gif" title="Share on Google Reader &amp; Buzz: [[html title]]" border="0" /></a>
 
 <!-- Facebook -->
 <a name="fb_share" type="button" share_url="[[html abs_permalink_url]]"
    title="Share on Facebook: [[html title]]"
    target="_blank" rel="nofollow external"
    href="http://www.facebook.com/sharer.php?u=[[url abs_permalink_url]]&t=[[url title]]"
-   ><img src="[[url rel_base_url]]media/facebook.gif" title="Share on Facebook: [[html title]]" border="0" /></a>
+   ><img src="[[url rel_base_url]]media/fav_facebook.gif" title="Share on Facebook: [[html title]]" border="0" /></a>
+
+<!-- Twitter -->
+<a href="http://twitter.com/home?status=Currently%20reading%20[[url abs_permalink_url]]"
+   title="Share on Twitter: [[html title]]"
+   target="_blank" rel="nofollow external"
+   ><img src="[[url rel_base_url]]media/fav_twitter.gif" title="Share on Twitter: [[html title]]" border="0" /></a>
+
 </span>
 </div>
 
