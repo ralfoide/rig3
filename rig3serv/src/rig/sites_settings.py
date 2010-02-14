@@ -220,6 +220,7 @@ class SiteSettings(object):
                    syntax (especially the named regex groups).
     - dup_on_realpath(bool): When true, use real path of source entries to de-dup
                    *regardless* of the various source settings.
+    - enable_sharing(bool): When true, add links to share posts to Facebook, twitter, etc.
     """
     def __init__(self,
                  public_name="",
@@ -259,20 +260,18 @@ class SiteSettings(object):
 </object>""",
                  youtube_sx="640",
                  youtube_sy="385",
+                 enable_sharing=False
                  ):
+        # Note: this is *always* called using the default values defined in the
+        # constructor. If you need to change a setting loaded from an RC file,
+        # use SetFinished() instead.
         self.public_name = public_name
         self.source_list = source_list or []
         self.dest_dir = dest_dir
         self.cache_dir = cache_dir
         self.theme = theme
         self.template_dir = template_dir
-
-        # We automatically add a / to the base_url if it needs to.
-        # A rare case where this might be unwanted is in case the URL has cgi params.
-        if base_url and not base_url.endswith("/") and not "?" in base_url:
-            base_url += "/"
         self.base_url = base_url
-
         self.rig_album_url = rig_album_url
         self.rig_img_url = rig_img_url
         self.rig_thumb_url = rig_thumb_url
@@ -302,6 +301,7 @@ class SiteSettings(object):
         self.youtube_html = youtube_html
         self.youtube_sx = youtube_sx
         self.youtube_sy = youtube_sy
+        self.enable_sharing = self.ParseBool(enable_sharing)
 
     def AsDict(self):
         """
@@ -342,6 +342,18 @@ class SiteSettings(object):
             raise TypeError("Invalid type for setting %s: expected %s, got %s" %
                             (key, type(value), type(new_value) ))
         self.__dict__[key] = value
+
+    def SetFinished(self):
+        """
+        Called once all settings have been set using Set(). This gives us
+        a last chance to edit/correct/check some settings.
+        """
+        # We automatically add a / to the base_url if it needs to.
+        # A rare case where this might be unwanted is in case the URL has cgi params.
+        if self.base_url and \
+                not self.base_url.endswith("/") and \
+                not "?" in self.base_url:
+            self.base_url += "/"
 
     def ParseBool(self, value):
         """
@@ -417,6 +429,7 @@ class SitesSettings(SettingsBase):
         for k in settings.__dict__.iterkeys():
             if k in vars:
                 settings.Set(k, vars[k])
+        settings.SetFinished()
 
     def _ProcessSources(self, settings, vars):
         """

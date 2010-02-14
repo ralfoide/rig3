@@ -36,3 +36,4 @@ public_name = Rig3 Live
 tracking_code = <i>tracking code here</i>
 toc_categories = !foo
 reverse_categories = bar
+enable_sharing = true

@@ -96,6 +96,9 @@ class Rig3LiveTest(RigTestCase):
         # empty posts are accepted
         self.assertHtmlSearch('<td class="title">\s*<a name="Empty-Post" title="Permalink to \'Empty Post\'"><a href="post_2007-10-01_Empty-Post.html" title="Permalink to \'Empty Post\'"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
                                index_izu)
+        # the live test site has sharing enabled (default is off)
+        self.assertHtmlSearch('href="http://www.facebook.com/sharer.php\?u=http://www.example.alfray.com/cat/videos/post_',
+                            index_izu)
 
 
 

@@ -37,6 +37,7 @@ Parameters:
 [[if "author" in tags]]by [[html tags["author"].capitalize() ]][[end]]
 [[if categories]]in [[html ", ".join([c.capitalize() for c in categories])]][[end]]
 
+[[if enable_sharing]]
 <span style="float:right">
 <!-- Reader & Buzz -->
 <a href="http://www.google.com/reader/link?title=[[url title]]&url=[[url abs_permalink_url]]"
@@ -57,8 +58,8 @@ Parameters:
    title="Share on Twitter: [[html title]]"
    target="_blank" rel="nofollow external"
    ><img src="[[url rel_base_url]]media/fav_twitter.gif" title="Share on Twitter: [[html title]]" border="0" /></a>
-
 </span>
+[[end]]
 </div>
 
 [[if "en" in sections]]
