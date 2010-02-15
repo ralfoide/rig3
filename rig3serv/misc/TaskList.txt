@@ -1,5 +1,7 @@
 ---- TODO ----
 
+20100215 Template: Fix broken borders on IE7 (IE8?)
+
 20091129 Engine:   Comment support (using Google Social?)
 20091130 Engine:   num_item configurable by category, e.g. = default cat=N cat=N
 20091130 Engine:   Merge patch from MM to auto link pix in sub-folders
@@ -35,6 +37,8 @@
 
 
 ---- Done Version 0.4 ----
+
+20100215 Template: Fix broken rounded borders on Chrome
 
 20100213 Template: Experiment with per-post sharing links for FB, Reader/Buzz, Twitter.
 20100211 Izu:      Youtube tag
