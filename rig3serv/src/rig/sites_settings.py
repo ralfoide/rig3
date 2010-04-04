@@ -221,6 +221,8 @@ class SiteSettings(object):
     - dup_on_realpath(bool): When true, use real path of source entries to de-dup
                    *regardless* of the various source settings.
     - enable_sharing(bool): When true, add links to share posts to Facebook, twitter, etc.
+    - index_exclude(str): An inclusion-exclusion list of categories to exclude from
+                    the generic "all recents items" page.
     """
     def __init__(self,
                  public_name="",
@@ -260,7 +262,8 @@ class SiteSettings(object):
 </object>""",
                  youtube_sx="640",
                  youtube_sy="385",
-                 enable_sharing=False
+                 enable_sharing=False,
+                 index_exclude=IncludeExclude(IncludeExclude.ALL, None)
                  ):
         # Note: this is *always* called using the default values defined in the
         # constructor. If you need to change a setting loaded from an RC file,
@@ -302,6 +305,7 @@ class SiteSettings(object):
         self.youtube_sx = youtube_sx
         self.youtube_sy = youtube_sy
         self.enable_sharing = self.ParseBool(enable_sharing)
+        self.index_exclude = index_exclude;
 
     def AsDict(self):
         """

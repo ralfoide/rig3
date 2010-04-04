@@ -38,8 +38,9 @@
 
 ---- Done Version 0.4 ----
 
-20100215 Template: Fix broken rounded borders on Chrome
+20100404 Engine:   Add option to exclude some categories from the 'all index' page
 
+20100215 Template: Fix broken rounded borders on Chrome
 20100213 Template: Experiment with per-post sharing links for FB, Reader/Buzz, Twitter.
 20100211 Izu:      Youtube tag
 

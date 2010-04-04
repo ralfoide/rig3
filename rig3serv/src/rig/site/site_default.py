@@ -265,15 +265,22 @@ class SiteDefault(SiteBase):
 
         # filter relevant items (or all of them if there's no curr_category)
         if curr_category is None:
-            relevant_items = items
+            # index_exclude indicates which categories to exclude for the "all index"
+            use_categories = self._site_settings.index_exclude.Filter(all_categories)
         else:
-            relevant_items = []
-            for i in items:
-                if i.categories:
-                    for c in i.categories:
-                        if c == curr_category:
-                            relevant_items.append(i)
-                            break
+            # we want only the specified category
+            use_categories = [ curr_category ]
+
+        relevant_items = []
+        for i in items:
+            if i.categories:
+                for c in i.categories:
+                    if c in use_categories:
+                        relevant_items.append(i)
+                        break
+            elif curr_category is None:
+                # item has no category. We accept it by default in the "all items" page
+                relevant_items.append(i)
 
         if curr_category in self._site_settings.reverse_categories:
             # sort by increasing date (thus reverse the name "decreasing date" order)
