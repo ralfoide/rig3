@@ -38,6 +38,7 @@
 
 ---- Done Version 0.4 ----
 
+20100404 Izu:      Implement legacy Izumi [table] and [izu:image] tags
 20100404 Engine:   Add option to exclude some categories from the 'all index' page
 
 20100215 Template: Fix broken rounded borders on Chrome

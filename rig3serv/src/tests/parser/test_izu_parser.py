@@ -221,6 +221,24 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": 640, "sy": 385 } ]].</span>',
             self._Render("[youtube:ab_CdefgGh:640x385]."))
 
+    def testTable(self):
+        self.assertEquals(
+            '<span class="izu">\n<table border="0"  width="100%"><tr valign="top"><td  width="50px">my column 1</td><td  width="48px">my column 2</td></tr><tr valign="top"><td  width="40%">second row</td></tr></table></span>',
+            self._Render("[table:begin:100%:50px]my column 1[col:48px]my column 2[row:40%]second row[table:end]"))
+
+        self.assertEquals(
+            '<span class="izu">\n<table border="0"  width="100%"><tr valign="top"><td >my column 1</td><td >my column 2</td></tr><tr valign="top"><td >second row</td></tr></table></span>',
+            self._Render("[table:begin:100%]my column 1[col]my column 2[row]second row[table:end]"))
+
+        self.assertEquals(
+            '<span class="izu">\n<table border="0" ><tr valign="top"><td >my column 1</td><td >my column 2</td></tr><tr valign="top"><td >second row</td></tr></table></span>',
+            self._Render("[table:begin]my column 1[col]my column 2[row]second row[table:end]"))
+
+    def testIzuImage(self):
+        self.assertEquals(
+            '<span class="izu">\n<a href="http://en.wikipedia.org/wiki/Apple_iic"><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Apple_iicb.jpg/150px-Apple_iicb.jpg"  title="Apple IIc (Wikipedia)" /></a></span>',
+            self._Render("[izu:image:http://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Apple_iicb.jpg/150px-Apple_iicb.jpg|http://en.wikipedia.org/wiki/Apple_iic:Apple IIc (Wikipedia)]"))
+
     def testBold(self):
         self.assertEquals(
             '<span class="izu">\n<b>this</b> is <b>in bold</b> but not <b>this</b></span>',

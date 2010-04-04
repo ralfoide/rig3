@@ -177,12 +177,12 @@ class IzuParser(object):
         self._rig_base = rig_base
 
         # custom section handlers. Unlisted sections use the "default" formatter
-        self._escape_block = { "--": self._EscapeComment,
-                               "html:": self._EscapeRawHtml }
-        self._formatters = { "images": self._ImagesSection,
-                             "html":   self._HtmlSection }
-        self._tag_handlers = { "cat":  self._CatHandler,
-                               "date": self._DateHandler }
+        self._escape_block = { "--"    : self._EscapeComment,
+                               "html:" : self._EscapeRawHtml }
+        self._formatters =   { "images": self._ImagesSection,
+                               "html"  : self._HtmlSection }
+        self._tag_handlers = { "cat"   : self._CatHandler,
+                               "date"  : self._DateHandler }
 
     def RenderFileToHtml(self, filestream):
         """
@@ -392,7 +392,15 @@ class IzuParser(object):
 
                 tag  = m.group("tag")
                 value  = m.group("value")
-                if tag:
+
+                if tag == "image":
+                    # izu:image is handled here for legacy reasons.
+                    # In Izumi, this is an HTML tag formatter, not a meta
+                    # processing tag. So we'll just rewrite it as izu_image
+                    # and let _DefaultSection handle it.
+                    line = start + "[izu_%s:%s]" % (tag, value) + end
+
+                elif tag:
                     self._tag_handlers.get(tag, self._DefaultTagHandler)(state, tag, value)
                 else:
                     # log an error and ignore
@@ -443,8 +451,10 @@ class IzuParser(object):
         line = self._FormatBoldItalicHtmlEmpty(line)
         line = self._FormatSimpleTags(state, line)
         line = self._FormatHtmlTags(state, line)
-        line = self._FormatCenter(state, line)
+        line = self._FormatTableTags(state, line)
+        line = self._FormatIzuImage(state, line)
         line = self._FormatYoutube(state, line)
+        line = self._FormatCenter(state, line)
         line = self._FormatLinks(state, line)
         line = self._FormatLists(state, line)
 
@@ -634,6 +644,104 @@ class IzuParser(object):
         return line
 
     _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
+
+    def _FormatTableTags(self, state, line):
+        """
+        Formats table tags:
+            [table:begin:100%:50px]
+                where first 100% or 100px is the table width and second one is column width
+                and are both optional.
+            [col:50%]
+            [row:50%]
+                where 50% or 50px is the column width, optional.
+            [table:end]
+        """
+
+        for regexp, replace in [ ( self._RE_TAG_TABLE_BEGIN,
+                                   "<table border=\"0\" %s><tr valign=\"top\"><td %s>" ),
+                                 ( self._RE_TAG_TABLE_COL,
+                                   "</td><td %s>" ),
+                                 ( self._RE_TAG_TABLE_ROW,
+                                   "</td></tr><tr valign=\"top\"><td %s>" ),
+                                 ( self._RE_TAG_TABLE_END,
+                                   "</td></tr></table>" )
+                                 ]:
+            m = True
+            while m:
+                m = regexp.match(line)
+                if m:
+                    before = m.group("before") or ""
+                    after  = m.group("after")  or ""
+
+                    try:
+                        # first width (table with for begin, column width for row/col)
+                        w1 = m.group("w1") or ""
+                        if w1:
+                            w1 = " width=\"" + w1 + "\""
+
+                        # second width (column width for begin, none for the others)
+                        try:
+                            w2 = m.group("w2") or ""
+                            if w2:
+                                w2 = " width=\"" + w2 + "\""
+                            replace = replace % ( w1, w2 )
+                        except IndexError:
+                            # no w2 argument
+                            replace = replace % ( w1 )
+                    except IndexError:
+                        pass # no w1 argument
+
+                    line = "%s%s%s" % (before, replace, after)
+
+
+
+        return line
+
+    _RE_TAG_TABLE_BEGIN = re.compile(r"(?P<before>.*?)(?<!\[)\[table:begin(?::(?P<w1>[0-9]+(?:%|px))(?::(?P<w2>[0-9]+(?:%|px)))?)?\](?P<after>.*)")
+    _RE_TAG_TABLE_COL   = re.compile(r"(?P<before>.*?)(?<!\[)\[col(?::(?P<w1>[0-9]+(?:%|px)))?\](?P<after>.*)")
+    _RE_TAG_TABLE_ROW   = re.compile(r"(?P<before>.*?)(?<!\[)\[row(?::(?P<w1>[0-9]+(?:%|px)))?\](?P<after>.*)")
+    _RE_TAG_TABLE_END   = re.compile(r"(?P<before>.*?)(?<!\[)\[table:end\](?P<after>.*)")
+
+    def _FormatIzuImage(self, state, line):
+        """
+        Formats izu_image with optional align tag, optional link and optional label
+        Syntax is [izu_image:url_img(,align=blah)(|url_link)(:label)]
+        If label is defined, it is used for <img title>.
+        If url_link is defined, it is used to wrap the img using an <a href>.
+        Url_link must start with http. The link cannot contain " : or < >
+        """
+        m = True
+        while m:
+            m = self._RE_TAG_IZU_IMG.match(line)
+            if m:
+                before = m.group("before") or ""
+                after  = m.group("after")  or ""
+                img    = m.group("img")    or ""
+                tag    = m.group("tag")    or ""
+                value  = m.group("value")  or ""
+                link   = m.group("link")   or ""
+                label  = m.group("label")  or ""
+
+                if tag and value:
+                    tag = "%s=%s" % (tag, value)
+                else:
+                    tag = ""
+                if label:
+                    tag = "%s title=\"%s\"" % (tag, label)
+
+                img = "<img src=\"%s\" %s />" % (img, tag)
+
+                if link:
+                    link = "<a href=\"%s\">%s</a>" % (link, img)
+                else:
+                    link = img
+
+                line = "%s%s%s" % (before, link, after)
+
+        return line
+
+    # Note: the [izu:image:..] tag is rewritten to [izu_image:..] by _ParseIzuTags
+    _RE_TAG_IZU_IMG = re.compile(r"(?i)(?P<before>.*?)(?<!\[)\[izu_image:(?P<img>https?://[^\],\"<>]+\.(?:gif|jpe?g|png|svg))(?:,(?P<tag>[a-z]+)=(?P<value>[a-z]+))?(?:\|(?P<link>(?:https?://|ftp://|#)[^:\"<>\]]+))?(?::(?P<label>[^\]]+))?\](?P<after>.*)")
 
     def _FormatLinks(self, state, line):
         """
