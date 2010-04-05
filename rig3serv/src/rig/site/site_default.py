@@ -922,7 +922,7 @@ class SiteDefault(SiteBase):
         """
         rig_base = keywords["rig_base"]
         if not rig_base:
-            self._log.Info("[%s], No rig_base, no images generated for %s",
+            self._log.Info("[%s] No rig_base, no images auto-generated for %s",
                            self._site_settings.public_name,
                            source_dir.rel_curr)
             return None

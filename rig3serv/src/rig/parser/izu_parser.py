@@ -803,7 +803,7 @@ class IzuParser(object):
                 line = self._ReplRigImage(state, m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
         return line
 
-    # groups:                     . first  .  1 title               2 islink.  3 size     4 img glob .    5 caption
+    # groups:                     . first     1 title               2 islink.  3 size       4 img glob .    5 caption
     _RE_RIGIMGLINK = re.compile(r'(?<!\[)\[(?:([^\|\[\]]+)\|)?rigimg(link)?:(?:([^:\]]*?):)?([^"<>|]+?)(?:\|([^"<>\]]+?))?\]')
 
     def _ReplRigLink(self, state, title, image_glob):
