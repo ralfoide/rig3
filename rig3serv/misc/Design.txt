@@ -1035,4 +1035,21 @@ Then if the site pref dup_on_realpath is set to true we can filter these
 hashes out.
 
 ----
+20100605 Images and video
+
+The goal of the next version will be do remove the rig1 link,
+or more exactly to make it optional. The idea is to display
+the images right in place.
+
+Lightbox, a lib to do this seems promising:
+  http://www.lokeshdhakar.com/projects/lightbox2/
+
+I still need a solution for video, though.
+
+I'd like also to incorporate a solution to embed user comments.
+Ideally they would be stored and managed by another site. I had
+hope in Google FriendConnect but it doesn't seem to do this at all.
+
+----
+
 
