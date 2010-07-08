@@ -859,6 +859,11 @@ class IzuParser(object):
 
     def _ExternalGenRigUrl(self, rel_file, abs_dir, filename, title, is_link, size, caption):
         """
+        Calls external script.
+        Returns None if there is no external script.
+        Returns False if script is dies with ret != 0, in which case we just die painfully
+        anyway.
+        Otherwise returns the replacement string to use for the image.
         """
         script = self._img_gen_script
         if not script:
@@ -896,11 +901,12 @@ class IzuParser(object):
                              universal_newlines=True)
 
         output = p.communicate()[0]
-        if not output:
-            return None
-        ret = p.wait()
+        ret = -1
+        if output:
+            ret = p.wait()
         if ret != 0:
-            return None
+            self._log.Error("Image Gen Script failed. Ret=%d, Args=%s", ret, repr(env))
+            sys.exit(2)
 
         result = output
         if output.find("<img ") == -1:
