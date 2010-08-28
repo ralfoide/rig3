@@ -28,8 +28,9 @@ import os
 import re
 from datetime import datetime
 
-from rig.source_item import SourceDir, SourceFile
+from rig.source_item import SourceDir, SourceFile, SourceContent
 from rig.parser.dir_parser import DirParser, RelFile, PathTimestamp
+from rig.parser.izu_parser import IzuParser
 
 
 #------------------------
@@ -151,14 +152,68 @@ class SourceBlogReader(SourceReaderBase):
                 # Not a directory entry, so check individual files to see if they
                 # qualify as individual entries
                 for f in all_files:
-                    if file_pattern.search(f):
-                        rel_file = RelFile(source_dir.abs_base,
-                                           os.path.join(source_dir.rel_curr, f))
+                    if not file_pattern.search(f):
+                        continue
+                    rel_file = RelFile(source_dir.abs_base,
+                                       os.path.join(source_dir.rel_curr, f))
+                    if f.endswith(".old.izu"):
+                        self._ParseOldIzu(rel_file.abs_path, items)
+                    else:
                         date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
                         item = SourceFile(date, rel_file, self._source_settings)
                         items.append(item)
 
         return items
+
+
+    OLD_IZU_HEADER = re.compile(r"^\[s:(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}):(?P<title>[^\]]*).*$")
+
+    def _ParseOldIzu(self, abs_path, items):
+        """
+        """
+        f = file(abs_path)
+
+        SEP = "----"
+
+        # First line must have some izu tags
+        line = None
+        tags = None
+        while line != SEP:
+            line = f.readline()
+            if not tags and line:
+                tags = IzuParser(self._log, None, None).ParseFirstLine(line)
+
+        content = None
+        date = None
+        title = None
+        for line in f.readlines():
+            if line.startswith("[s:"):
+                # Flush content
+                item = SourceContent(date, title, content, tags, self._source_settings)
+                items.append(item)
+
+                content = ""
+                date = None
+                title = None
+
+                m = self.OLD_IZU_HEADER.match(line)
+                if m:
+                    date = datetime.datetime(
+                                 int(m.groups("year")),
+                                 int(m.groups("month")),
+                                 int(m.groups("day")))
+                    title = m.groups("title")
+
+            elif date and title:
+                content += line
+
+        if content:
+            # Flush content
+            item = SourceContent(date, title, content)
+            items.append(item)
+
+        f.close()
+
 
     # Utilities, overridable for unit tests
 
@@ -197,7 +252,7 @@ class SourceDirReader(SourceReaderBase):
     the specified DIR_PATTERN regexp *and* must contain one or more of the files
     specified by the VALID_FILES regexp.
 
-    @deprecated
+    @deprecated use SourceBlogReader instead
     """
 
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
@@ -306,7 +361,7 @@ class SourceFileReader(SourceReaderBase):
 
     Only files which name match the specified FILE_PATTERN regexp are considered valid.
 
-    @deprecated
+    @deprecated use SourceBlogReader instead
     """
 
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")

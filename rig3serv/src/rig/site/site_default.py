@@ -670,6 +670,8 @@ class SiteDefault(SiteBase):
         If the source item is not suitable (i.e. generates no data),
         the method must return None and the caller must be prepared to ignore it.
 
+        This basically converts a SourceItem into a SiteItem.
+
         Arguments:
         - source_item: An instance of SourceItem.
         """

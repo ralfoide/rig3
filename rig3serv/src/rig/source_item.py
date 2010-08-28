@@ -180,7 +180,7 @@ class SourceFile(SourceItem):
     """
     Represents a file item from a SourceFileReader.
 
-    Paremeters:
+    Parameters:
     - date (datetime): Date of the file
     - rel_file (RelFile): absolute+relative source file
     - source_settings (not optional)
@@ -228,10 +228,61 @@ class SourceFile(SourceItem):
         return self.rel_file.rel_curr
 
 
-# TODO:  SourceBlog
-#    - content: the data of the file
-#    - rel_filename: filename of the generated file relative to the site's
-#                    dest_dir.
+#------------------------
+class SourceContent(SourceItem):
+    """
+    Represents a file item from a SourceFileReader.
+
+    Parameters:
+    - date (datetime): Date of the file
+    - rel_file (RelFile): absolute+relative source file
+    - source_settings (not optional)
+    """
+    def __init__(self, date, title, content, tags, source_settings):
+        super(SourceContent, self).__init__(date, source_settings)
+        self.tags = tags
+        self.title = title
+        self.content = content
+
+    def __eq__(self, rhs):
+        if not super(SourceContent, self).__eq__(rhs):
+            return False
+        return (isinstance(rhs, SourceContent) and
+                    self.tags == rhs.tags  and
+                    self.title == rhs.title and
+                    self.content == rhs.content)
+
+    def RigHash(self, md=None):
+        """
+        Computes a hash that depends on the real path of the file (like
+        ContentHash) but *also* depends on the items date, source settings
+        and categories.
+        """
+        md = super(SourceContent, self).RigHash(md)
+        md = self.ContentHash(md)
+        return md
+
+    def ContentHash(self, md=None):
+        """
+        Computes a hash that only depends on the real path of the file.
+        """
+        md = super(SourceContent, self).ContentHash(md)
+        md = self.UpdateHash(md, self.rel_file.realpath())
+        return md
+
+    def __repr__(self):
+        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
+                                         self.date,
+                                         self.rel_file,
+                                         self.categories,
+                                         self.source_settings)
+
+    def PrettyRepr(self):
+        """
+        Returns a "pretty representation" of the item as a string,
+        suitable for Log.Info, namely the file relative path.
+        """
+        return self.rel_file.rel_curr
 
 
 
