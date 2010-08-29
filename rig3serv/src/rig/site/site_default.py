@@ -35,7 +35,7 @@ from datetime import date, datetime
 from rig.parser.izu_parser import IzuParser
 from rig.site_base import SiteBase, SiteItem
 from rig.template.template import Template
-from rig.source_item import SourceDir, SourceFile
+from rig.source_item import SourceDir, SourceFile, SourceContent
 from rig.parser.dir_parser import RelPath, PathTimestamp
 from rig.version import Version
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
@@ -723,6 +723,7 @@ class SiteDefault(SiteBase):
         izu_file = None
         html_file = None
         rel_dir = None
+        title = None
 
         if isinstance(source_item, SourceDir):
             rel_dir = source_item.rel_dir
@@ -743,6 +744,11 @@ class SiteDefault(SiteBase):
             elif rel_file.rel_curr.endswith(self.EXT_HTML):
                 html_file = rel_file
                 title = title[:-1 * len(self.EXT_HTML)]  # remove ext from title
+
+        elif isinstance(source_item, SourceContent):
+            title = source_item.title
+            izu_file = source_item.rel_file
+            html_file = "@content"
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
@@ -767,7 +773,11 @@ class SiteDefault(SiteBase):
             p = IzuParser(self._log,
                               keywords["rig_base"],
                               keywords["img_gen_script"])
-            tags, sections = p.RenderFileToHtml(izu_file)
+            if html_file == "@content":
+                tags = source_item.tags
+                _, sections = p.RenderStringToHtml(source_item.content)
+            else:
+                tags, sections = p.RenderFileToHtml(izu_file)
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):

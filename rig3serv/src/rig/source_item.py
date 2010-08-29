@@ -238,8 +238,9 @@ class SourceContent(SourceItem):
     - rel_file (RelFile): absolute+relative source file
     - source_settings (not optional)
     """
-    def __init__(self, date, title, content, tags, source_settings):
+    def __init__(self, date, rel_file, title, content, tags, source_settings):
         super(SourceContent, self).__init__(date, source_settings)
+        self.rel_file = rel_file
         self.tags = tags
         self.title = title
         self.content = content
@@ -250,7 +251,8 @@ class SourceContent(SourceItem):
         return (isinstance(rhs, SourceContent) and
                     self.tags == rhs.tags  and
                     self.title == rhs.title and
-                    self.content == rhs.content)
+                    self.content == rhs.content and
+                    self.rel_file == rhs.rel_file)
 
     def RigHash(self, md=None):
         """
@@ -267,22 +269,26 @@ class SourceContent(SourceItem):
         Computes a hash that only depends on the real path of the file.
         """
         md = super(SourceContent, self).ContentHash(md)
+        md = self.UpdateHash(md, self.tags)
+        md = self.UpdateHash(md, self.title)
+        md = self.UpdateHash(md, self.content)
         md = self.UpdateHash(md, self.rel_file.realpath())
         return md
 
     def __repr__(self):
-        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
+        return "<%s (%s) %s, %s, %s, %s>" % (self.__class__.__name__,
                                          self.date,
-                                         self.rel_file,
-                                         self.categories,
+                                         self.title,
+                                         self.tags,
+                                         self.content,
                                          self.source_settings)
 
     def PrettyRepr(self):
         """
         Returns a "pretty representation" of the item as a string,
-        suitable for Log.Info, namely the file relative path.
+        suitable for Log.Info.
         """
-        return self.rel_file.rel_curr
+        return "%s:%s" % (self.date, self.title)
 
 
 

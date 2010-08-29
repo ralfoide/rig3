@@ -91,6 +91,7 @@ class SourceBlogReader(SourceReaderBase):
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
     DIR_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
+    OLD_IZU_PATTERN = re.compile(r"^.+?\.old\.izu$")
 
     def __init__(self, log, site_settings, source_settings, path):
         """
@@ -152,45 +153,55 @@ class SourceBlogReader(SourceReaderBase):
                 # Not a directory entry, so check individual files to see if they
                 # qualify as individual entries
                 for f in all_files:
-                    if not file_pattern.search(f):
-                        continue
-                    rel_file = RelFile(source_dir.abs_base,
-                                       os.path.join(source_dir.rel_curr, f))
-                    if f.endswith(".old.izu"):
-                        self._ParseOldIzu(rel_file.abs_path, items)
-                    else:
+                    if self.OLD_IZU_PATTERN.search(f):
+                        rel_file = RelFile(source_dir.abs_base,
+                                           os.path.join(source_dir.rel_curr, f))
+                        self._ParseOldIzu(rel_file, items)
+
+                    elif file_pattern.search(f):
+                        rel_file = RelFile(source_dir.abs_base,
+                                           os.path.join(source_dir.rel_curr, f))
                         date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
                         item = SourceFile(date, rel_file, self._source_settings)
                         items.append(item)
+                        self._log.Debug("[%s] Append item '%s'", item)
 
         return items
 
 
     OLD_IZU_HEADER = re.compile(r"^\[s:(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}):(?P<title>[^\]]*).*$")
 
-    def _ParseOldIzu(self, abs_path, items):
+    def _ParseOldIzu(self, rel_file, items):
         """
         """
-        f = file(abs_path)
+        f = file(rel_file.abs_path)
 
         SEP = "----"
 
         # First line must have some izu tags
-        line = None
         tags = None
-        while line != SEP:
-            line = f.readline()
+        for line in f:
+            if line.strip() == SEP:
+                break
             if not tags and line:
                 tags = IzuParser(self._log, None, None).ParseFirstLine(line)
 
         content = None
         date = None
         title = None
-        for line in f.readlines():
-            if line.startswith("[s:"):
+        for line in f:
+            if line.strip() == SEP:
+                continue
+
+            elif line.startswith("[s:"):
                 # Flush content
-                item = SourceContent(date, title, content, tags, self._source_settings)
-                items.append(item)
+                if content:
+                    # Inject date in tags
+                    tags = dict(tags)
+                    tags["date"] = date
+                    item = SourceContent(date, rel_file, title, content, tags, self._source_settings)
+                    items.append(item)
+                    self._log.Debug("[%s] Append item '%s'", item)
 
                 content = ""
                 date = None
@@ -198,19 +209,23 @@ class SourceBlogReader(SourceReaderBase):
 
                 m = self.OLD_IZU_HEADER.match(line)
                 if m:
-                    date = datetime.datetime(
-                                 int(m.groups("year")),
-                                 int(m.groups("month")),
-                                 int(m.groups("day")))
-                    title = m.groups("title")
+                    date = datetime(
+                                 int(m.group("year")),
+                                 int(m.group("month")),
+                                 int(m.group("day")))
+                    title = m.group("title")
 
             elif date and title:
                 content += line
 
         if content:
+            # Inject date in tags
+            tags = dict(tags)
+            tags["date"] = date
             # Flush content
-            item = SourceContent(date, title, content)
+            item = SourceContent(date, rel_file, title, content, tags, self._source_settings)
             items.append(item)
+            self._log.Debug("[%s] Append item '%s'", item)
 
         f.close()
 
