@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
-import md5
+import sha
 from tests.rig_test_case import RigTestCase
 from rig.hashable import Hashable
 
@@ -47,9 +47,9 @@ class HashableTest(RigTestCase):
     def tearDown(self):
         pass
 
-    def assertMd5Equals(self, expected, actual, msg=None):
+    def assertShaEquals(self, expected, actual, msg=None):
         """
-        Helper for testing MD5 equality
+        Helper for testing SHA1 equality
         """
         self.assertEquals(expected.hexdigest(), actual.hexdigest(), msg)
 
@@ -75,34 +75,34 @@ class HashableTest(RigTestCase):
         m = MyHash("blah")
         h = m.RigHash()
 
-        # The md5 is not really an object so we can't quite test its type
+        # The sha is not really an object so we can't quite test its type
         # using isinstance(). Check the value directly then.
-        # I.e. we can't write this: self.assertIsInstance(md5, h)
-        self.assertMd5Equals(md5.new("blah"), h)
+        # I.e. we can't write this: self.assertIsInstance(sha, h)
+        self.assertShaEquals(sha.new("blah"), h)
 
     def testRigHashes(self):
         """
         Test various hashes on complex structures.
         """
 
-        m = md5.new("some string")
-        self.assertMd5Equals(m,
+        m = sha.new("some string")
+        self.assertShaEquals(m,
               MyHash("some string").RigHash())
 
-        m = md5.new()
+        m = sha.new()
         m.update("some")
         m.update(" string")
-        self.assertMd5Equals(m,
+        self.assertShaEquals(m,
               MyHash([ "some", " string" ]).RigHash())
 
-        m = md5.new()
+        m = sha.new()
         m.update("1")
         m.update("one")
         m.update("2")
         m.update("two")
         m.update("3")
         m.update("4"),
-        self.assertMd5Equals(m,
+        self.assertShaEquals(m,
               MyHash({ 1: "one", 2: "two", 3: 4 }).RigHash())
 
 

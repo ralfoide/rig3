@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
-import md5
+import sha
 
 #------------------------
 class Hashable(object):
@@ -39,7 +39,7 @@ class Hashable(object):
 
     def UpdateHash(self, md, obj):
         if md is None:
-            md = md5.new()
+            md = sha.new()
 
         if isinstance(obj, Hashable):
             obj.RigHash(md)
