@@ -263,9 +263,8 @@ class SourceContent(SourceItem):
 
     def RigHash(self, md=None):
         """
-        Computes a hash that depends on the real path of the file (like
-        ContentHash) but *also* depends on the items date, source settings
-        and categories.
+        Computes a hash that depends on the content (like ContentHash)
+        but *also* depends on the source settings and categories.
         """
         md = super(SourceContent, self).RigHash(md)
         md = self.ContentHash(md)
@@ -273,7 +272,7 @@ class SourceContent(SourceItem):
 
     def ContentHash(self, md=None):
         """
-        Computes a hash that only depends on the real path of the file.
+        Computes a hash that only depends on the content.
         """
         md = super(SourceContent, self).ContentHash(md)
         md = self.UpdateHash(md, self.tags)
@@ -283,11 +282,10 @@ class SourceContent(SourceItem):
         return md
 
     def __repr__(self):
-        return "<%s (%s) %s, %s, %s, %s>" % (self.__class__.__name__,
+        return "<%s (%s) %s, %s, %s>" % (self.__class__.__name__,
                                          self.date,
                                          self.title,
                                          self.tags,
-                                         self.content,
                                          self.source_settings)
 
     def PrettyRepr(self):

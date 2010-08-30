@@ -245,11 +245,19 @@ class Cache(object):
             for k, v in obj.iteritems():
                 self._ShaHash(md, k)
                 self._ShaHash(md, v)
+        elif isinstance(obj, unicode):
+            # Transforms the unicode string into a python string representation
+            # of the unicode string, thus removing encodings.
+            md.update(obj.encode("unicode_escape"))
         else:
-            r = repr(obj)
-            if "object at 0x" in r:
-                raise AssertionError("Object %s does not override __repr__ for cache hash" % type(obj))
-            md.update(r)
+            try:
+                r = repr(obj)
+                if "object at 0x" in r:
+                    raise AssertionError("Object %s does not override __repr__ for cache hash" % type(obj))
+                md.update(r)
+            except Exception, e:
+                self._log.Debug("Invalid cache object: %s", type(obj))
+                raise e
 
     def _RemoveDir(self, dir_path):
         """

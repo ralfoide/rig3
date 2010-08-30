@@ -82,9 +82,12 @@ class TagRaw(Tag):
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
-            result = str(result)
+            if not isinstance(result, (str, unicode)):
+                result = str(result)
+            return result
         except Exception, e:
-            raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
+            raise Exception("%s: %s\nTag: %s\nContext: %s\n" %
+                            (type(e), e, tag_node, context))
         return result
 
 
@@ -101,10 +104,11 @@ class TagHtml(Tag):
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
-            result = cgi.escape(str(result))
+            if not isinstance(result, (str, unicode)):
+                result = str(result)
+            return cgi.escape(result)
         except Exception, e:
             raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
-        return result
 
 
 #------------------------
@@ -123,7 +127,9 @@ class TagXml(Tag):
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
-            result = cgi.escape(str(result))
+            if not isinstance(result, (str, unicode)):
+                result = str(result)
+            return cgi.escape(result)
         except Exception, e:
             raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
         return result
@@ -142,7 +148,9 @@ class TagUrl(Tag):
     def Generate(self, log, tag_node, context):
         try:
             result = eval(tag_node.Parameters(), dict(context))
-            result = _RE_URL.sub(_UrlEncode, str(result))
+            if not isinstance(result, (str, unicode)):
+                result = str(result)
+            result = _RE_URL.sub(_UrlEncode, result)
         except Exception, e:
             raise e.__class__("%s\nTag: %s\nContext: %s" % (e, tag_node, context))
         return result

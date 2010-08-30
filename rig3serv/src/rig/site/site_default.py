@@ -24,12 +24,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
-import re
-import os
 import cgi
-import zlib
+import codecs
+import os
+import re
 import time
 import urllib
+import zlib
 from datetime import date, datetime
 
 from rig.parser.izu_parser import IzuParser
@@ -51,8 +52,11 @@ class ContentEntry(object):
         self.permalink = permalink
 
     def __repr__(self):
+        content = self.content
+        if isinstance(content, unicode):
+            content = content.encode("unicode_escape")
         return "<%s: title %s, date %s, link %s, content %s>" % (
-             self.__class__.__name__, self.title, self.date, self.permalink, self.content)
+             self.__class__.__name__, self.title, self.date, self.permalink, content)
 
 #------------------------
 class MonthPageItem(object):
@@ -1174,7 +1178,8 @@ class SiteDefault(SiteBase):
             self._log.Info("[%s] Write %s",
                            self._site_settings.public_name,
                            dest_file)
-            f = file(dest_file, mode="wb")
+
+            f = codecs.open(dest_file, mode="wb", encoding="utf-8")
             f.write(data)
             f.close()
         return dest_file

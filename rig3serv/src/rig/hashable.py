@@ -57,7 +57,9 @@ class Hashable(object):
             md.update(str(obj))
 
         elif isinstance(obj, unicode):
-            md.update(unicode(obj))
+            # Transforms the unicode string into a python string representation
+            # of the unicode string, thus removing encodings.
+            md.update(obj.encode("unicode_escape"))
 
         else:
             md.update(repr(obj))

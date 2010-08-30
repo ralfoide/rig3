@@ -11,6 +11,12 @@ The rig link won't work, it can only access a picture in the same folder
 when using the directory-based items.
 Rig link: [This is a rig link|riglink:T12896*.jpg]
 
+This little accent here causes a __lot__ of trouble because it encodes to 0xE5
+and the encoding behavior is different whether I run this using Windows' WPython
+or cygwin's python (sigh, no kidding):
+   "å" from
+   "Deepzooming at the top of the Mandelbrot set has already been done, for example in this page from Bengt Månsson."
+
 [s:fr]
 Un mot ou deux en français, avec des accents en UTF-8:
       ça, où est le pré près du prêt?
