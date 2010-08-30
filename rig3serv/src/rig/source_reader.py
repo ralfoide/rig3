@@ -182,7 +182,6 @@ class SourceBlogReader(SourceReaderBase):
     def _ParseOldIzu(self, rel_file, cat, items):
         """
         """
-        f = file(rel_file.abs_path, "rU")
 
         SEP = "----"
 
@@ -192,11 +191,11 @@ class SourceBlogReader(SourceReaderBase):
             encoding = self._site_settings.encoding
 
         # First line must have some izu tags
-        tags = IzuParser(self._log, None, None).ParseFileFirstLine(f, encoding)
+        tags = IzuParser(self._log, None, None).ParseFileFirstLine(rel_file.abs_path, encoding)
 
         # If we find an encoding tag, reparse the tags using that encoding
         if "encoding" in tags:
-            tags = IzuParser(self._log, None, None).ParseFileFirstLine(f, encoding)
+            tags = IzuParser(self._log, None, None).ParseFileFirstLine(rel_file.abs_path, encoding)
 
         f = codecs.open(rel_file.abs_path, mode="rU", encoding=encoding)
         # Skip to the first section

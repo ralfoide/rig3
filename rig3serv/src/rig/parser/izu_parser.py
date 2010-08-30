@@ -560,12 +560,18 @@ class IzuParser(object):
         Converts accents to HTML encoding entities.
         Returns the formatted line.
         """
+        is_unicode = isinstance(line, unicode)
         for k, v in _ACCENTS_TO_HTML.iteritems():
+            if is_unicode:
+                # If line is of type unicode, k cannot be str, it must
+                # be converted to unicode using the encoding of _ACCENTS_TO_HTML
+                # otherwise the "k in line" will fail with a type error.
+                k = unicode(k, "iso-8859-1")
             if k in line:
                 line = line.replace(k, v)
 
         try:
-            if isinstance(line, unicode):
+            if is_unicode:
                 us = line
             else:
                 us = line.decode("utf-8")
