@@ -23,8 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "ralfoide at gmail com"
 
 import os
-import sys
-import md5
+import sha
 import cPickle
 
 from rig import stats
@@ -39,7 +38,7 @@ class Cache(object):
 
     For each object to store, you need a key, which is an Python structure
     (including list, dict, primitives). Computing a key means being able
-    to compute a MD5 of the combined __repr__ of these objects. Computing
+    to compute a SHA1 of the combined __repr__ of these objects. Computing
     a key can be expensive -- lists and dicts are traversed recursively and
     must NOT contain circular references.
 
@@ -234,18 +233,18 @@ class Cache(object):
         return os.path.join(self._cache_dir, _hash[0:2], _hash)
 
     def _Hash(self, key):
-        m = md5.new(str(cPickle.HIGHEST_PROTOCOL))
-        self._Md5Hash(m, key)
+        m = sha.new(str(cPickle.HIGHEST_PROTOCOL))
+        self._ShaHash(m, key)
         return m.hexdigest()
 
-    def _Md5Hash(self, md, obj):
+    def _ShaHash(self, md, obj):
         if isinstance(obj, (list, tuple)):
             for v in obj:
-                self._Md5Hash(md, v)
+                self._ShaHash(md, v)
         elif isinstance(obj, dict):
             for k, v in obj.iteritems():
-                self._Md5Hash(md, k)
-                self._Md5Hash(md, v)
+                self._ShaHash(md, k)
+                self._ShaHash(md, v)
         else:
             r = repr(obj)
             if "object at 0x" in r:

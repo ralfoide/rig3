@@ -53,8 +53,11 @@ class Hashable(object):
                 self.UpdateHash(md, k)
                 self.UpdateHash(md, v)
 
-        elif isinstance(obj, (str, unicode)):
+        elif isinstance(obj, str):
             md.update(str(obj))
+
+        elif isinstance(obj, unicode):
+            md.update(unicode(obj))
 
         else:
             md.update(repr(obj))
