@@ -29,10 +29,17 @@ from rig.hashable import Hashable
 class SourceSettings(Hashable):
     """
     Settings attached to a specific source.
+
+    Current settings that can be overridden per source:
+    - rig_base(str): Base URL for rig1 for generating rig1 image links.
+    - encoding(str): Text encoding of Izu/HTML files for the source.
+                     When set, overrides the global settings' encoding
+                     (which is utf-8 by default).
     """
-    def __init__(self, rig_base=None):
+    def __init__(self, rig_base=None, encoding=None):
         super(SourceSettings, self).__init__()
         self.rig_base = rig_base
+        self.encoding = encoding
 
     def AsDict(self):
         """

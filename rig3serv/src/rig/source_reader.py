@@ -186,23 +186,23 @@ class SourceBlogReader(SourceReaderBase):
 
         SEP = "----"
 
+        if self._source_settings.encoding:
+            encoding = self._source_settings.encoding
+        else:
+            encoding = self._site_settings.encoding
+
         # First line must have some izu tags
-        tags = {}
+        tags = IzuParser(self._log, None, None).ParseFileFirstLine(f, encoding)
+
+        # If we find an encoding tag, reparse the tags using that encoding
+        if "encoding" in tags:
+            tags = IzuParser(self._log, None, None).ParseFileFirstLine(f, encoding)
+
+        f = codecs.open(rel_file.abs_path, mode="rU", encoding=encoding)
+        # Skip to the first section
         for line in f:
             if line.strip() == SEP:
                 break
-            if not tags and line:
-                tags = IzuParser(self._log, None, None).ParseFirstLine(line)
-
-        # If we find an encoding tag, reopen the file using that encoding
-        encoding = tags.get("encoding", None)
-        if encoding:
-            f.close()
-            f = codecs.open(rel_file.abs_path, mode="rU", encoding=encoding)
-            # Skip the tag section
-            for line in f:
-                if line.strip() == SEP:
-                    break
 
         # Use the category based on the filename if there's no override in the file tags
         if not "cat" in tags:

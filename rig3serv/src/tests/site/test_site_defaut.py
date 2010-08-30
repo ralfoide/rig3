@@ -138,7 +138,8 @@ class SiteDefaultTest(RigTestCase):
                            dest_dir=self._tempdir,
                            cache_dir=self._cachedir,
                            theme=DEFAULT_THEME,
-                           base_url="http://www.example.com")
+                           base_url="http://www.example.com",
+                           encoding="iso-8859-1")
         sos = SourceSettings(rig_base="http://example.com/photos/index.php")
         return sis, sos
 

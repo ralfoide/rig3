@@ -23,11 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
-import re
-import os
+import codecs
 import fnmatch
-import urllib
+import os
+import re
 import subprocess
+import sys
+import urllib
 from datetime import datetime
 from StringIO import StringIO
 
@@ -142,7 +144,11 @@ class _State(object):
         """
         line = None
         if self._file:
-            line = self._file.readline()
+            try:
+                line = self._file.readline()
+            except UnicodeDecodeError, e:
+                raise Exception("Failed to read line from %s" % self._filename,
+                                "UnicodeDecodeError: " + str(e))
             if not line:
                 self._file = None
                 line = None
@@ -183,10 +189,13 @@ class IzuParser(object):
         self._tag_handlers = { "cat"   : self._CatHandler,
                                "date"  : self._DateHandler }
 
-    def RenderFileToHtml(self, filestream):
+    def RenderFileToHtml(self, filestream, encoding):
         """
         Parses the file 'filename' and returns an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
+
+        Encoding must be the desired text file encoding, e.g. "utf-8"
+        or "iso-8859-1", as supported by the codecs.open() method.
 
         If source is a string or a RelPath/RelFile, it is considered a path to
         be opened as read-only text.
@@ -206,15 +215,17 @@ class IzuParser(object):
         try:
             rel_file = None
             if isinstance(filestream, (str, unicode)):
-                f = file(filestream, "rU", 1)  # 1=line buffered, universal
+                # open with 1=line buffered, U=universal end-of-lines
+                f = codecs.open(filestream, mode="rU", buffering=1, encoding=encoding)
                 filename = filestream
             elif isinstance(filestream, RelPath):
                 filename = filestream.abs_path
                 rel_file = filestream
-                f = file(filename, "rU", 1)  # 1=line buffered, universal
+                # open with 1=line buffered, U=universal end-of-lines
+                f = codecs.open(filename, mode="rU", buffering=1, encoding=encoding)
             else:
                 f = filestream
-                filename = "<unknown stream>"
+                filename = "<internal stream>"
 
             state = _State(f, filename, rel_file)
             self._ParseStream(state)
@@ -225,17 +236,20 @@ class IzuParser(object):
             self._log.Exception("Read-error for %s" % filestream)
         return result
 
-    def RenderStringToHtml(self, source):
+    def RenderStringToHtml(self, source, encoding):
         """
-        Renders an Izu source to HTML.
+        Renders an Izu string to HTML.
         This is an utility wrapper that actually calls RenderFileToHtml.
+
+        Encoding must be the desired text file encoding, e.g. "utf-8"
+        or "iso-8859-1", as supported by the codecs.open() method.
         """
         f = StringIO(source)
-        return self.RenderFileToHtml(f)
+        return self.RenderFileToHtml(f, encoding)
 
     def ParseFirstLine(self, source):
         """
-        Parses the *first* line of a string -- the string is actual content,
+        Parses the *first* line of a *string* -- the string is actual content,
         not a filename. It returns any Izu tags found on the line.
 
         This is mostly an utility method to parse izu tags embedded in the
@@ -247,8 +261,26 @@ class IzuParser(object):
         a = source.find("\r")
         if a != -1:
             source = source[:a]
-        tags, sections = self.RenderStringToHtml(source)
+        tags, sections = self.RenderStringToHtml(source, encoding=None) #@UnusedVariable
         return tags
+
+    def ParseFileFirstLine(self, filename, encoding):
+        """
+        Parses the *first* line of a *file*, using the given optional encoding.
+
+        This is a wrapper to open the file, extract the first line and
+        return the result of ParseFirstLine on it.
+        """
+        f = None
+        try:
+            if isinstance(filename, RelPath):
+                filename = filename.abs_path
+            f = codecs.open(filename, mode="rU", buffering=1, encoding=encoding)
+            line = f.readline()
+            return self.ParseFirstLine(line)
+        finally:
+            if f:
+                f.close()
 
     def _ParseStream(self, state):
         is_block = None
@@ -920,7 +952,10 @@ class IzuParser(object):
             ret = p.wait()
         if ret != 0:
             self._log.Error("Image Gen Script failed. Ret=%d, Args=%s", ret, repr(env))
-            sys.exit(2)
+            if abs_dir != "@test@":
+                # Don't do a sys.exit during unit-tests :-)
+                sys.exit(2)
+            return None
 
         result = output
         if output.find("<img ") == -1:

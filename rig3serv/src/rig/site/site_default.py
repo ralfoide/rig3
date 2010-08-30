@@ -770,14 +770,22 @@ class SiteDefault(SiteBase):
                            self._site_settings.public_name,
                            izu_file)
 
+            if source_item.source_settings.encoding:
+                encoding = source_item.source_settings.encoding
+            else:
+                encoding = self._site_settings.encoding
+
             p = IzuParser(self._log,
                               keywords["rig_base"],
                               keywords["img_gen_script"])
             if html_file == "@content":
                 tags = source_item.tags
-                _, sections = p.RenderStringToHtml(source_item.content)
+                _, sections = p.RenderStringToHtml(source_item.content, encoding)
             else:
-                tags, sections = p.RenderFileToHtml(izu_file)
+                tags = p.ParseFileFirstLine(izu_file, encoding)
+                if "encoding" in tags:
+                    encoding = tags["encoding"]
+                tags, sections = p.RenderFileToHtml(izu_file, encoding)
 
             for k, v in sections.iteritems():
                 if isinstance(v, (str, unicode)):

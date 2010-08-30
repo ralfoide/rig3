@@ -252,13 +252,13 @@ class SitesSettingsTest(RigTestCase):
 
         sis = SiteSettings()
         self.m._ProcessSources(sis,
-                               { "sources": "file:/my/path1, rig_base:http://some/url" })
+                               { "sources": "file:/my/path1, rig_base:http://some/url, encoding=iso-8859-1" })
         self.assertListEquals(
             [ SourceFileReader(log, sis,
-                               SourceSettings(rig_base="http://some/url"),
+                               SourceSettings(rig_base="http://some/url", encoding="iso-8859-1"),
                                "/my/path1") ],
             sis.source_list)
-        self.assertDictEquals( { "rig_base": "http://some/url" },
+        self.assertDictEquals( { "rig_base": "http://some/url", "encoding": "iso-8859-1" },
             sis.source_list[0]._source_settings.AsDict())
 
         sis = SiteSettings()
@@ -270,11 +270,11 @@ class SitesSettingsTest(RigTestCase):
               SourceFileReader(log, sis, sos, "/my/path2"),
               SourceFileReader(log, sis, sos, "/my/path3") ],
             sis.source_list)
-        self.assertDictEquals( { "rig_base": "http://some/url" },
+        self.assertDictEquals( { "rig_base": "http://some/url", "encoding": None },
             sis.source_list[0]._source_settings.AsDict())
-        self.assertDictEquals( { "rig_base": "http://some/url" },
+        self.assertDictEquals( { "rig_base": "http://some/url", "encoding": None },
             sis.source_list[1]._source_settings.AsDict())
-        self.assertDictEquals( { "rig_base": "http://some/url" },
+        self.assertDictEquals( { "rig_base": "http://some/url", "encoding": None },
             sis.source_list[2]._source_settings.AsDict())
 
     def testSiteSettingsTypes(self):

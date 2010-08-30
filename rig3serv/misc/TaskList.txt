@@ -38,6 +38,10 @@
 
 ---- Done Version 0.4 ----
 
+20100829 Engine:   Add support for encoding. Switch to explicit UTF-8 by default.
+20100828 Engine:   Experimental old izu blog reader, continued
+20100827 Engine:   Experimental old izu blog reader
+
 20100404 Izu:      UTF8-to-HTML conversion of upper case accents
 20100404 Izu:      Implement legacy Izumi [table] and [izu:image] tags
 20100404 Engine:   Add option to exclude some categories from the 'all index' page
