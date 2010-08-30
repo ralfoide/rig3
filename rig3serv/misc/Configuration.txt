@@ -87,6 +87,7 @@ The following variables have default values:
 - tracking_code="", a raw html piece for google analytics or similar
 - num_item_page (int): Number of items per HTML page. Default is 20. Must be > 0.
 - num_item_atom (int): Number of items in ATOM feed. Default is 20. -1 for all.
+- encoding (str): Text input encoding. Defaults to utf-8.
 
 
 The following optional variables are described in more details below:
@@ -108,7 +109,24 @@ The following variables are not implemented yet, planned for a future version:
 
 
 ----------------------
-5- Category Filter
+5- Encoding
+----------------------
+
+By default rig3 considers input files to be UTF-8.
+
+You can override this at 3 levels:
+- per site, using encoding=type in the .rc file
+- per source, by defining encoding=type
+- per izu file by adding a tag [izu:encoding:type] on the very first line.
+
+Values are whatever python's codecs module accepts. Typical choices
+would be utf-8, ascii, iso-8859-1, etc., with a variety of aliases.
+
+Full list is here: http://docs.python.org/library/codecs.html#standard-encodings
+
+
+----------------------
+6- Category Filter
 ----------------------
 
 "cat_filter" is an optional variable that you can define per site.
@@ -128,32 +146,32 @@ The default category filter (i.e. its absence) is "*", so that it matches everyt
 
 Examples:
   cat_filter=public cats !dogs !parrots $ funny
-	=> matches all posts that have categories public or cats or funny or no
-	category and will exclude those which have dogs and parrots.
+    => matches all posts that have categories public or cats or funny or no
+    category and will exclude those which have dogs and parrots.
 
   cat_filter=!*
-  	=> excludes ALL posts. Can be used to block a site in case of hurry.
+      => excludes ALL posts. Can be used to block a site in case of hurry.
 
   cat_filter=!$
-  	=> excludes all posts that have no tags
+      => excludes all posts that have no tags
 
   cat_filter=!dogs
 and
   cat_filter=* !dogs
-	=> means the same thing: match every category, except those posts that use "dogs".
+    => means the same thing: match every category, except those posts that use "dogs".
 
   cat_filter=*
 and
   cat_filter=
-  	=> means the same thing, i.e. accept everything (even posts with no categories)
+      => means the same thing, i.e. accept everything (even posts with no categories)
 
   cat_filter=* !$
-  	=> accepts all posts except those with no categories, i.e. accepts posts must
-  	   have at least one category set.
+      => accepts all posts except those with no categories, i.e. accepts posts must
+         have at least one category set.
 
 
 ----------------------
-6- RIG URLs
+7- RIG URLs
 ----------------------
 
 To be able to link to RIG, you need to specify how to generate the
@@ -178,11 +196,11 @@ By default rig_base is EMPTY. When it is left empty, no RIG links or images are 
 - rig_album_url: This variable declares how to generate a link to a given RIG album.
 
 The default is:
-	rig_album_url=%(rig_base)s?album=%(album)s
+    rig_album_url=%(rig_base)s?album=%(album)s
 
 Where:
-	%(rig_base)s is the value of the site's rig_base variable as-is
-	%(album)s    is the URL-encoded album's path relative to the source directory
+    %(rig_base)s is the value of the site's rig_base variable as-is
+    %(album)s    is the URL-encoded album's path relative to the source directory
 
 
 Note that "%(name)s" is a standard Python idiom for inserting a variable in a string.
@@ -197,30 +215,30 @@ Note: This does insert a *text* link to a RIG page for one image. Compare with t
 variable rig_thumb_url below, which generates a link to INCLUDE an image in-place.
 
 The default is:
-	rig_img_url=%(rig_base)s?album=%(album)s&img=%(img)s
+    rig_img_url=%(rig_base)s?album=%(album)s&img=%(img)s
 
 Where:
-	%(rig_base)s is the value of the site's rig_base variable as-is
-	%(album)s    is the URL-encoded album's path relative to the source directory
-	%(img)s      is the URL-encoded image's name (with extension)
+    %(rig_base)s is the value of the site's rig_base variable as-is
+    %(album)s    is the URL-encoded album's path relative to the source directory
+    %(img)s      is the URL-encoded image's name (with extension)
 
 
 - rig_thumb_url: This variable declares how to generate an IMG reference to a give RIG image.
 
 The default is:
-	rig_thumb_url=%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75
+    rig_thumb_url=%(rig_base)s?th=&album=%(album)s&img=%(img)s&sz=%(size)s&q=75
 
 Where:
-	%(rig_base)s is the value of the site's rig_base variable as-is
-	%(album)s    is the URL-encoded album's path relative to the source directory
-	%(img)s      is the URL-encoded image's name (with extension)
-	%(size)s	 is the size in pixel of the largest dimension of the image
+    %(rig_base)s is the value of the site's rig_base variable as-is
+    %(album)s    is the URL-encoded album's path relative to the source directory
+    %(img)s      is the URL-encoded image's name (with extension)
+    %(size)s     is the size in pixel of the largest dimension of the image
 
 - rig_img_size=512, the default size of a [rigimg] tag in Izumi
 
 
 ----------------------
-7- Source Selection
+8- Source Selection
 ----------------------
 
 To specify source(s), you need to add one or more "sources" variables.
@@ -239,6 +257,9 @@ Note: the "dir" and "file" types are considered deprecated. Use "blog" wherever 
 
 On top of that, each "sources" variable must define a "rig_base" variable if
 that source should generate rig images.
+
+Sources can also overridde the global encoding by defining an "encoding"
+variable.
 
 You can have as many entries as you want per line.
 
@@ -263,7 +284,7 @@ So in the example above, the sourcesNoImages will fail to generate any kind of R
 
 
 ----------------------
-8- Image Generation Script
+9- Image Generation Script
 ----------------------
 
 When defined, the site setting "img_gen_script" is the script
@@ -317,7 +338,7 @@ Stdout:
 
 
 ----------------------
-9- Examples
+10- Examples
 ----------------------
 
 One of the nice effects you can achieve is to define several sites in your configuration
@@ -330,7 +351,7 @@ For example, you can define a site for public post and another one for all priva
  cat_filter = public
 
  [private-site]
- source = /path/to/posts
+ source = /path/to/posts, rig_base=http://alternate.site/albums, encoding=iso-8859-1
  dest_dir = public_html/blog/private
  cat_filter = !public
 
@@ -339,7 +360,7 @@ different category filter.
 
 
 ----------------------
-10- Atom Feed
+11- Atom Feed
 ----------------------
 
 To generate an atom feed, there's nothing to do.
