@@ -24,8 +24,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
+import codecs
 import os
 import re
+from binascii import crc32
 from datetime import datetime
 
 from rig.source_item import SourceDir, SourceFile, SourceContent
@@ -91,7 +93,7 @@ class SourceBlogReader(SourceReaderBase):
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
     DIR_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
-    OLD_IZU_PATTERN = re.compile(r"^.+?\.old\.izu$")
+    OLD_IZU_PATTERN = re.compile(r"^(?P<cat>.+?)\.old\.izu$")
 
     def __init__(self, log, site_settings, source_settings, path):
         """
@@ -134,7 +136,7 @@ class SourceBlogReader(SourceReaderBase):
         for source_dir, dest_dir, all_files in tree.TraverseDirs():
             basename = source_dir.basename()
 
-            if dir_pattern.search(basename):
+            if dir_pattern.match(basename):
                 # This directory looks like one entry.
                 # Only keep the "valid" files for directory entries.
                 valid_files = [f for f in all_files if dir_valid_files.search(f)]
@@ -153,12 +155,13 @@ class SourceBlogReader(SourceReaderBase):
                 # Not a directory entry, so check individual files to see if they
                 # qualify as individual entries
                 for f in all_files:
-                    if self.OLD_IZU_PATTERN.search(f):
+                    m = self.OLD_IZU_PATTERN.match(f)
+                    if m:
                         rel_file = RelFile(source_dir.abs_base,
                                            os.path.join(source_dir.rel_curr, f))
-                        self._ParseOldIzu(rel_file, items)
+                        self._ParseOldIzu(rel_file, m.group("cat"), items)
 
-                    elif file_pattern.search(f):
+                    elif file_pattern.match(f):
                         rel_file = RelFile(source_dir.abs_base,
                                            os.path.join(source_dir.rel_curr, f))
                         date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
@@ -169,22 +172,45 @@ class SourceBlogReader(SourceReaderBase):
         return items
 
 
-    OLD_IZU_HEADER = re.compile(r"^\[s:(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}):(?P<title>[^\]]*).*$")
+    _RE_OLD_IZU_HEADER = re.compile(r"^\[s:(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}):(?P<title>[^\]]*).*$")
 
-    def _ParseOldIzu(self, rel_file, items):
+    # An inter-izumi named link: [label|page/subpage#s:YYYYMMDD:title], without [[
+    # title is optional and date must be 8-digits.
+    _RE_INTER_IZU_LINK = re.compile(r"(?<!\[)\[(?P<label>[^\|\]]+)\|(?P<page>[^#:|\]]+)#s:(?P<date>[0-9]{8})(?::(?P<title>[^\]]+))?\]")
+
+
+    def _ParseOldIzu(self, rel_file, cat, items):
         """
         """
-        f = file(rel_file.abs_path)
+        f = file(rel_file.abs_path, "rU")
 
         SEP = "----"
 
         # First line must have some izu tags
-        tags = None
+        tags = {}
         for line in f:
             if line.strip() == SEP:
                 break
             if not tags and line:
                 tags = IzuParser(self._log, None, None).ParseFirstLine(line)
+
+        # If we find an encoding tag, reopen the file using that encoding
+        encoding = tags.get("encoding", None)
+        if encoding:
+            f.close()
+            f = codecs.open(rel_file.abs_path, mode="rU", encoding=encoding)
+            # Skip the tag section
+            for line in f:
+                if line.strip() == SEP:
+                    break
+
+        # Use the category based on the filename if there's no override in the file tags
+        if not "cat" in tags:
+            tags["cat"] = { cat: True }
+
+        izumi_base_url = tags.get("izumi_base_url", None)
+        if izumi_base_url and not izumi_base_url.endswith("/"):
+            izumi_base_url += "/"
 
         content = None
         date = None
@@ -207,7 +233,7 @@ class SourceBlogReader(SourceReaderBase):
                 date = None
                 title = None
 
-                m = self.OLD_IZU_HEADER.match(line)
+                m = self._RE_OLD_IZU_HEADER.match(line)
                 if m:
                     date = datetime(
                                  int(m.group("year")),
@@ -216,6 +242,16 @@ class SourceBlogReader(SourceReaderBase):
                     title = m.group("title")
 
             elif date and title:
+                if "#s" in line and not "|#s" in line:
+                    pass
+                if izumi_base_url:
+                    # Convert old inter-izumi links into hard URLs (e.g. only links
+                    # from one izumi page to another. This does not affect intra-izumi
+                    # links inside the same category, as those will be supported by
+                    # rig3 directly.)
+                    line = self._RE_INTER_IZU_LINK.sub(
+                               lambda m: self._ConvertInterIzuLinks(m, izumi_base_url), line)
+
                 content += line
 
         if content:
@@ -228,6 +264,28 @@ class SourceBlogReader(SourceReaderBase):
             self._log.Debug("[%s] Append item '%s'", item)
 
         f.close()
+
+    def _ConvertInterIzuLinks(self, m, izumi_base_url):
+        label = m.group("label")
+        date  = m.group("date")
+        title = m.group("title")
+        page  = m.group("page")
+
+        # Compute the same key than RBlog::BlogEntryKey from izumi.sourforge.net
+        # see http://izumi.cvs.sourceforge.net/viewvc/izumi/izumi/src/RBlog.php?view=markup&pathrev=HEAD
+        # at line 348.
+        if title:
+            key = title.lower()
+            key = re.sub(r"[ \-_=+\[\]{};:'\",./<>?`~!@#$%^&*()\\|]", "_", key)
+            key = re.sub(r"[^0123456789abcdefghijklmnopqrstuvwxyz_]", "", key)
+            key = date + "_" + key
+            if len(key) > 32:
+                # shorten with a crc32
+                key = "%s_%x" % (key[0:23], crc32(date + title))
+        else:
+            key = date
+
+        return "[%s|%s%s?s=%s]" % (label, izumi_base_url, page, key)
 
 
     # Utilities, overridable for unit tests

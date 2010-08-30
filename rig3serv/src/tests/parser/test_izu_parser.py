@@ -112,6 +112,13 @@ class IzuParserTest(RigTestCase):
             '<span class="izu">\n[[[3[[[] [[2[[]</span>',
             self._Render("[[[[3[[[[] [[[2[[[]"))
 
+    def testNoEscapeInURLs(self):
+        # ___ (2+) can be present in an URL and should not espaced to be replaced
+        # by n-1 underscores, as it's not a valid pattern.
+        self.assertEquals(
+            '<span class="izu">\n<a href="http://my___url.com">some label</a></span>',
+            self._Render("[some label|http://my___url.com]"))
+
     def testHtmlEscapes(self):
         self.assertEquals(
             '<span class="izu">\nfoo&lt;bar&gt;zoo&amp;luu</span>',

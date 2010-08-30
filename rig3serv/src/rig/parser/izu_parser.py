@@ -25,7 +25,6 @@ __author__ = "ralfoide at gmail com"
 
 import re
 import os
-import sys
 import fnmatch
 import urllib
 import subprocess
@@ -509,9 +508,20 @@ class IzuParser(object):
         to escape normal [ tags and same for double-underscore, double-quotes
         """
         line = self._RE_RMV_ESC_DOUBLE_CHAR.sub(r"\2", line)
+
+        # The double-underscore case must not be escaped from within URLs where
+        # it is valid. We define an URL context is as being a non-special chars
+        # string that contains :// somewhere before the underline, unfortunately
+        # we can't use a non-capturing look-behind expression (?<!...) with a
+        # variable width, so instead we'll use a capturing group and filter
+        # using a lambda.
+        line = self._RE_RMV_ESC_DOUBLE_UNDER.sub(
+                     lambda m: not m.group(1) and m.group(3) or m.group(0), line)
+
         return line
 
-    _RE_RMV_ESC_DOUBLE_CHAR = re.compile(r"([_'=\[])(\1+)")
+    _RE_RMV_ESC_DOUBLE_CHAR = re.compile(r"(['=\[])(\1+)")
+    _RE_RMV_ESC_DOUBLE_UNDER = re.compile(r"(://(?:[^ \"\[\]_]|_[^_])*)?(_)(\2+)")
 
     def _ConvertAccents(self, line):
         """
@@ -523,7 +533,11 @@ class IzuParser(object):
                 line = line.replace(k, v)
 
         try:
-            us = line.decode("utf-8")
+            if isinstance(line, unicode):
+                us = line
+            else:
+                us = line.decode("utf-8")
+
             for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
                 if k in us:
                     us = us.replace(k, v)
