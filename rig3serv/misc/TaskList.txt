@@ -38,6 +38,7 @@
 
 ---- Done Version 0.4 ----
 
+20100829 Engine:   Switch Hashable and Cache from MD5 to SHA1 keys
 20100829 Engine:   Add support for encoding. Switch to explicit UTF-8 by default.
 20100828 Engine:   Experimental old izu blog reader, continued
 20100827 Engine:   Experimental old izu blog reader
