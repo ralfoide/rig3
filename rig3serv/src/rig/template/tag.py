@@ -196,7 +196,8 @@ class TagFor(Tag):
         for value in result:
             d = dict(context)  # clone context before udpating it
             d[var] = value
-            s += content.Generate(log, d)
+            u = content.Generate(log, d)
+            s += u
 
         return s
 

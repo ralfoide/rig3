@@ -1,4 +1,4 @@
-[izu:cat:bar,foo,other]
+[izu:cat:bar,foo,other] [izu:encoding:utf-8]
 You can have sections but it's not mandatory. The ''en'' one is the default.
 
 [s:en]
@@ -10,6 +10,8 @@ Some content in English.
 The rig link won't work, it can only access a picture in the same folder
 when using the directory-based items.
 Rig link: [This is a rig link|riglink:T12896*.jpg]
+
+This file is UTF-8 encoded.
 
 This little accent here causes a __lot__ of trouble because it encodes to 0xE5
 and the encoding behavior is different whether I run this using Windows' WPython

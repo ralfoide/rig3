@@ -197,7 +197,9 @@ class SourceBlogReader(SourceReaderBase):
         if "encoding" in tags:
             tags = IzuParser(self._log, None, None).ParseFileFirstLine(rel_file.abs_path, encoding)
 
-        f = codecs.open(rel_file.abs_path, mode="rU", encoding=encoding)
+        f = codecs.open(rel_file.abs_path, mode="rU",
+                        encoding=encoding,
+                        errors="xmlcharrefreplace")
         # Skip to the first section
         for line in f:
             if line.strip() == SEP:
@@ -215,6 +217,11 @@ class SourceBlogReader(SourceReaderBase):
         date = None
         title = None
         for line in f:
+            if isinstance(line, unicode):
+                # Internally we only process ISO-8859-1 and replace
+                # unknown entities by their XML hexa encoding
+                line = line.encode("iso-8859-1", "xmlcharrefreplace")
+
             if line.strip() == SEP:
                 continue
 

@@ -36,9 +36,9 @@ class CustomTestProgram(unittest.TestProgram):
     Overrides unittest.TestProgram to use our own test list if none is
     specified on the command line.
     """
-    def __init__(self, tests):
+    def __init__(self, tests, argv=None):
         self._tests = tests
-        unittest.TestProgram.__init__(self)
+        unittest.TestProgram.__init__(self, argv=argv)
 
     def runTests(self):
         RigTestCase.setVerbose(self.verbosity == 2)
@@ -48,7 +48,7 @@ class CustomTestProgram(unittest.TestProgram):
 
 
 #------------
-def get_tests():
+def get_tests(test_filter=None):
     """
     Create a test suite with all the tests to run.
     """
@@ -72,7 +72,9 @@ def get_tests():
                 m = list(base)
                 m.append(file)
                 m = m[start:]
-                modules.append(".".join(m))
+                name = ".".join(m)
+                if (not test_filter) or name in test_filter:
+                    modules.append(name)
 
     print >>sys.stderr, "Rig Tests:", ", ".join([m.split(".")[-1] for m in modules])
 
@@ -84,8 +86,18 @@ def get_tests():
 #------------------------
 if __name__ == "__main__":
     print >>sys.stderr, "UT Main", sys.argv
-    tests = get_tests()
-    p = CustomTestProgram(tests)
+
+    argv = []
+    test_filter = []
+    for a in sys.argv:
+        if isinstance(a, str) and a.startswith("test"):
+            test_filter.append(a)
+        else:
+            argv.append(a)
+
+    tests = get_tests(test_filter)
+
+    p = CustomTestProgram(tests, argv=argv)
 
 
 #------------------------

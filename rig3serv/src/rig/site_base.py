@@ -101,11 +101,12 @@ class SiteItem(Hashable):
         try:
             # Note: do not display content_gen as it's an internal pointer that
             # changes between runs.
+            title = self.title
             return "[%s: %s, %s, %s, %s, %s]" % (
                      self.__class__.__name__,
                      self.source_item,
                      self.date,
-                     self.title,
+                     title,
                      self.categories,
                      self.permalink)
         except:

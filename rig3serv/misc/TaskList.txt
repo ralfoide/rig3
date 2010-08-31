@@ -38,6 +38,7 @@
 
 ---- Done Version 0.4 ----
 
+20100830 Engine:   Switching back to ISO-8859-1 (Latin-1) processing workflow.
 20100829 Engine:   Generate UTF-8 files by default. Full unicode workflow support.
 20100829 Engine:   Switch Hashable and Cache from MD5 to SHA1 keys
 20100829 Engine:   Add support for encoding. Switch to explicit UTF-8 by default.

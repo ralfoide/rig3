@@ -53,8 +53,6 @@ class ContentEntry(object):
 
     def __repr__(self):
         content = self.content
-        if isinstance(content, unicode):
-            content = content.encode("unicode_escape")
         return "<%s: title %s, date %s, link %s, content %s>" % (
              self.__class__.__name__, self.title, self.date, self.permalink, content)
 
@@ -769,15 +767,15 @@ class SiteDefault(SiteBase):
         sections = {}
         tags = {}
 
+        if source_item.source_settings.encoding:
+            encoding = source_item.source_settings.encoding
+        else:
+            encoding = self._site_settings.encoding
+
         if izu_file:
             self._log.Info("[%s] Render '%s' to HTML",
                            self._site_settings.public_name,
                            izu_file)
-
-            if source_item.source_settings.encoding:
-                encoding = source_item.source_settings.encoding
-            else:
-                encoding = self._site_settings.encoding
 
             p = IzuParser(self._log,
                               keywords["rig_base"],
@@ -808,7 +806,7 @@ class SiteDefault(SiteBase):
                         sections[k] = ""
 
         elif html_file:
-            sections["html"] = self._ReadFile(html_file)
+            sections["html"] = self._ReadFile(html_file, encoding)
             izu_parser = IzuParser(self._log,
                                    keywords["rig_base"],
                                    keywords["img_gen_script"])
@@ -1138,7 +1136,7 @@ class SiteDefault(SiteBase):
     def _GetRating(self, ascii):
         return self._RATING.get(ascii, self._RATING_DEFAULT)
 
-    def _ReadFile(self, full_path):
+    def _ReadFile(self, full_path, encoding):
         """
         Returns the content of a file as a string.
         Will raise an IOError if the file cannot be read.
@@ -1146,9 +1144,20 @@ class SiteDefault(SiteBase):
         if isinstance(full_path, RelPath):
             full_path = full_path.abs_path
 
-        f = file(full_path)
+        # First line may have some izu tags
+        tags = IzuParser(self._log, None, None).ParseFileFirstLine(full_path, encoding)
+        encoding = tags.get("encoding", encoding)
+
+        f = codecs.open(full_path, mode="rU",
+                        encoding=encoding,
+                        errors="xmlcharrefreplace")
         data = f.read()
         f.close()
+
+        # Internally we only process ISO-8859-1 and replace
+        # unknown entities by their XML hexa encoding
+        data = data.encode("iso-8859-1", "xmlcharrefreplace")
+
         return data
 
     def _WriteFile(self, data, dest_dir, leafname):
@@ -1179,8 +1188,12 @@ class SiteDefault(SiteBase):
                            self._site_settings.public_name,
                            dest_file)
 
-            f = codecs.open(dest_file, mode="wb", encoding="utf-8")
-            f.write(data)
+            f = codecs.open(dest_file, mode="wb",
+                            encoding="utf-8",
+                            errors="xmlcharrefreplace")
+            # Internally the data was processed as iso-8859-1, so use that
+            # to decode and re-encode to UTF-8 for output.
+            f.write(data.decode("iso-8859-1"))
             f.close()
         return dest_file
 

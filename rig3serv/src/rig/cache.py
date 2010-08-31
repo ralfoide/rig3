@@ -278,7 +278,7 @@ class Cache(object):
                         os.unlink(p)
                 os.rmdir(dir_path)
         except OSError, e:
-            self.Log().Exception("RemoveDir '%s' failed: %s", dir_path, e)
+            self._log.Exception("RemoveDir '%s' failed: %s", dir_path, e)
 
 #------------------------
 # Local Variables:

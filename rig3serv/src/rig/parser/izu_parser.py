@@ -146,6 +146,10 @@ class _State(object):
         if self._file:
             try:
                 line = self._file.readline()
+                if isinstance(line, unicode):
+                    # Internally we only process ISO-8859-1 and replace
+                    # unknown entities by their XML hexa encoding
+                    line = line.encode("iso-8859-1", "xmlcharrefreplace")
             except UnicodeDecodeError, e:
                 raise Exception("Failed to read line from %s" % self._filename,
                                 "UnicodeDecodeError: " + str(e))
@@ -216,13 +220,17 @@ class IzuParser(object):
             rel_file = None
             if isinstance(filestream, (str, unicode)):
                 # open with 1=line buffered, U=universal end-of-lines
-                f = codecs.open(filestream, mode="rU", buffering=1, encoding=encoding)
+                f = codecs.open(filestream, mode="rU", buffering=1,
+                                encoding=encoding,
+                                errors="xmlcharrefreplace")
                 filename = filestream
             elif isinstance(filestream, RelPath):
                 filename = filestream.abs_path
                 rel_file = filestream
                 # open with 1=line buffered, U=universal end-of-lines
-                f = codecs.open(filename, mode="rU", buffering=1, encoding=encoding)
+                f = codecs.open(filename, mode="rU", buffering=1,
+                                encoding=encoding,
+                                errors="xmlcharrefreplace")
             else:
                 f = filestream
                 filename = "<internal stream>"
@@ -266,7 +274,11 @@ class IzuParser(object):
 
     def ParseFileFirstLine(self, filename, encoding):
         """
-        Parses the *first* line of a *file*, using the given optional encoding.
+        Parses the *first* 2 lines of a *file*, using the given optional encoding.
+
+        Note: actually we use 2 lines, as it's entirely possible that the
+        file needs the first line to be different, typically an XHTML file
+        might need to have an <xml> declaration on the first line.
 
         This is a wrapper to open the file, extract the first line and
         return the result of ParseFirstLine on it.
@@ -275,8 +287,15 @@ class IzuParser(object):
         try:
             if isinstance(filename, RelPath):
                 filename = filename.abs_path
-            f = codecs.open(filename, mode="rU", buffering=1, encoding=encoding)
-            line = f.readline()
+            f = codecs.open(filename, mode="rU", buffering=1,
+                            encoding=encoding, errors="xmlcharrefreplace")
+            line = f.readline() + f.readline()
+            if isinstance(line, unicode):
+                # Internally we only process ISO-8859-1 and replace
+                # unknown entities by their XML hexa encoding
+                line = line.encode("iso-8859-1", "xmlcharrefreplace")
+            # strip \r\n from it
+            line = re.sub("[\r\n]", "", line)
             return self.ParseFirstLine(line)
         finally:
             if f:
@@ -574,7 +593,7 @@ class IzuParser(object):
             if is_unicode:
                 us = line
             else:
-                us = line.decode("utf-8")
+                us = unicode(line, "utf-8")
 
             for k, v in UTF8_ACCENTS_TO_HTML.iteritems():
                 if k in us:

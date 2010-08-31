@@ -112,7 +112,9 @@ The following variables are not implemented yet, planned for a future version:
 5- Encoding
 ----------------------
 
-By default rig3 considers input files to be UTF-8.
+By default rig3 considers input files to be Latin-1 (aka ISO-8859-1).
+
+Output files are always UTF-8.
 
 You can override this at 3 levels:
 - per site, using encoding=type in the .rc file
@@ -123,6 +125,13 @@ Values are whatever python's codecs module accepts. Typical choices
 would be utf-8, ascii, iso-8859-1, etc., with a variety of aliases.
 
 Full list is here: http://docs.python.org/library/codecs.html#standard-encodings
+
+Internal processing is done in ISO-8859-1, no matter what the input encoding is.
+You can change the input encoding, as long as content can be interpreted as
+ISO-8859-1. Unfortunately, this limitation cannot be easily lifted. However
+unknown characters will be output using their XML entity reference encoding
+(e.g. &#xhhhh; in hexa), which means as a workaround you could at least
+post-process it.
 
 
 ----------------------
