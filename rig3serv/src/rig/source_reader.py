@@ -93,7 +93,7 @@ class SourceBlogReader(SourceReaderBase):
     DIR_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *$")
     DIR_VALID_FILES = re.compile(r"\.(?:izu|jpe?g|html)$")
     FILE_PATTERN = re.compile(r"^(\d{4}[-]?\d{2}(?:[-]?\d{2})?)[ _-] *(?P<name>.*) *\.(?P<ext>izu|html)$")
-    OLD_IZU_PATTERN = re.compile(r"^(?P<cat>.+?)\.old\.izu$")
+    OLD_IZU_PATTERN = re.compile(r"^(?P<cat>.+?)\.blog\.izu$")
 
     def __init__(self, log, site_settings, source_settings, path):
         """
