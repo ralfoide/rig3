@@ -34,7 +34,7 @@ from datetime import datetime
 from StringIO import StringIO
 
 from rig.parser.utf8_accents import UTF8_ACCENTS_TO_HTML
-from rig.parser.dir_parser import RelPath
+from rig.parser.dir_parser import RelPath, RelFile
 
 _DATE_YMD = re.compile(r"^(?P<year>\d{4})[:/-]?(?P<month>\d{2})[:/-]?(?P<day>\d{2})"
                        r"(?:[ ,:/-]?(?P<hour>\d{2})[:/.-]?(?P<min>\d{2})(?:[:/.-]?(?P<sec>\d{2}))?)?")
@@ -193,7 +193,7 @@ class IzuParser(object):
         self._tag_handlers = { "cat"   : self._CatHandler,
                                "date"  : self._DateHandler }
 
-    def RenderFileToHtml(self, filestream, encoding):
+    def RenderFileToHtml(self, filestream, encoding=None):
         """
         Parses the file 'filename' and returns an HTML snippet for it.
         Renders a <div> section, not a full single HTML file.
@@ -214,16 +214,34 @@ class IzuParser(object):
             - most are HTML content.
             - the "images" section must be a list of RIG urls.
         """
+        return self.__RenderContent(filestream, encoding)
+
+    def RenderStringToHtml(self, source, encoding=None, rel_file=None):
+        """
+        Renders an Izu string to HTML.
+        This is an utility wrapper that actually calls RenderFileToHtml.
+
+        Rel_file is the originating file, if any, where the string was
+        extracted from. The file itself is not used, only its parent
+        directory is used for rigimg/riglink image glob patterns and such.
+
+        Encoding must be the desired text file encoding, e.g. "utf-8"
+        or "iso-8859-1", as supported by the codecs.open() method.
+        """
+        f = StringIO(source)
+        return self.__RenderContent(f, encoding, rel_file)
+
+    def __RenderContent(self, filestream, encoding=None, rel_file=None):
         f = None
         result = None
         try:
-            rel_file = None
             if isinstance(filestream, (str, unicode)):
                 # open with 1=line buffered, U=universal end-of-lines
                 f = codecs.open(filestream, mode="rU", buffering=1,
                                 encoding=encoding,
                                 errors="xmlcharrefreplace")
                 filename = filestream
+                rel_file = RelFile(os.path.dirname(filestream), os.path.basename(filestream))
             elif isinstance(filestream, RelPath):
                 filename = filestream.abs_path
                 rel_file = filestream
@@ -244,17 +262,6 @@ class IzuParser(object):
             self._log.Exception("Read-error for %s" % filestream)
         return result
 
-    def RenderStringToHtml(self, source, encoding):
-        """
-        Renders an Izu string to HTML.
-        This is an utility wrapper that actually calls RenderFileToHtml.
-
-        Encoding must be the desired text file encoding, e.g. "utf-8"
-        or "iso-8859-1", as supported by the codecs.open() method.
-        """
-        f = StringIO(source)
-        return self.RenderFileToHtml(f, encoding)
-
     def ParseFirstLine(self, source):
         """
         Parses the *first* line of a *string* -- the string is actual content,
@@ -269,7 +276,7 @@ class IzuParser(object):
         a = source.find("\r")
         if a != -1:
             source = source[:a]
-        tags, sections = self.RenderStringToHtml(source, encoding=None) #@UnusedVariable
+        tags, sections = self.RenderStringToHtml(source) #@UnusedVariable
         return tags
 
     def ParseFileFirstLine(self, filename, encoding):
@@ -694,7 +701,7 @@ class IzuParser(object):
 
     def _FormatYoutube(self, state, line):
         """
-        Formats any [[youtube:ID:SXxSY]] tag.
+        Formats any [youtube:ID:SXxSY] tag.
         The ":SXxSY" part is optional.
         """
         m = True
@@ -840,6 +847,11 @@ class IzuParser(object):
         # rig image: [name|rigimg:size:image_glob]
         line = self._ParseRigImage(state, line, accept_rest=True)
 
+        # izumi post link: [name|/category#s:date:title] or [name|#s:date:title]
+        line = self._RE_IZU_POST_LINK.sub(
+            lambda m: self._ReplIzuPostLink(state, m.group(1), m.group(2), m.group(3), m.group(4)),
+            line)
+
         # unformatted link: http://blah or ftp:// (link cannot contain quotes)
         # and must not be surrounded by quotes
         # and must not be surrounded by brackets
@@ -855,6 +867,22 @@ class IzuParser(object):
     _RE_LINK_UNNAMED_URL = re.compile(r'(?<!\[)\[((?:https?://|ftp://|#)[^ "<>]+?)\]')
     _RE_LINK_UNFORMATTED = re.compile(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<>]+)($|[^"\]])')
     _RE_RIGLINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|riglink:([^ "<>]+?)\]')
+    _RE_IZU_POST_LINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|(/[^ #:\[\]\|]+)?#s:([0-9]{8})(?::([^\|\[\]]+))?\]')
+
+    def _ReplIzuPostLink(self, state, label, category, date, title):
+        """
+        Generates an izumi blog post link, either within the same category or to
+        another category.
+
+        If category is available, we link to:
+          <album_base_url>/cat/<category>/post_<date>_<title>.html
+        If the category is not available, we need to figure the current one.
+        """
+        return ("<pre> *** "
+                "curr_category=[[[[raw locals().get('curr_category', 'NOT-SET2')]] "
+                "permalink_url=[[[[raw locals().get('permalink_url', 'NOT-SET')]] "
+                "rel_permalink_url=[[[[raw locals().get('rel_permalink_url', 'NOT-SET')]] "
+                "</pre>")
 
     def _ParseRigImage(self, state, line, accept_rest):
         """
@@ -887,7 +915,12 @@ class IzuParser(object):
         result = ""
         filename = state.Filename()
         if filename and image_glob:
-            choice = self._GlobGlob(os.path.dirname(filename), image_glob)
+            rel_file = state.RelFile()
+            if rel_file:
+                abs_dir = rel_file.dirname().abs_path
+            else:
+                abs_dir = os.path.dirname(filename)
+            choice = self._GlobGlob(abs_dir, image_glob)
             if choice:
                 subdir = os.path.dirname(choice)
                 filename = os.path.basename(choice)
@@ -915,10 +948,13 @@ class IzuParser(object):
         result = ""
         filename = state.Filename()
         if filename and image_glob:
-            abs_dir = os.path.dirname(filename)
+            rel_file = state.RelFile()
+            if rel_file:
+                abs_dir = rel_file.dirname().abs_path
+            else:
+                abs_dir = os.path.dirname(filename)
             choice = self._GlobGlob(abs_dir, image_glob)
             if choice:
-                rel_file = state.RelFile()
                 if rel_file:
                     rel_file = rel_file.dirname().join(choice)
                 subdir = os.path.dirname(choice)

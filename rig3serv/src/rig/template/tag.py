@@ -273,7 +273,34 @@ class TagInsert(Tag):
 
 
 #------------------------
-ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagXml, TagUrl, TagInsert]
+class TagEval(Tag):
+    """
+    Tag that represents a template evulation. The expression must
+    evaluate to a string that is the new template to inject and generate
+    in-place in the container template.
+
+    This is similar to [[insert]] except here we directly have the text
+    of the template rather than the filename of the template.
+
+    Template syntax:
+      [[eval python_expression]]
+    """
+    def __init__(self):
+        super(TagEval, self).__init__(tag="eval", has_content=False)
+
+    def Generate(self, log, tag_node, context):
+        source = eval(tag_node.Parameters(), dict(context))
+
+        if not not source:
+            from rig.template.template import Template
+            template = Template(log, source=source)
+            result = template.Generate(context)
+            return result
+        return ""
+
+
+#------------------------
+ALL_TAGS = [TagComment, TagFor, TagIf, TagRaw, TagHtml, TagXml, TagUrl, TagInsert, TagEval]
 
 #------------------------
 # Local Variables:

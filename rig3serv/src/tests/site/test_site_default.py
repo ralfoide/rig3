@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "ralfoide at gmail com"
 
 import os
+import types
 from datetime import datetime
 
 from tests.rig_test_case import RigTestCase
@@ -30,9 +31,9 @@ from tests.rig_test_case import RigTestCase
 from rig.site.site_default import SiteDefault, ContentEntry
 from rig.site_base import DEFAULT_THEME, SiteItem
 from rig.sites_settings import SiteSettings
-from rig.parser.dir_parser import DirParser, RelDir
+from rig.parser.dir_parser import DirParser, RelDir, RelFile
 from rig.source_reader import SourceDirReader
-from rig.source_item import SourceDir, SourceSettings
+from rig.source_item import SourceDir, SourceSettings, SourceContent
 from rig.sites_settings import SiteSettings, SitesSettings
 from rig.sites_settings import DEFAULT_ITEMS_PER_PAGE
 
@@ -418,7 +419,13 @@ class SiteDefaultTest(RigTestCase):
     def testGenerateIndexPage(self):
         m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
 
-        m._GenerateIndexPage("", "", [], [], [], [])
+        m._GenerateIndexPage(
+             path="",
+             rel_base="",
+             curr_category=None,
+             all_categories=[],
+             items=[],
+             month_pages=[])
         params = m._fill_template_params
 
         for key in [ "rig_img_url",
@@ -1031,6 +1038,80 @@ class SiteDefaultTest(RigTestCase):
         m._ClearCache(new_sis)
         self.assertEquals(2, m.CacheClearCount(reset=False))
 
+
+    def testGenerateItems_Pipeline(self):
+        m = MockSiteDefault(self, self.Log(), False, True, self.sis).MakeDestDirs()
+
+        # Disable the cache since we'll call twice the same content
+        m._enable_cache = False
+
+        source_dir = os.path.join(self.getTestDataPath(), "album", "blog2", "2007-10-07 11.00_Folder 2")
+        source_item = SourceContent(
+                date=datetime(2006, 5, 28, 17, 18, 5),
+                rel_file=RelFile(source_dir, "Main.blog.izu"),
+                title="Title",
+                content="""[izu:cat:ignored]
+youtube: [youtube:ID:123x456]
+riglink: [link name|riglink:T12896_tiny1.jpg]
+rigimg: [img name|rigimg:size:T12896_tiny2.jpg]
+innerlink: [To folder 1 in same category|#s:20071007:Folder 1]
+crosslink: [To folder 1 in another category|/bar#s:20071007:Folder 1]""",
+                tags={ "cat": { "main:": True } },
+                source_settings=self.sos)
+
+        # Invoke the real GenerateItem and collect the result
+        actual_result = m.GenerateItem(source_item)
+
+        # Now simulate step-by step what GenerateItem does
+
+        test = self
+        m.old_GenItem_GetSections = m._GenItem_GetSections
+
+        def Patch_GenItem_GetSections(self, *args):
+            sections, tags = self.old_GenItem_GetSections(*args)
+
+            test.assertDictEquals(
+                     { "cat": { "main:": True } },
+                     tags)
+            test.assertListEquals([ "en" ], sections.keys())
+            test.assertHtmlEquals(
+                   """<span class="izu">
+youtube: <object width="123" height="456"> <param name="movie" value="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00"></param>\n<param name="allowFullScreen" value="true"></param>\n<param name="allowscriptaccess" value="always"></param>\n<embed src="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="123" height="456"></embed>\n</object>
+riglink: <a title="link name" href="http://example.com/photos/index.php?album=&img=T12896_tiny1.jpg">link name</a>
+rigimg: <img title="img name" src="http://example.com/photos/index.php?th=&album=&img=T12896_tiny2.jpg&sz=size&q=75">
+innerlink: <pre> *** curr_category=[[raw locals().get(\'curr_category\', \'NOT-SET2\')]] permalink_url=[[raw locals().get(\'permalink_url\', \'NOT-SET\')]] rel_permalink_url=[[raw locals().get(\'rel_permalink_url\', \'NOT-SET\')]] </pre>
+crosslink: <pre> *** curr_category=[[raw locals().get(\'curr_category\', \'NOT-SET2\')]] permalink_url=[[raw locals().get(\'permalink_url\', \'NOT-SET\')]] rel_permalink_url=[[raw locals().get(\'rel_permalink_url\', \'NOT-SET\')]]
+</pre></span>""",
+                sections["en"])
+
+            return sections, tags
+
+        # use monkey patching to have GenerateItem() invoke the patched method instead
+        m._GenItem_GetSections = types.MethodType(Patch_GenItem_GetSections, m, SiteDefault)
+        patched_result = m.GenerateItem(source_item)
+        self.assertEquals(actual_result, patched_result)
+
+        # GenerateItem() takes a SourceItem and generates a SiteItem
+        # which contains a lambda generator
+        self.assertEquals(SiteItem, type(actual_result))
+        self.assertEquals(type(lambda t, x: None), type(actual_result.content_gen))
+
+        # Generates the pages. We monkey-patch the _WriteFile method to grab
+        # whatever would actually get written to disk (and not actually write it)
+        data_result = []
+        def Patch_WriteFile(self, data, dest_dir, leafname):
+            # Do not invoke the old _WriteFile, just append to the result list
+            data_result.append(data)
+
+        m._WriteFile = types.MethodType(Patch_WriteFile, m, SiteDefault)
+        m.GeneratePages(categories=[ "main", "ignored" ],
+                        items=[ actual_result ])
+
+        # We expect 7 files to be written: index + monthly page + single post
+        # for the "no-category" main page, plus the same for the actual "main"
+        # category folder of the single post, plus one for the empty "ignored"
+        # category.
+        self.assertEquals(4+4+3, len(data_result))
 
 #------------------------
 # Local Variables:

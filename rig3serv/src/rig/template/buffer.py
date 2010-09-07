@@ -126,13 +126,13 @@ class Buffer(object):
 
     def SkipTo(self, word):
         """
-        Advances the buffer up to the first occurence of the given word
+        Advances the buffer up to the first occurrence of the given word
         (not included) or to the end of the buffer.
 
         Line numbers: The method returns *everything* between the current position
-        and the first occurence of word, including line separators. If linesep is
+        and the first occurrence of word, including line separators. If linesep is
         defined, these are scanned for when the buffer is consumed and the
-        Buffer.lineno is incremeted as necessary.
+        Buffer.lineno is incremented as necessary.
 
         Returns whatever has been read in between or an empty string is
         nothing changed (i.e. if the requested word is already at the current

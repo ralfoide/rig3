@@ -85,16 +85,16 @@ class Rig3LiveTest(RigTestCase):
         self.assertSearch(r'Rig link: <a title="This is a rig link" href="http://rig.base.url.alfray.com/photos1/index.php\?album=2007-10-07_Folder%201&img=T12896_tiny_jpeg.jpg">This is a rig link</a>',
                           index_izu)
         # file items which use the file name as title should loose their extension
-        self.assertHtmlSearch('<td class="title">\s*<a name="Izu-File-Item" title="Permalink to \'Izu File Item\'"><a href="cat/bar/post_2007-09-09_Izu-File-Item.html" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="izu-file-item" title="Permalink to \'Izu File Item\'"><a href="cat/bar/post_2007-09-09_izu-file-item.html" title="Permalink to \'Izu File Item\'"><span class="date">2007/09/09</span>Izu File Item</a></a></td></tr>',
                                index_izu)
         # sub-directories are parsed for file items too
-        self.assertHtmlSearch('<td class="title">\s*<a name="Sub-File-Item" title="Permalink to \'Sub File Item\'"><a href="cat/bar/post_2008-01-02_Sub-File-Item.html" title="Permalink to \'Sub File Item\'"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="sub-file-item" title="Permalink to \'Sub File Item\'"><a href="cat/bar/post_2008-01-02_sub-file-item.html" title="Permalink to \'Sub File Item\'"><span class="date">2008/01/02</span>Sub File Item</a></a></td></tr>',
                                index_izu)
         # posts with no tags/categories are accepted
-        self.assertHtmlSearch('<td class="title">\s*<a name="No-Tags" title="Permalink to \'No Tags\'"><a href="post_2007-10-02_No-Tags.html" title="Permalink to \'No Tags\'"><span class="date">2007/10/02</span>No Tags</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="no-tags" title="Permalink to \'No Tags\'"><a href="post_2007-10-02_no-tags.html" title="Permalink to \'No Tags\'"><span class="date">2007/10/02</span>No Tags</a></a></td></tr>',
                                index_izu)
         # empty posts are accepted
-        self.assertHtmlSearch('<td class="title">\s*<a name="Empty-Post" title="Permalink to \'Empty Post\'"><a href="post_2007-10-01_Empty-Post.html" title="Permalink to \'Empty Post\'"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
+        self.assertHtmlSearch('<td class="title">\s*<a name="empty-post" title="Permalink to \'Empty Post\'"><a href="post_2007-10-01_empty-post.html" title="Permalink to \'Empty Post\'"><span class="date">2007/10/01</span>Empty Post</a></a></td></tr>',
                                index_izu)
         # the live test site has sharing enabled (default is off)
         self.assertHtmlSearch('href="http://www.facebook.com/sharer.php\?u=http://www.example.alfray.com/cat/videos/post_',

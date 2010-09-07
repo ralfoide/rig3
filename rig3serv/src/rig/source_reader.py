@@ -27,7 +27,7 @@ __author__ = "ralfoide at gmail com"
 import codecs
 import os
 import re
-from binascii import crc32
+import zlib
 from datetime import datetime
 
 from rig.source_item import SourceDir, SourceFile, SourceContent
@@ -146,7 +146,7 @@ class SourceBlogReader(SourceReaderBase):
                 if valid_files:
                     self._log.Debug("[%s] Process '%s' to '%s'",
                                     self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
-                                   source_dir.rel_curr, dest_dir.rel_curr)
+                                    source_dir.rel_curr, dest_dir.rel_curr)
 
                     date = datetime.fromtimestamp(self._DirTimeStamp(source_dir.abs_path))
                     item = SourceDir(date, source_dir, all_files, self._source_settings)
@@ -167,7 +167,9 @@ class SourceBlogReader(SourceReaderBase):
                         date = datetime.fromtimestamp(self._FileTimeStamp(rel_file.abs_path))
                         item = SourceFile(date, rel_file, self._source_settings)
                         items.append(item)
-                        self._log.Debug("[%s] Append item '%s'", item)
+                        self._log.Debug("[%s] Append item '%s'",
+                                        self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
+                                        item)
 
         return items
 
@@ -233,7 +235,9 @@ class SourceBlogReader(SourceReaderBase):
                     tags["date"] = date
                     item = SourceContent(date, rel_file, title, content, tags, self._source_settings)
                     items.append(item)
-                    self._log.Debug("[%s] Append item '%s'", item)
+                    self._log.Debug("[%s] Append item '%s'",
+                                    self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
+                                    item)
 
                 content = ""
                 date = None
@@ -267,7 +271,9 @@ class SourceBlogReader(SourceReaderBase):
             # Flush content
             item = SourceContent(date, rel_file, title, content, tags, self._source_settings)
             items.append(item)
-            self._log.Debug("[%s] Append item '%s'", item)
+            self._log.Debug("[%s] Append item '%s'",
+                            self._site_settings and self._site_settings.public_name or "[Unnamed Site]",
+                            item)
 
         f.close()
 
@@ -287,7 +293,10 @@ class SourceBlogReader(SourceReaderBase):
             key = date + "_" + key
             if len(key) > 32:
                 # shorten with a crc32
-                key = "%s_%x" % (key[0:23], crc32(date + title))
+                # The adler32 CRC is returned as an int and can thus "seem" negative
+                # convert to its true long 64-bit value, always positive
+                crc = zlib.adler32(date + title) & 0x0FFffFFffL
+                key = "%s_%8x" % (key[0:23], crc)
         else:
             key = date
 

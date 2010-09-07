@@ -92,11 +92,11 @@ class IzuParserTest(RigTestCase):
         self.m = None
 
     def _Render(self, text, section="en"):
-        tags, sections = self.m.RenderStringToHtml(text, encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml(text) #@UnusedVariable
         return sections.get("en", None)
 
     def _Tags(self, text):
-        tags, sections = self.m.RenderStringToHtml(text, encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml(text) #@UnusedVariable
         return tags
 
     def testEscapes(self):
@@ -327,68 +327,68 @@ class IzuParserTest(RigTestCase):
             self._Render("first line\nfoo[!html:<blah1>\n<blah2>\n\ntoto</blah2>--]bar\nend"))
 
     def testSection(self):
-        tags, sections = self.m.RenderStringToHtml("default section is en", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("default section is en") #@UnusedVariable
         self.assertEquals('<span class="izu">\ndefault section is en</span>',
                           sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
 
-        tags, sections = self.m.RenderStringToHtml("line 1[s:en]line 2", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("line 1[s:en]line 2") #@UnusedVariable
         self.assertEquals('<span class="izu">\nline 1\nline 2</span>', sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
 
-        tags, sections = self.m.RenderStringToHtml("line 1\n[s:en]line 2", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("line 1\n[s:en]line 2") #@UnusedVariable
         self.assertEquals('<span class="izu">\nline 1\nline 2</span>', sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
 
-        tags, sections = self.m.RenderStringToHtml("section 1\n[s:fr]section 2", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("section 1\n[s:fr]section 2") #@UnusedVariable
         self.assertEquals('<span class="izu">\nsection 1</span>', sections.get("en", None))
         self.assertEquals('<span class="izu">\nsection 2</span>', sections.get("fr", None))
 
-        tags, sections = self.m.RenderStringToHtml("[s:en]section 1\n[s:fr]section 2", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:en]section 1\n[s:fr]section 2") #@UnusedVariable
         self.assertEquals('<span class="izu">\nsection 1</span>', sections.get("en", None))
         self.assertEquals('<span class="izu">\nsection 2</span>', sections.get("fr", None))
 
-        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]section 2", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]section 2") #@UnusedVariable
         self.assertEquals('<span class="izu">\nsection 1</span>', sections.get("fr", None))
         self.assertEquals('<span class="izu">\nsection 2</span>', sections.get("en", None))
 
         # Empty sections generate *really* nothing, not even the wrapping div (since
         # there's nothing to wrap)
-        tags, sections = self.m.RenderStringToHtml("\n\n\n\n[s:en]\n\n\n\n\n[s:fr]\n\n\n\n", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("\n\n\n\n[s:en]\n\n\n\n\n[s:fr]\n\n\n\n") #@UnusedVariable
         self.assertEquals('', sections.get("en", None))
         self.assertEquals('', sections.get("fr", None))
 
         # A section before EOF generates nothing
-        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1[s:en]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1[s:en]") #@UnusedVariable
         self.assertEquals('<span class="izu">\nsection 1</span>', sections.get("fr", None))
         self.assertEquals('', sections.get("en", None))
 
-        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:fr]section 1\n[s:en]") #@UnusedVariable
         self.assertEquals('<span class="izu">\nsection 1</span>', sections.get("fr", None))
         self.assertEquals('', sections.get("en", None))
 
         # Sole section tags do not count as a white line that would generate a <p>
-        tags, sections = self.m.RenderStringToHtml("\n[s:en]\nline 1\n\n[s:fr]\nline 2\n\n", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("\n[s:en]\nline 1\n\n[s:fr]\nline 2\n\n") #@UnusedVariable
         self.assertEquals('<span class="izu">\nline 1</span>', sections.get("en", None))
         self.assertEquals('<span class="izu">\nline 2</span>', sections.get("fr", None))
 
     def testIzuTags(self):
-        tags, sections = self.m.RenderStringToHtml("[izu:author:ralf]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:author:ralf]") #@UnusedVariable
         self.assertDictEquals({ "author": "ralf" }, tags)
 
-        tags, sections = self.m.RenderStringToHtml("[izu:date:2006-05-28 17:18:05]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:date:2006-05-28 17:18:05]") #@UnusedVariable
         self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 5) }, tags)
 
-        tags, sections = self.m.RenderStringToHtml("[izu:date:2006:05:28 17:18:22]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:date:2006:05:28 17:18:22]") #@UnusedVariable
         self.assertDictEquals({ "date":  datetime(2006, 5, 28, 17, 18, 22) }, tags)
 
-        tags, sections = self.m.RenderStringToHtml("[izu:cat:videos,photos]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:cat:videos,photos]") #@UnusedVariable
         self.assertDictEquals({ "cat":  { "videos": True, "photos": True } }, tags)
 
-        tags, sections = self.m.RenderStringToHtml("[izu:title:some random title with : colon]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:title:some random title with : colon]") #@UnusedVariable
         self.assertDictEquals({ "title":  "some random title with : colon" }, tags)
 
-        tags, sections = self.m.RenderStringToHtml("[izu:date:0000-00-00 00:00:00]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[izu:date:0000-00-00 00:00:00]") #@UnusedVariable
         self.assertDictEquals({}, tags)
 
     def testParseFirstLine(self):
@@ -399,6 +399,11 @@ class IzuParserTest(RigTestCase):
                                 "date":  datetime(2006, 5, 28, 17, 18, 5),
                                 "cat": { "foo": True, "bar": True, "test": True } },
                                tags)
+
+    def testConvertAccents(self):
+        self.assertEquals(
+              "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
+              self.m._ConvertAccents("ça, où est le pré près du prêt?"))
 
     def testAutoLink(self):
         self.assertEquals(
@@ -430,11 +435,6 @@ class IzuParserTest(RigTestCase):
         self.assertEquals(
             '<span class="izu">\n<img alt="My Image" title="My Image" src="http://www.example.code/image.gif"></span>',
             self._Render("[My Image|http://www.example.code/image.gif]"))
-
-    def testConvertAccents(self):
-        self.assertEquals(
-              "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
-              self.m._ConvertAccents("ça, où est le pré près du prêt?"))
 
     def testRigLink(self):
         self.m = MockIzuParser(self.Log(),
@@ -568,19 +568,19 @@ class IzuParserTest(RigTestCase):
                                glob={ "A01234*.jpg": "A01234 My Image.jpg" },
                                rig_base=None,
                                img_gen_script=None)
-        tags, sections = self.m.RenderStringToHtml("[s:images]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:images]") #@UnusedVariable
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
         self.assertEquals([], sections.get("images", None))
 
         # Ignore invalid tags
-        tags, sections = self.m.RenderStringToHtml("[s:images]line 1\nline 2\n[not a rigimg tag]", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:images]line 1\nline 2\n[not a rigimg tag]") #@UnusedVariable
         self.assertEquals(None, sections.get("en", None))
         self.assertEquals(None, sections.get("fr", None))
         self.assertEquals([], sections.get("images", None))
 
         # full tag with name, size and glob
-        tags, sections = self.m.RenderStringToHtml("[s:images][This is & comment|rigimg:256:A01234*.jpg] ignore the rest", encoding=None) #@UnusedVariable
+        tags, sections = self.m.RenderStringToHtml("[s:images][This is & comment|rigimg:256:A01234*.jpg] ignore the rest") #@UnusedVariable
         self.assertListEquals(
             [ '[[if rig_base]]<img title="This is &amp; comment" '
               'src="[[raw rig_thumb_url % '

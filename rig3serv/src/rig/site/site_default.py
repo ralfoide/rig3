@@ -69,9 +69,6 @@ class MonthPageItem(object):
 class SiteDefault(SiteBase):
     """
     Describes how to generate the content of a site using the "default" theme.
-
-    Right now the "magic" theme is identical to the "default" theme
-    so the implementation is empty. This is expected to change later.
     """
     EXT_IZU = ".izu"
     EXT_HTML = ".html"
@@ -170,7 +167,7 @@ class SiteDefault(SiteBase):
         # Do we have to generate anything at all?
         hash_key = self._cache.GetKey([ categories, items ])
 
-        if self._hash_store.Contains(hash_key):
+        if self._enable_cache and self._hash_store.Contains(hash_key):
             if self._force:
                 self._log.Info("[%s] No new content found, forcing generation",
                                self._site_settings.public_name)
@@ -678,7 +675,7 @@ class SiteDefault(SiteBase):
         - source_item: An instance of SourceItem.
         """
         may_have_images, all_files, izu_file, html_file, title, rel_dir = \
-                                            self.__GenItem_GetFiles(source_item)
+                                            self._GenItem_GetFiles(source_item)
 
         # TODO keep 2 keyword dicts: the main site_settings which does NOT
         # need to be hashed for the cache (cache gets cleared on settings)
@@ -696,7 +693,7 @@ class SiteDefault(SiteBase):
 
         sections, tags = self._cache.Compute(
                  section_args,
-                 lambda: self.__GenItem_GetSections(*section_args),
+                 lambda: self._GenItem_GetSections(*section_args),
                  stat_prefix="1.1 Izu",
                  use_cache=self._enable_cache)
 
@@ -719,7 +716,7 @@ class SiteDefault(SiteBase):
                                              cats,
                                              title)
 
-    def __GenItem_GetFiles(self, source_item):
+    def _GenItem_GetFiles(self, source_item):
         may_have_images = False
         all_files = None
         izu_file = None
@@ -748,16 +745,19 @@ class SiteDefault(SiteBase):
                 title = title[:-1 * len(self.EXT_HTML)]  # remove ext from title
 
         elif isinstance(source_item, SourceContent):
-            title = source_item.title
-            izu_file = source_item.rel_file
             html_file = "@content"
+            title = source_item.title
+            may_have_images = True
+            all_files = []
+            izu_file = source_item.rel_file
+            rel_dir = izu_file.dirname()
 
         else:
             raise NotImplementedError("TODO support %s" % repr(source_item))
 
         return may_have_images, all_files, izu_file, html_file, title, rel_dir
 
-    def __GenItem_GetSections(self,
+    def _GenItem_GetSections(self,
                               source_item,
                               may_have_images,
                               izu_file,
@@ -782,7 +782,7 @@ class SiteDefault(SiteBase):
                               keywords["img_gen_script"])
             if html_file == "@content":
                 tags = source_item.tags
-                _, sections = p.RenderStringToHtml(source_item.content, encoding)
+                _, sections = p.RenderStringToHtml(source_item.content, encoding, source_item.rel_file)
             else:
                 tags = p.ParseFileFirstLine(izu_file, encoding)
                 if "encoding" in tags:
@@ -811,7 +811,6 @@ class SiteDefault(SiteBase):
                                    keywords["rig_base"],
                                    keywords["img_gen_script"])
             tags = izu_parser.ParseFirstLine(sections["html"])
-            #DEBUG--self._log.Debug("HTML : %s => '%s'", main_filename, sections["html"])
         else:
             self._log.Debug("No content for source %s", source_item)
             return None, None
@@ -883,7 +882,7 @@ class SiteDefault(SiteBase):
                 _keywords["sections"]["images"] = _html_img
 
         if "curr_category" in _keywords:
-            # We need to update some keywords depending the current category
+            # We need to update some keywords depending on the current category
             # being generated.
             curr_category = _keywords["curr_category"]
             permalink_url = _keywords["permalink_url"]
@@ -1206,7 +1205,8 @@ class SiteDefault(SiteBase):
         - If the name is too long, keep a shorter version with a CRC at the end.
         Returns the new file name.
         """
-        name = re.sub(r"[ /\\-]+", "-", leafname)
+        name = leafname.lower()
+        name = re.sub(r"[ /\\-]+", "-", name)
         name = re.sub(r"[^a-zA-Z0-9-]+", "_", name)
         if maxlen <= 0:
             maxlen = self._site_settings.mangled_name_len
@@ -1310,7 +1310,7 @@ class SiteDefault(SiteBase):
             }
         hash_key = self._cache.GetKey(cache_coherency_key)
 
-        f = self._hash_store.Contains(hash_key)
+        f = self._enable_cache and self._hash_store.Contains(hash_key)
 
         if self._debug_cache:
             self._log.Debug("Cache Coherency key [site=%s, found=%s, hash=%s] = %s",

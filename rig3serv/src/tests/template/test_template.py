@@ -106,6 +106,24 @@ class TemplateTest(RigTestCase):
         b = Buffer("file", "[[tag")
         self.assertRaises(SyntaxError, m._GetNextNode, b)
 
+    def testGetNextNode_Escape(self):
+        m = MockParse(self.Log(), source="")
+
+        # [[raw expr]] is escaped with an extra [, so it transformed into a
+        # literal rather than a tag.
+        b = Buffer("file", "[[[raw expr]]")
+        self.assertEquals(NodeLiteral("[[raw expr]]"), m._GetNextNode(b))
+
+        # We can have as many levels of [[[[, only N-1 are generated in output.
+        # However the [[[... part still generates its own literal.
+        b = Buffer("file", "some [[[[[[blah foo bar]] thing")
+        self.assertEquals(NodeLiteral("some "), m._GetNextNode(b))
+        self.assertEquals(NodeLiteral("[[[[[blah foo bar]] thing"), m._GetNextNode(b))
+
+        # Since the escaped tag is a literal, it doesn't have to be closed properly
+        b = Buffer("file", "[[[[tag")
+        self.assertEquals(NodeLiteral("[[[tag"), m._GetNextNode(b))
+
     def testGetNextNode_Tags(self):
         m = MockParse(self.Log(), source="")
         t = m._tags["tag"] = _TagTag()

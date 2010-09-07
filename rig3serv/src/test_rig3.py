@@ -55,6 +55,7 @@ def get_tests(test_filter=None):
     localdir = os.path.join(os.path.dirname(__file__), "tests")
     start = len(localdir.split(os.path.sep)) - 1
     modules = []
+    ignored = []
     for root, dirs, files in os.walk(localdir):
         if "CVS"  in dirs:
             dirs.remove("CVS")
@@ -73,9 +74,13 @@ def get_tests(test_filter=None):
                 m.append(file)
                 m = m[start:]
                 name = ".".join(m)
-                if (not test_filter) or name in test_filter:
+                if (not test_filter) or (name in test_filter):
                     modules.append(name)
+                else:
+                    ignored.append(name)
 
+    if ignored:
+        print >>sys.stderr, "IGNORED Rig Tests:", ", ".join([m for m in ignored])
     print >>sys.stderr, "Rig Tests:", ", ".join([m.split(".")[-1] for m in modules])
 
     loader = unittest.TestLoader()

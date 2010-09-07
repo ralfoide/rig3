@@ -11,6 +11,11 @@ __bold__ ''italics'' ==code==
 
 ___underline___ '''single quotes''' ===equals===
 
+
+Cross-linking:
+* [To folder 1 in same category|#s:20071007:Folder 1]
+* [To folder 1 in another category|/bar#s:20071007:Folder 1]
+
 [s:images]
 [Image 2 @ 128|rigimg:128:T*tiny2.jpg]
 [Image 1 @ 96 |rigimg:96:T*tiny1.jpg]

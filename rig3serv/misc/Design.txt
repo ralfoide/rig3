@@ -10,10 +10,20 @@ Sections below in this document are historical records and may be obsolete.
 Summary:
 
 - Input blog posts are either Izumi (text with wiki-like syntax) or HTML.
-- Rig3 has two "expansion" mechanisms. Izumi files are first converted to
-  HTML when found. The HTML is then fed to the "template engine",
-  which is a macro processor (i.e. like PHP or Django templates).
-  (Native HTML posts do not go thru the template engine.)
+
+- Rig3 has two "expansion" mechanisms:
+
+A- Izumi files are text files that contains formatting instructions in brackets,
+   e.g. "[label|http://link]". The IzuParser class knows how to convert these
+   Izu files or strings to parial-HTML, which may contain template tags.
+
+B- The partial-HTML is then fed to the "template engine", which is a macro processor
+   (i.e. like PHP or Django templates). Here the template is based on tags
+   which are enclosed in double-brackets. There are tags to inject variables,
+   do some computations or do conditional execution (for, if).
+
+- Pure-HTML posts do not go thru the template engine.
+
 - Wrapper templates are then available to generate full HTML or Atom pages
   from individual blog posts.
 
@@ -39,7 +49,7 @@ Detailed version:
     - for CSS files, transform using the template engine.
 - for all sources in the site's setting source list:
     - _ProcessSourceItems:
-        - source.Parse => a generator of SourceItem (aka SourceFile, SourceDir)
+        - source.Parse => a generator of SourceItem (aka SourceFile, SourceDir, SourceContent)
         - for all SourceItems:
             - remove dups (by hashing on path/settings)
             - GenerateItem: transforms SourceItem into SiteItem
@@ -50,9 +60,11 @@ Detailed version:
 4- GenerateItem:
 - Currently implemented only in rig.site.site_default for the photoblog
 - Input must be either SourceFile (one izu file = one blog post) or
-  SourceDir (one directory with index.izu + pictures = one blog post)
+  SourceDir (one directory with index.izu + pictures = one blog post) or
+  SourceContent (one izu string = one blog post)
 - Parse date and title from file name or dir name
 - If there's an izu file, pre-render it to HTML (rig.parser.izu_parser.RenderFileToHtml)
+  If there's an izu content, pre-render it to HTML (rig.parser.izu_parser.RenderStringToHtml)
     - Generates a list of tags:
         - Use date, title or categories from parsed izu tags, if any.
     - Generates a list of sections:
@@ -126,8 +138,8 @@ So let's see what application we want to do first:
 - Parents folders are used to provide categories and index.izu files (or some kind of
   specific file) can provide additional tags.
 - Generated pages:
-	- Page for the Most recent N items
-	- Page for all items of category X
+  - Page for the Most recent N items
+  - Page for all items of category X
 - Each item should be generated as a bit of HTML, cached as an embeddable HTML file.
 - Each page is a collection of existing items. We can use .shtml on the server
   side (to be enabled in Apache) to link the separate items into a single page,
@@ -145,24 +157,24 @@ The engine should work like this:
 
 Stages:
 - Stage 1:
-	- Ignore pictures (i.e. the album view will be a link to an existing
-	  Rig1) and only deal with folders that contain an index.izu.
-  	- Requires a new Izu formatter in Python that can embedded the Rig images.
-  	- Have global config vs sites configs.
-  		- Patterns for valid folder names
-  		- Settings for generating the Rig links
-  	- Generate .shtml for items and create pages that uses them.
+  - Ignore pictures (i.e. the album view will be a link to an existing
+    Rig1) and only deal with folders that contain an index.izu.
+    - Requires a new Izu formatter in Python that can embedded the Rig images.
+    - Have global config vs sites configs.
+      - Patterns for valid folder names
+      - Settings for generating the Rig links
+    - Generate .shtml for items and create pages that uses them.
 - Stage 2:
-	- Remove obsolete destination items/pages
-	- Generate embedded album views, with a link onto the full rig version.
-		- Settings/patterns for image levels (unwanted/ignored, low/medium/good/excellent)
-	- Experiment with AJAX instead of shtml (or provide it as an option)
-	- Tags to be able to remove a given source folder from processing
-	- Tags to generate .htaccess into destination
+  - Remove obsolete destination items/pages
+  - Generate embedded album views, with a link onto the full rig version.
+    - Settings/patterns for image levels (unwanted/ignored, low/medium/good/excellent)
+  - Experiment with AJAX instead of shtml (or provide it as an option)
+  - Tags to be able to remove a given source folder from processing
+  - Tags to generate .htaccess into destination
 
 Expansions:
 - Ability to generate on-the-fly obfuscated pages for sharing
-	- can be done at first by symlinking the html on the web server
+  - can be done at first by symlinking the html on the web server
 
 ----
 20070827 Structure Stage 1
@@ -176,11 +188,11 @@ At src level:
 - settings.py: Load() from .rig3.rc f.ex (flat settings dict per site)
 - dirparser.py: Parse(dir) => list [ Dir( ... ) ] (recursive)
 - generate.py: Generate(site)
-	- load source for site
-	- compare to dest
-	- generate or update items
-	- keep links per type: last-n-page or page-cat-X (dict of list or dict of dict)
-	- generate pages
+  - load source for site
+  - compare to dest
+  - generate or update items
+  - keep links per type: last-n-page or page-cat-X (dict of list or dict of dict)
+  - generate pages
 - izumi.py: ConvertToHtml(izu)
 - thumbnail.py: UrlForImage(file, quality, size)
 - cache.py: Store(type, name, ref), or update. Cleanup()
@@ -335,12 +347,12 @@ appropriate. Currently this header contains:
 
 The izu index should have the following structure:
 - An izu header on the first line (same tags).
-	- The date & title are optional.
-	- If not present, the defaults extracted from the directory name will be used.
-  	- If present, they must override these defaults.
+  - The date & title are optional.
+  - If not present, the defaults extracted from the directory name will be used.
+    - If present, they must override these defaults.
 - Sections: "en" (english), "fr" (french), "images", "notes".
-  	- Sections are optional. "en" is the default if not specified.
-	- Sections are to be used in the template if present.
+    - Sections are optional. "en" is the default if not specified.
+  - Sections are to be used in the template if present.
 
 The purpose of the sections is to further separate layout from content:
 even in the current HTML of the "old" wordpress blog, I have quite a bit of
@@ -471,22 +483,22 @@ handled as such.
 20071121 Next Steps
 
 - Permalinks
-	- Ironically, requires to save each post as a separate HTML file
-	- links: prev/next/up. Up goes to the corresponding index with an anchor.
+  - Ironically, requires to save each post as a separate HTML file
+  - links: prev/next/up. Up goes to the corresponding index with an anchor.
 - RSS generation
-	- discovery links
+  - discovery links
 - Site customization/refactor.
-	- Ability to have several sources. Each source generates a dated list of entries.
-		- DirParser is just one of them.
-		- Adapt DirParser to return single files w/ pattern <date><title>.izu
-		- Later I'll want a parser for old izu files that contain multiple entries.
-		- It can be all done by DirParser but we want to make it configurable in
-			site prefs.
-	- Move prefs to site prefs w/ defaults. Essentially regexps but also Rig sizes.
-	- Extract actual page/items/images generation.
+  - Ability to have several sources. Each source generates a dated list of entries.
+    - DirParser is just one of them.
+    - Adapt DirParser to return single files w/ pattern <date><title>.izu
+    - Later I'll want a parser for old izu files that contain multiple entries.
+    - It can be all done by DirParser but we want to make it configurable in
+      site prefs.
+  - Move prefs to site prefs w/ defaults. Essentially regexps but also Rig sizes.
+  - Extract actual page/items/images generation.
 - IzuParser:
-	- add a raw HTML tag, to include HTML inline on the spot, e.g. [html:-- ... --].
-	- [img:] tag that work for current album (or simply [blah.jpg])
+  - add a raw HTML tag, to include HTML inline on the spot, e.g. [html:-- ... --].
+  - [img:] tag that work for current album (or simply [blah.jpg])
 - Documentation
 
 The long term goal is that it should be possible to switch templates *and* switch the

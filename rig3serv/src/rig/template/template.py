@@ -164,6 +164,19 @@ class Template(object):
         Returns the next node in the buffer.
         """
         if buffer.StartsWith("[[", consume=True):
+
+            # Tags start with [[. However we can use [[[ to escape a tag
+            # that should be ignored, the [[[ is converted to [[ and [[[[
+            # is converted to [[[, etc.
+
+            if buffer.StartsWith("[", consume=False):
+                bracket = "["  # because we consumed 2 [ above
+                while buffer.StartsWith("[", consume=True):
+                    bracket += "["
+                literal = buffer.SkipTo("[[")
+                return NodeLiteral(bracket + literal)
+
+            # Process a normal tag opened with [[
             keyword = buffer.NextWord().lower()
             parameters = buffer.SkipTo("]]")
             if not buffer.StartsWith("]]", consume=True):
