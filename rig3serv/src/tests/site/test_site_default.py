@@ -1111,7 +1111,7 @@ crosslink: <pre> *** curr_category=[[raw locals().get(\'curr_category\', \'NOT-S
         # for the "no-category" main page, plus the same for the actual "main"
         # category folder of the single post, plus one for the empty "ignored"
         # category.
-        self.assertEquals(4+4+3, len(data_result))
+        self.assertEquals(4+3, len(data_result))
 
 #------------------------
 # Local Variables:

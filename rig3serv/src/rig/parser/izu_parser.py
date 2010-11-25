@@ -866,7 +866,7 @@ class IzuParser(object):
     _RE_LINK_NAMED_URL   = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|((?:https?://|ftp://|#|/)[^ "<>]+?)\]')
     _RE_LINK_UNNAMED_URL = re.compile(r'(?<!\[)\[((?:https?://|ftp://|#)[^ "<>]+?)\]')
     _RE_LINK_UNFORMATTED = re.compile(r'(^|[^\[]\]|[^"\[\]\|>])((?:https?://|ftp://)[^ "<>]+)($|[^"\]])')
-    _RE_RIGLINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|riglink:([^ "<>]+?)\]')
+    _RE_RIGLINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|riglink:([^"<>]+?)\]')
     _RE_IZU_POST_LINK = re.compile(r'(?<!\[)\[([^\|\[\]]+)\|(/[^ #:\[\]\|]+)?#s:([0-9]{8})(?::([^\|\[\]]+))?\]')
 
     def _ReplIzuPostLink(self, state, label, category, date, title):
