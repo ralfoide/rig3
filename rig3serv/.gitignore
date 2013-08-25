@@ -1,0 +1,6 @@
+*.pyc
+default.log
+testdata/live_dest/
+testdata/test_cache/
+testdata/test_dest/
+
