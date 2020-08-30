@@ -4,6 +4,8 @@
 """
 Rig3 module: UTF8 Accents
 
+===> IMPORTANT: This file MUST be opened using UTF-8 encoding. <===
+
 Must be stored in a different file since it requires UTF8-encoding.
 
 Part of Rig3.

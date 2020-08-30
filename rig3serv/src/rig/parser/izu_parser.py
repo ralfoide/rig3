@@ -4,6 +4,8 @@
 """
 Rig3 module: Parses Izumi files to HTML
 
+===> IMPORTANT: This file MUST be opened using iso-8859-1 encoding, not UTF-8. <===
+
 Part of Rig3.
 Copyright (C) 2007-2009 ralfoide gmail com
 
