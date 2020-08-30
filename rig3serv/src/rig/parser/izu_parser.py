@@ -703,8 +703,8 @@ class IzuParser(object):
 
     def _FormatYoutube(self, state, line):
         """
-        Formats any [youtube:ID:SXxSY] tag.
-        The ":SXxSY" part is optional.
+        Formats any [youtube:ID:t=time:SXxSY] tag.
+        The "t=time" and ":SXxSY" parts are optional.
         """
         m = True
         while m:
@@ -712,18 +712,20 @@ class IzuParser(object):
             if m:
                 before = m.group("before") or ""
                 id     = m.group("id") or ""
-                sx     = m.group("sx") or 'youtube_sx'
-                sy     = m.group("sy") or 'youtube_sy'
+                sx     = m.group("sx") or "youtube_sx"
+                sy     = m.group("sy") or "youtube_sy"
+                t      = m.group("t")  or ""
                 after  = m.group("after")  or ""
 
-                cmd = '[[[raw youtube_html %% { "id": "%s", "sx": %s, "sy": %s } ]]' \
-                        % (id, sx, sy)
+                url_extra = t and ("&t=%s" % t) or ""
+                cmd = '[[[raw youtube_html %% { "id": "%s", "sx": %s, "sy": %s, "url_extra": "%s" } ]]' \
+                        % (id, sx, sy, url_extra)
 
                 line = "%s%s%s" % (before, cmd, after)
 
         return line
 
-    _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
+    _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::t=(?P<t>[0-9]+))?(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
 
     def _FormatTableTags(self, state, line):
         """
