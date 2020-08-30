@@ -1051,7 +1051,7 @@ class SiteDefaultTest(RigTestCase):
                 rel_file=RelFile(source_dir, "Main.blog.izu"),
                 title="Title",
                 content="""[izu:cat:ignored]
-youtube: [youtube:ID:123x456]
+youtube: [youtube:ID:t=12:345x678]
 riglink: [link name|riglink:T12896_tiny1.jpg]
 rigimg: [img name|rigimg:size:T12896_tiny2.jpg]
 innerlink: [To folder 1 in same category|#s:20071007:Folder 1]

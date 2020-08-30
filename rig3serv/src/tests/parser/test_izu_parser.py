@@ -220,13 +220,18 @@ class IzuParserTest(RigTestCase):
     def testYoutube(self):
         # Youtube tag with just an id, no size
         self.assertEquals(
-            '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": youtube_sx, "sy": youtube_sy } ]].</span>',
+            '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": youtube_sx, "sy": youtube_sy, "url_extra": "" } ]].</span>',
             self._Render("[youtube:ab_CdefgGh]."))
 
-        # Youtube tag with just an id and a pixel size
+        # Youtube tag with an id and a pixel size
         self.assertEquals(
-            '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": 640, "sy": 385 } ]].</span>',
+            '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": 640, "sy": 385, "url_extra": "" } ]].</span>',
             self._Render("[youtube:ab_CdefgGh:640x385]."))
+
+        # Youtube tag with an id, a pixel size, and time
+        self.assertEquals(
+            '<span class="izu">\n[[raw youtube_html % { "id": "ab_CdefgGh", "sx": 640, "sy": 385, "url_extra": "&t=123" } ]].</span>',
+            self._Render("[youtube:ab_CdefgGh:t=123:640x385]."))
 
     def testTable(self):
         self.assertEquals(
@@ -403,7 +408,7 @@ class IzuParserTest(RigTestCase):
     def testConvertAccents(self):
         self.assertEquals(
               "&ccedil;a, o&ugrave; est le pr&eacute; pr&egrave;s du pr&ecirc;t?",
-              self.m._ConvertAccents("ça, où est le pré près du prêt?"))
+              self.m._ConvertAccents("Ã§a, oÃ¹ est le prÃ© prÃ¨s du prÃªt?"))
 
     def testAutoLink(self):
         self.assertEquals(
