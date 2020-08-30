@@ -257,7 +257,7 @@ class SiteSettings(object):
                  img_pattern=None,
                  dup_on_realpath=False,
                  youtube_html="""<object width="%(sx)s" height="%(sy)s">
-<param name="movie" value="http://www.youtube-nocookie.com/v/%(id)s&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00%(url_extra)s"></param>
+<param name="movie" value="http://www.youtube-nocookie.com/v/%(id)s&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00"></param>
 <param name="allowFullScreen" value="true"></param>
 <param name="allowscriptaccess" value="always"></param>
 <embed src="http://www.youtube-nocookie.com/v/%(id)s&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="%(sx)s" height="%(sy)s"></embed>

@@ -44,38 +44,38 @@ _WS_LINE = re.compile(r"^[ \t\r\n\f]*$")
 _IZU_CAT_SEP = re.compile("[, \t\f]")
 
 _ACCENTS_TO_HTML = {
-    "Ã¡": "&aacute;",
-    "Ã ": "&agrave;",
-    "Ã¢": "&acirc;",
-    "Ã¤": "&auml;",
-    "Ã£": "&atilde;",
+    "á": "&aacute;",
+    "à": "&agrave;",
+    "â": "&acirc;",
+    "ä": "&auml;",
+    "ã": "&atilde;",
 
-    "Ã§": "&ccedil;",
+    "ç": "&ccedil;",
 
-    "Ã©": "&eacute;",
-    "Ã¨": "&egrave;",
-    "Ãª": "&ecirc;",
-    "Ã«": "&euml;",
+    "é": "&eacute;",
+    "è": "&egrave;",
+    "ê": "&ecirc;",
+    "ë": "&euml;",
 
-    "Ã­": "&iacute;",
-    "Ã¬": "&igrave;",
-    "Ã®": "&icirc;",
-    "Ã¯": "&iuml;",
+    "í": "&iacute;",
+    "ì": "&igrave;",
+    "î": "&icirc;",
+    "ï": "&iuml;",
 
-    "Ã±": "&mtilde;",
+    "ñ": "&mtilde;",
 
-    "Ã³": "&oacute;",
-    "Ã²": "&ograve;",
-    "Ã´": "&ocirc;",
-    "Ã¶": "&ouml;",
-    "Ãµ": "&otilde;",
+    "ó": "&oacute;",
+    "ò": "&ograve;",
+    "ô": "&ocirc;",
+    "ö": "&ouml;",
+    "õ": "&otilde;",
 
-    "Ãº": "&uacute;",
-    "Ã¹": "&ugrave;",
-    "Ã»": "&ucirc;",
-    "Ã¼": "&uuml;",
+    "ú": "&uacute;",
+    "ù": "&ugrave;",
+    "û": "&ucirc;",
+    "ü": "&uuml;",
 
-    "Â°": "&deg;",
+    "°": "&deg;",
 }
 
 #------------------------
@@ -701,8 +701,8 @@ class IzuParser(object):
 
     def _FormatYoutube(self, state, line):
         """
-        Formats any [youtube:ID:t=time:SXxSY] tag.
-        The "t=time" and ":SXxSY" parts are optional.
+        Formats any [youtube:ID:SXxSY] tag.
+        The ":SXxSY" part is optional.
         """
         m = True
         while m:
@@ -710,20 +710,18 @@ class IzuParser(object):
             if m:
                 before = m.group("before") or ""
                 id     = m.group("id") or ""
-                sx     = m.group("sx") or "youtube_sx"
-                sy     = m.group("sy") or "youtube_sy"
-                t      = m.group("t")  or ""
+                sx     = m.group("sx") or 'youtube_sx'
+                sy     = m.group("sy") or 'youtube_sy'
                 after  = m.group("after")  or ""
 
-                url_extra = t and ("&t=%s" % t) or ""
-                cmd = '[[[raw youtube_html %% { "id": "%s", "sx": %s, "sy": %s, "url_extra": "%s" } ]]' \
-                        % (id, sx, sy, url_extra)
+                cmd = '[[[raw youtube_html %% { "id": "%s", "sx": %s, "sy": %s } ]]' \
+                        % (id, sx, sy)
 
                 line = "%s%s%s" % (before, cmd, after)
 
         return line
 
-    _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::t=(?P<t>[0-9]+))?(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
+    _RE_TAG_YOUTUBE = re.compile(r"(?P<before>.*?)(?<!\[)\[youtube:(?P<id>[^:\"\'\<\>\]]+)(?::(?P<sx>[0-9]+)x(?P<sy>[0-9]+))?\](?P<after>.*)")
 
     def _FormatTableTags(self, state, line):
         """
