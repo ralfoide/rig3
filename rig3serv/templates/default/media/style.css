@@ -1,4 +1,4 @@
-[[# Default style for default template */
+[[# /* Default style for default template */
 
 --- base style extracted from my own wordpress theme
 Receives the following template variables:
@@ -189,3 +189,10 @@ body {
 table.content td.flag {
 	vertical-align: top;
 }
+
+/* Prevent content images from being larger than screen, resize as needed. */
+div.content img {
+    max-width: 100%;
+    height: auto;
+}
+
