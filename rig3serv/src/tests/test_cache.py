@@ -41,7 +41,7 @@ class CacheTest(RigTestCase):
     def testContainsStore(self):
         # Contains returns a tuple (True/False, path).
         c = self.m.Contains("foo")
-        self.assertIsInstance(tuple, c)
+        self.rigAssertIsInstance(tuple, c)
         self.assertEqual(2, len(c))
         self.assertEqual(False, c[0])
         self.assertMatches("%s.*" % re.escape(self._cachedir), c[1])
@@ -49,7 +49,7 @@ class CacheTest(RigTestCase):
         self.m.Store([ "some", "value" ], "foo")
 
         c = self.m.Contains("foo")
-        self.assertIsInstance(tuple, c)
+        self.rigAssertIsInstance(tuple, c)
         self.assertEqual(2, len(c))
         self.assertEqual(True, c[0])
         self.assertMatches("%s.*" % re.escape(self._cachedir), c[1])

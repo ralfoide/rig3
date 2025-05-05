@@ -184,7 +184,7 @@ class SiteDefaultTest(RigTestCase):
         keywords["rig3_version"] = "3.1.4.15"
 
         html = m._FillTemplate(SiteDefault._TEMPLATE_HTML_INDEX, **keywords)
-        self.assertIsInstance(str, html)
+        self.rigAssertIsInstance(str, html)
         self.assertTrue(SiteDefault._TEMPLATE_HTML_INDEX in m._fill_template_params)
         self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX]))
         self.assertDictEquals(keywords, m._fill_template_params[SiteDefault._TEMPLATE_HTML_INDEX][0])
@@ -214,7 +214,7 @@ class SiteDefaultTest(RigTestCase):
         keywords["sections"] = { "en": "Main <b>Text Content</b> as HTML",
                                  "images": "<a href='page_url'><img src='image_url'/></a>" }
         html = m._FillTemplate(SiteDefault._TEMPLATE_HTML_ENTRY, **keywords)
-        self.assertIsInstance(str, html)
+        self.rigAssertIsInstance(str, html)
         self.assertTrue(SiteDefault._TEMPLATE_HTML_ENTRY in m._fill_template_params)
         self.assertTrue(1, len(m._fill_template_params[SiteDefault._TEMPLATE_HTML_ENTRY]))
         self.assertDictEquals(keywords, m._fill_template_params[SiteDefault._TEMPLATE_HTML_ENTRY][0])
@@ -1076,7 +1076,7 @@ crosslink: [To folder 1 in another category|/bar#s:20071007:Folder 1]""",
             test.assertListEquals([ "en" ], sections.keys())
             test.assertHtmlEquals(
                    """<span class="izu">
-youtube: <object width="123" height="456"> <param name="movie" value="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00"></param>\n<param name="allowFullScreen" value="true"></param>\n<param name="allowscriptaccess" value="always"></param>\n<embed src="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="123" height="456"></embed>\n</object>
+youtube: <object width="345" height="678"> <param name="movie" value="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00&t=12"></param>\n<param name="allowFullScreen" value="true"></param>\n<param name="allowscriptaccess" value="always"></param>\n<embed src="http://www.youtube-nocookie.com/v/ID&hl=en&fs=1&rel=0&color1=0x234900&color2=0x4e9e00" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="345" height="678"></embed>\n</object>
 riglink: <a title="link name" href="http://example.com/photos/index.php?album=&img=T12896_tiny1.jpg">link name</a>
 rigimg: <img title="img name" src="http://example.com/photos/index.php?th=&album=&img=T12896_tiny2.jpg&sz=size&q=75">
 innerlink: <pre> *** curr_category=[[raw locals().get(\'curr_category\', \'NOT-SET2\')]] permalink_url=[[raw locals().get(\'permalink_url\', \'NOT-SET\')]] rel_permalink_url=[[raw locals().get(\'rel_permalink_url\', \'NOT-SET\')]] </pre>

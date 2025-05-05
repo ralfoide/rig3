@@ -187,7 +187,7 @@ class SitesSettingsTest(RigTestCase):
 
         sis = self.m.GetSiteSettings("site1")
         self.assertNotEquals(None, sis)
-        self.assertIsInstance(SiteSettings, sis)
+        self.rigAssertIsInstance(SiteSettings, sis)
         self.assertEquals("blue_template", sis.theme)
         self.assertEquals("Site 1", sis.public_name)
         self.assertListEquals(

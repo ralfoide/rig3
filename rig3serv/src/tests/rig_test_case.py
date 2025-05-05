@@ -28,6 +28,7 @@ import difflib
 import unittest
 import StringIO
 import tempfile
+import sys
 
 from rig.log import Log
 
@@ -186,17 +187,23 @@ class RigTestCase(unittest.TestCase):
               (msg or "assertMatches failed", expected_regexp, actual)
         self.assertTrue(re.match(expected_regexp, actual), msg)
 
-    def assertIsInstance(self, expected_types, actual, msg=None):
+    # Python 2.7 now has assertIsInstance()
+    # However we override it with out backward compatible version.abs
+    # Warning: the parameters ar REVERSED compared to the unittest 2.7 version.
+    def rigAssertIsInstance(self, expected_types, actual, msg=None):
         """
         Asserts that the actual data is of the expected instance type.
         Test is done using isinstance(actual, expected).
         Parameters:
         - expected_type (type or list of types): One type or a list of types to
-                                                 expect.
+                                                    expect.
         - actual (expression): An expression which type is to be expected.
+
+        WARNING: the order of parameters is (expected type, actual value).
+        This is the REVERSE from unittest.assertIsInstance in Python 2.7.
         """
         msg = "%s\nExpected types: %s\nActual type: %s" % \
-                (msg or "assertIsInstance failed", repr(expected_types), repr(actual))
+                (msg or "rigAssertIsInstance failed", repr(expected_types), repr(actual))
         self.assertTrue(isinstance(actual, expected_types), msg)
 
     def assertDictEquals(self, expected, actual, msg=None):
@@ -207,8 +214,8 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertDictEquals failed", repr(expected), repr(actual))
-        self.assertTrue(isinstance(actual, dict), msg)
-        self.assertTrue(isinstance(expected, dict), msg)
+        self.rigAssertIsInstance(dict, actual, msg)
+        self.rigAssertIsInstance(dict, expected, msg)
         super(RigTestCase, self).assertEquals(expected, actual, msg)
 
     def assertListEquals(self, expected, actual, msg=None, sort=False):
@@ -227,8 +234,8 @@ class RigTestCase(unittest.TestCase):
         """
         msg = "%s\nExpected: %s\nActual  : %s" % \
                 (msg or "assertListEquals failed", repr(expected), repr(actual))
-        self.assertTrue(isinstance(actual, (list, tuple)), msg)
-        self.assertTrue(isinstance(expected, type(actual)), msg)
+        self.rigAssertIsInstance((list, tuple), actual, msg)
+        self.rigAssertIsInstance(type(actual), expected, msg)
         if sort is not False:
             expected = list(expected)
             actual = list(actual)
@@ -329,6 +336,7 @@ class RigTestCase(unittest.TestCase):
             else:
                 break
         return result
+
 
 #------------------------
 # Local Variables:

@@ -38,13 +38,13 @@ class RelPathTest(RigTestCase):
 
     def testStr(self):
         s = str(self.m)
-        self.assertIsInstance(str, s)
+        self.rigAssertIsInstance(str, s)
         self.assertEquals(-1, s.find("RelPath"))
         self.assertNotEquals(-1, s.find(os.path.join("sub", "dir", "blah")))
 
     def testRepr(self):
         s = repr(self.m)
-        self.assertIsInstance(str, s)
+        self.rigAssertIsInstance(str, s)
         self.assertNotEquals(-1, s.find("RelPath"))
         self.assertNotEquals(-1, s.find(os.path.join("sub", "dir", "blah")))
 

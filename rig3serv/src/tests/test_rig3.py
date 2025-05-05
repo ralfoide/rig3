@@ -112,8 +112,8 @@ class Rig3Test(RigTestCase):
         self.assertEquals(None, self.m._sites_settings)
         self.assertFalse(self.m._ProcessSitesCalled)
         self.m.Run()
-        self.assertIsInstance(Log, self.m._log)
-        self.assertIsInstance(SitesSettings, self.m._sites_settings)
+        self.rigAssertIsInstance(Log, self.m._log)
+        self.rigAssertIsInstance(SitesSettings, self.m._sites_settings)
         self.assertTrue(self.m._ProcessSitesCalled)
 
 #------------------------

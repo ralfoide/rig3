@@ -27,20 +27,20 @@ Python 2.4 or 2.5 are known to work under both Linux and Cygwin.
 1- Grab the source and run the test suite
 ----------------------
 
-The project lives at http://code.google.com/p/rig3/
+The project lives at https://github.com/ralfoide/rig3
 
 As of right now, the best way to grab the source is by using an anonymous
-SVN checkout:
- $ svn checkout http://rig3.googlecode.com/svn/trunk/rig3serv rig3serv
+git checkout:
+ $ git clone https://github.com/ralfoide/rig3.git
 
-This will create a directory "rig3serv" with all the code.
+This will create a directory "rig3/rig3serv" with all the code.
 
 Make sure the two main files are executable:
  $ chmod +x rig3serv/src/rig3.py
  $ chmod +x rig3serv/src/test_rig3.py
 
 The first thing you might want to do is check the unit tests pass:
- $ rig3serv/src/test_rig3.py
+ $ python2 rig3serv/src/test_rig3.py
 
 You should see something like this:
  UT Main ['rig3serv/src/test_rig3.py']

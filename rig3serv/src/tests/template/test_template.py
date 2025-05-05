@@ -63,8 +63,8 @@ class TemplateTest(RigTestCase):
         self.assertRaises(TypeError, Template, self.Log())
         m = MockParse(self.Log(), file=None, source="something")
         self.assertSame(self.Log(), m._log)
-        self.assertIsInstance(dict, m._tags)
-        self.assertIsInstance(dict, m._filters)
+        self.rigAssertIsInstance(dict, m._tags)
+        self.rigAssertIsInstance(dict, m._filters)
 
     def testInitParse(self):
         """
@@ -77,7 +77,7 @@ class TemplateTest(RigTestCase):
 
         filename = os.path.join(self.getTestDataPath(), "simple.html")
         m = MockParse(self.Log(), file=filename, source=None)
-        self.assertIsInstance(str, m.source)
+        self.rigAssertIsInstance(str, m.source)
         self.assertSearch("html", m.source)
         self.assertEquals(filename, m.filename)
 
@@ -88,15 +88,15 @@ class TemplateTest(RigTestCase):
 
     def testTags(self):
         m = MockParse(self.Log(), file=None, source="something")
-        self.assertIsInstance(dict, m._tags)
+        self.rigAssertIsInstance(dict, m._tags)
         self.assertTrue("#" in m._tags, "Missing key '#' in %s" % m._tags)
         self.assertTrue("end" in m._tags, "Missing key 'end' in %s" % m._tags)
         self.assertTrue("for" in m._tags, "Missing key 'for' in %s" % m._tags)
         self.assertTrue("if" in m._tags, "Missing key 'if' in %s" % m._tags)
-        self.assertIsInstance(TagComment, m._tags["#"])
-        self.assertIsInstance(TagFor, m._tags["for"])
-        self.assertIsInstance(TagIf, m._tags["if"])
-        self.assertIsInstance(Tag, m._tags["end"])
+        self.rigAssertIsInstance(TagComment, m._tags["#"])
+        self.rigAssertIsInstance(TagFor, m._tags["for"])
+        self.rigAssertIsInstance(TagIf, m._tags["if"])
+        self.rigAssertIsInstance(Tag, m._tags["end"])
 
     def testGetNextNode(self):
         m = MockParse(self.Log(), source="")

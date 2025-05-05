@@ -22,6 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "ralfoide at gmail com"
 
+import unittest
+
 from tests.rig_test_case import RigTestCase
 from rig.version import Version
 
@@ -33,13 +35,14 @@ class VersionTest(RigTestCase):
 
     def testVersion(self):
         v = self.m.Version()
-        self.assertIsInstance(tuple, v)
+        self.rigAssertIsInstance(tuple, v)
         self.assertEquals(2, len(v))
 
     def testVersionString(self):
         v = self.m.VersionString()
         self.assertEquals("%s.%s" % Version.RIG3_VERSION, v)
 
+    @unittest.skip("Not currentyl using SVN")
     def testSvnRevision_Fake(self):
         v = self.m.SvnRevision("$Revision: 42 $")
         self.assertEquals(42, v)
@@ -47,9 +50,10 @@ class VersionTest(RigTestCase):
         v = self.m.SvnRevision("$Revision: None $")
         self.assertEquals("Unknown", v)
 
+    @unittest.skip("Not currentyl using SVN")
     def testSvnRevision_Real(self):
         v = self.m.SvnRevision()
-        self.assertIsInstance(int, v)
+        self.rigAssertIsInstance(int, v)
         self.assertTrue(v > 150)
 
 

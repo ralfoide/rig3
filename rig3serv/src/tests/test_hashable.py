@@ -77,7 +77,7 @@ class HashableTest(RigTestCase):
 
         # The sha is not really an object so we can't quite test its type
         # using isinstance(). Check the value directly then.
-        # I.e. we can't write this: self.assertIsInstance(sha, h)
+        # I.e. we can't write this: self.rigAssertIsInstance(sha, h)
         self.assertShaEquals(sha.new("blah"), h)
 
     def testRigHashes(self):

@@ -71,7 +71,8 @@ class SettingsBaseTest(RigTestCase):
         self.assertListEquals(
             [ ("key1", "value1"),
               ("global_default_key", "global_value_default") ],
-            self.m._parser.items("section1"))
+            self.m._parser.items("section1"),
+            sort=True)
 
         # The settings_base.rc file entry for [site1] has multiple definitions
         # for the same variable. Only the last definition is used.

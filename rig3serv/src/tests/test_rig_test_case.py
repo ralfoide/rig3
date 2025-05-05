@@ -72,13 +72,13 @@ class RigTestCaseTest(RigTestCase):
         self.assertMatches("fo+ba+r$", "foobar")
 
     def testAssertIsInstance(self):
-        self.assertIsInstance(str, "string")
-        self.assertIsInstance((str, list), "string")
-        self.assertIsInstance(list, [ 1, 2 ])
-        self.assertIsInstance(dict, { "a":1, "b":2 })
-        self.assertRaises(AssertionError, self.assertIsInstance, list, "string")
-        self.assertRaises(AssertionError, self.assertIsInstance, dict, [ 1, 2 ])
-        self.assertRaises(AssertionError, self.assertIsInstance, str, { "a":1, "b":2 })
+        self.rigAssertIsInstance(str, "string")
+        self.rigAssertIsInstance((str, list), "string")
+        self.rigAssertIsInstance(list, [ 1, 2 ])
+        self.rigAssertIsInstance(dict, { "a":1, "b":2 })
+        self.assertRaises(AssertionError, self.rigAssertIsInstance, list, "string")
+        self.assertRaises(AssertionError, self.rigAssertIsInstance, dict, [ 1, 2 ])
+        self.assertRaises(AssertionError, self.rigAssertIsInstance, str, { "a":1, "b":2 })
 
     def testAssertDictEquals(self):
         self.assertDictEquals({ "a":1, "b":2 }, {  "b":2, "a":1 })
