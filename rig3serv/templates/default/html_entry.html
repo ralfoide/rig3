@@ -18,18 +18,14 @@ Parameters:
 ]]
 <div class="entry">
 
-<table class="deco">
-<tr><td class="left-top"> </td>
-<td class="title">
+<div class="deco before-content title">
 <a name="[[url anchorlink_name]]" title="Permalink to '[[html title]]'"><a
         href="[[html rel_permalink_url]]"
         title="Permalink to '[[html title]]'"
     ><span class="date">[[html date.strftime("%Y/%m/%d")]]</span>
     [[html title]]
-    </a>
-</a></td></tr>
-<tr><td class="left-bottom"> </td>
-<td class="right-bottom">
+</a>
+</div> [[# end div title ]]
 
 <div class="content intro">
 <a href="[[raw anchorlink_url]]" title="#">&pi;</a>
@@ -62,18 +58,20 @@ Parameters:
    ><img src="[[url rel_base_url]]media/fav_twitter.gif" title="Share on Twitter: [[html title]]" border="0" /></a>
 </span>
 [[end]]
-</div>
+</div>  [[# end div content.intro ]]
 
 [[if "en" in sections]]
-<table class="content en"><tr>
-[[if "fr" in sections]]<td class="flag"><img src="[[url rel_base_url + "media/flag_usa.gif"]]" /></td>[[end]]
-<td>[[raw sections["en"] ]]</td></tr></table>
+<div class="content en">
+[[if "fr" in sections]]<div class="flag"><img src="[[url rel_base_url + "media/flag_usa.gif"]]" /></div>[[end]]
+<div>[[raw sections["en"] ]]</div>
+</div>
 [[end]]
 
 [[if "fr" in sections]]
-<table class="content fr"><tr><td class="flag">
-<td class="flag"><img src="[[url rel_base_url + "media/flag_fr.gif"]]" /></td>
-<td>[[raw sections["fr"] ]]</td></tr></table>
+<div class="content fr">
+<div class="flag"><img src="[[url rel_base_url + "media/flag_fr.gif"]]" /></div>
+<div>[[raw sections["fr"] ]]</div>
+</div>
 [[end]]
 
 [[if "html" in sections]]
@@ -88,5 +86,7 @@ Parameters:
 </div>
 [[end]]
 
-</td></tr></table>
-</div>
+<div class="deco after-content"></div>
+
+</div>  [[# end div entry ]]
+
